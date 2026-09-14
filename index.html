@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Tools Tài Xỉu (GaNg 2007)</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --card: #1a2332;
+      --line: #2a3548;
+      --text: #e8eef6;
+      --muted: #8b9bb4;
+      --tai: #ff6b6b;
+      --xiu: #4dabf7;
+      --tri: #fcc419;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 16px 16px 48px;
+    }
+    h1 { font-size: 1.25rem; margin: 0 0 6px; }
+    .sub { color: var(--muted); font-size: 0.85rem; margin-bottom: 16px; line-height: 1.45; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+    .dice {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    select, button {
+      font: inherit;
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: #0f1419;
+      color: var(--text);
+      padding: 12px;
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    button.primary { background: #2b6cb0; border-color: #2b6cb0; font-weight: 600; }
+    button.danger { background: #3a1c1c; border-color: #7a2e2e; color: #ffb4b4; }
+    button.ghost { background: #243044; }
+    .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; text-align: center; }
+    .tai { color: var(--tai); }
+    .xiu { color: var(--xiu); }
+    .tri { color: var(--tri); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th, td { padding: 8px 4px; border-bottom: 1px solid var(--line); text-align: left; }
+    th { color: var(--muted); font-weight: 600; }
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .pill.TAI { background: #3a1c1c; color: var(--tai); }
+    .pill.XIU { background: #102a44; color: var(--xiu); }
+    .pill.TRIPLE { background: #3a2f10; color: var(--tri); }
+    .warn { color: #ffd43b; font-size: 0.8rem; line-height: 1.45; margin: 0; }
+    .bar {
+      height: 8px;
+      background: #0f1419;
+      border-radius: 99px;
+      overflow: hidden;
+      display: flex;
+      margin: 6px 0 10px;
+    }
+    .bar span { display: block; height: 100%; }
+    .guess {
+      font-size: 1.35rem;
+      font-weight: 800;
+      margin: 4px 0 8px;
+    }
+    .tiny { color: var(--muted); font-size: 0.78rem; line-height: 1.45; }
+    .kv { font-size: 0.88rem; margin: 4px 0; }
+  </style>
+</head>
+<body>
+  <h1>Tools Tài Xỉu (GaNg 2007)</h1>
+  <p class="sub">Ghi phiên để đếm cầu và chạy mô hình toán. Mô hình không đoán được xúc xắc thật — mỗi lần đổ vẫn độc lập.</p>
+
+  <div class="card">
+    <label>Nhập 3 viên xúc xắc</label>
+    <div class="dice">
+      <select id="d1"></select>
+      <select id="d2"></select>
+      <select id="d3"></select>
+    </div>
+    <div class="row">
+      <button class="primary" onclick="ghi()">Ghi phiên</button>
+      <button class="ghost" onclick="xoa1()">Xóa phiên cuối</button>
+    </div>
+    <div style="height:8px"></div>
+    <button class="danger" onclick="xoaHet()">Xóa hết</button>
+  </div>
+
+  <div class="card">
+    <label>Phân tích toán / gợi ý mẫu</label>
+    <div id="guessBox">Cần ít nhất 1 phiên.</div>
+  </div>
+
+  <div class="card">
+    <div class="stats">
+      <div>Phiên<b id="n">0</b></div>
+      <div class="tai">Tài<b id="nt">0</b></div>
+      <div class="xiu">Xỉu<b id="nx">0</b></div>
+    </div>
+    <p style="margin:10px 0 0;font-size:0.9rem">
+      Triple: <b id="ntr">0</b><br />
+      Cầu hiện tại: <b id="cau">—</b><br />
+      Cầu dài nhất: <b id="cauMax">—</b>
+    </p>
+  </div>
+
+  <div class="card">
+    <label>Tổng hay ra</label>
+    <div id="tongHay">Chưa có dữ liệu</div>
+  </div>
+
+  <div class="card">
+    <label>Dãy phiên</label>
+    <div id="ds">Chưa có dữ liệu</div>
+  </div>
+
+  <p class="warn">Xác suất lý thuyết mỗi phiên (loại bộ ba khỏi Tài/Xỉu): Xỉu 105/216 = 48.61%, Tài 105/216 = 48.61%, Triple 6/216 = 2.78%. Cầu dài không làm phiên sau “phải đảo”.</p>
+
+<script>
+const KEY = "xx3_phien_v2";
+const LY_THUYET = { TAI: 105/216, XIU: 105/216, TRIPLE: 6/216 };
+let L = JSON.parse(localStorage.getItem(KEY) || localStorage.getItem("xx3_phien") || "[]");
+
+function fillSel() {
+  ["d1","d2","d3"].forEach(id => {
+    const s = document.getElementById(id);
+    s.innerHTML = [1,2,3,4,5,6].map(n => `<option>${n}</option>`).join("");
+  });
+}
+function loai(x) {
+  const s = x[0]+x[1]+x[2];
+  if (x[0]===x[1] && x[1]===x[2]) return "TRIPLE";
+  return (s>=4 && s<=10) ? "XIU" : "TAI";
+}
+function ghi() {
+  const x = [+d1.value, +d2.value, +d3.value];
+  L.push({x, s: x[0]+x[1]+x[2], loai: loai(x), t: Date.now()});
+  save(); render();
+}
+function xoa1() {
+  if (!L.length) return;
+  L.pop(); save(); render();
+}
+function xoaHet() {
+  if (!confirm("Xóa toàn bộ dữ liệu?")) return;
+  L = []; save(); render();
+}
+function save(){ localStorage.setItem(KEY, JSON.stringify(L)); }
+
+function streakNow() {
+  if (!L.length) return { loai: "—", n: 0 };
+  const day = L.map(i => i.loai);
+  let n=1, cur=day[day.length-1];
+  for (let i=day.length-2;i>=0;i--) {
+    if (day[i]===cur) n++; else break;
+  }
+  return { loai: cur, n };
+}
+function cauHienTai() {
+  const s = streakNow();
+  return s.n ? (s.loai + " x" + s.n) : "—";
+}
+function cauDaiNhat() {
+  if (!L.length) return "—";
+  const day = L.map(i => i.loai);
+  let mx=1, mxv=day[0], v=day[0], c=1;
+  for (let i=1;i<day.length;i++) {
+    if (day[i]===v) c++;
+    else { if (c>mx){mx=c;mxv=v;} v=day[i]; c=1; }
+  }
+  if (c>mx){mx=c;mxv=v;}
+  return mxv + " x" + mx;
+}
+
+function markov() {
+  const m = {
+    TAI:{TAI:0,XIU:0,TRIPLE:0},
+    XIU:{TAI:0,XIU:0,TRIPLE:0},
+    TRIPLE:{TAI:0,XIU:0,TRIPLE:0}
+  };
+  for (let i=1;i<L.length;i++) m[L[i-1].loai][L[i].loai]++;
+  return m;
+}
+
+function phanTich() {
+  const box = document.getElementById("guessBox");
+  if (!L.length) {
+    box.innerHTML = "Cần ít nhất 1 phiên.";
+    return;
+  }
+  const n = L.length;
+  const cnt = { TAI:0, XIU:0, TRIPLE:0 };
+  L.forEach(i => cnt[i.loai]++);
+
+  // Laplace smoothing + co về lý thuyết (shrinkage)
+  // w tăng theo số phiên, tối đa 0.35 — không để mẫu nhỏ lấn át xác suất thật
+  const w = Math.min(0.35, n / (n + 30));
+  const empiric = {
+    TAI: (cnt.TAI + 1) / (n + 3),
+    XIU: (cnt.XIU + 1) / (n + 3),
+    TRIPLE: (cnt.TRIPLE + 1) / (n + 3)
+  };
+  const mix = {};
+  ["TAI","XIU","TRIPLE"].forEach(k => {
+    mix[k] = (1-w)*LY_THUYET[k] + w*empiric[k];
+  });
+
+  // Markov 1 bước từ cửa vừa ra (làm mượt)
+  const last = L[n-1].loai;
+  const mk = markov()[last];
+  const tot = mk.TAI + mk.XIU + mk.TRIPLE;
+  const mark = {};
+  ["TAI","XIU","TRIPLE"].forEach(k => {
+    mark[k] = tot ? (mk[k]+1)/(tot+3) : LY_THUYET[k];
+  });
+  const w2 = tot >= 8 ? 0.25 : 0.08;
+  const final = {};
+  ["TAI","XIU","TRIPLE"].forEach(k => {
+    final[k] = (1-w2)*mix[k] + w2*mark[k];
+  });
+  const sum = final.TAI+final.XIU+final.TRIPLE;
+  ["TAI","XIU","TRIPLE"].forEach(k => final[k]/=sum);
+
+  const order = ["XIU","TAI","TRIPLE"].sort((a,b)=>final[b]-final[a]);
+  const top = order[0];
+  const gap = final[order[0]] - final[order[1]];
+  const st = streakNow();
+
+  let doTin = "rất thấp";
+  if (n >= 80 && gap > 0.04) doTin = "thấp";
+  else if (n >= 30) doTin = "rất thấp (mẫu còn nhỏ)";
+  else doTin = "không đủ (mẫu quá ít)";
+
+  const pct = k => (final[k]*100).toFixed(1) + "%";
+  const cls = {TAI:"tai", XIU:"xiu", TRIPLE:"tri"}[top];
+
+  box.innerHTML = `
+    <div class="tiny">Mô hình: 65–92% xác suất lý thuyết + tần suất mẫu + chuyển cửa (Markov 1 bước). Không phải AI nhìn được xúc xắc.</div>
+    <div class="guess ${cls}">Gợi ý mẫu: ${top}</div>
+    <div class="kv xiu">Xỉu ${pct("XIU")}</div>
+    <div class="bar"><span class="xiu" style="width:${final.XIU*100}%;background:#4dabf7"></span></div>
+    <div class="kv tai">Tài ${pct("TAI")}</div>
+    <div class="bar"><span class="tai" style="width:${final.TAI*100}%;background:#ff6b6b"></span></div>
+    <div class="kv tri">Triple ${pct("TRIPLE")}</div>
+    <div class="bar"><span class="tri" style="width:${final.TRIPLE*100}%;background:#fcc419"></span></div>
+    <div class="tiny">
+      Cửa vừa ra: <b>${last}</b> · Cầu: <b>${st.loai} x${st.n}</b><br>
+      Độ tin cậy: <b>${doTin}</b> · Số phiên: ${n}<br>
+      Lý thuyết luôn ~ Tài 48.6% / Xỉu 48.6% / Triple 2.8%.<br>
+      ${tot ? `Sau ${last}, trong mẫu của bạn: Tài ${mk.TAI}, Xỉu ${mk.XIU}, Triple ${mk.TRIPLE}.` : "Chưa đủ cặp liên tiếp để đếm chuyển cửa."}
+    </div>
+  `;
+}
+
+function render() {
+  const n=L.length;
+  const nt=L.filter(i=>i.loai==="TAI").length;
+  const nx=L.filter(i=>i.loai==="XIU").length;
+  const ntr=L.filter(i=>i.loai==="TRIPLE").length;
+  document.getElementById("n").textContent=n;
+  document.getElementById("nt").textContent=n? (nt+" ("+(100*nt/n).toFixed(1)+"%)") : 0;
+  document.getElementById("nx").textContent=n? (nx+" ("+(100*nx/n).toFixed(1)+"%)") : 0;
+  document.getElementById("ntr").textContent=n? (ntr+" ("+(100*ntr/n).toFixed(1)+"%)") : 0;
+  document.getElementById("cau").textContent=cauHienTai();
+  document.getElementById("cauMax").textContent=cauDaiNhat();
+  phanTich();
+
+  if (!n) {
+    tongHay.textContent="Chưa có dữ liệu";
+    ds.textContent="Chưa có dữ liệu";
+    return;
+  }
+  const cnt={};
+  L.forEach(i => cnt[i.s]=(cnt[i.s]||0)+1);
+  tongHay.innerHTML = Object.entries(cnt)
+    .sort((a,b)=>b[1]-a[1] || a[0]-b[0])
+    .map(([t,c])=>`Tổng ${t}: ${c} phiên`)
+    .join("<br>");
+
+  const rows = [...L].reverse().map((i,idx) => {
+    const stt = n-idx;
+    return `<tr>
+      <td>${stt}</td>
+      <td>${i.x.join("-")}</td>
+      <td>${i.s}</td>
+      <td><span class="pill ${i.loai}">${i.loai}</span></td>
+    </tr>`;
+  }).join("");
+  ds.innerHTML = `<table><thead><tr><th>#</th><th>Xúc xắc</th><th>Tổng</th><th>Cửa</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+fillSel();
+render();
+</script>
+</body>
+</html>
