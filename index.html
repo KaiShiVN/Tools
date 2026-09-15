@@ -3,725 +3,1634 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎲 Dice AI Pro Max - Phân Tích Xúc Xắc Thông Minh</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0/dist/tf.min.js"></script>
+<title>CrossBoost - Tương tác chéo</title>
 <style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  
   :root {
-    --bg1: #0f0c29; --bg2: #302b63; --bg3: #24243e;
-    --card: rgba(255,255,255,0.06);
-    --border: rgba(255,255,255,0.12);
-    --text: #ffffff;
-    --text2: rgba(255,255,255,0.7);
-    --accent: #f9d423;
-    --accent2: #ff4e50;
-    --green: #4ade80;
-    --blue: #38bdf8;
-    --purple: #a78bfa;
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --text: #0f172a;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08);
+    --shadow-lg: 0 10px 40px rgba(0,0,0,0.1);
   }
-  [data-theme="light"] {
-    --bg1: #e0e7ff; --bg2: #f0f4ff; --bg3: #dbeafe;
-    --card: rgba(255,255,255,0.85);
-    --border: rgba(0,0,0,0.1);
-    --text: #1e293b;
-    --text2: rgba(30,41,59,0.7);
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
+
   body {
-    font-family: 'Segoe UI', -apple-system, sans-serif;
-    background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
-    background-attachment: fixed;
-    min-height: 100vh;
-    padding: 20px;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--bg);
     color: var(--text);
-    transition: all 0.3s;
+    min-height: 100vh;
+    line-height: 1.5;
   }
-  .container {
-    max-width: 1300px;
-    margin: 0 auto;
-  }
-  .header {
+
+  button { font-family: inherit; cursor: pointer; border: none; }
+  input, textarea, select { font-family: inherit; }
+
+  /* ===== AUTH SCREEN ===== */
+  .auth-screen {
+    min-height: 100vh;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 12px;
+    justify-content: center;
+    padding: 20px;
+    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
   }
-  h1 {
-    font-size: 28px;
-    background: linear-gradient(90deg, var(--accent), var(--accent2), var(--purple));
+  .auth-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 36px 28px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: var(--shadow-lg);
+  }
+  .auth-logo { text-align: center; font-size: 40px; margin-bottom: 8px; }
+  .auth-card h1 {
+    text-align: center;
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 6px;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    background-size: 200% 200%;
-    animation: gradient 3s ease infinite;
+    background-clip: text;
   }
-  @keyframes gradient {
-    0%,100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-  }
-  .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-  .section {
-    background: var(--card);
-    border-radius: 14px;
-    padding: 20px;
-    margin-bottom: 18px;
-    border: 1px solid var(--border);
-    backdrop-filter: blur(12px);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-  }
-  h2 {
-    font-size: 17px;
-    margin-bottom: 14px;
-    color: var(--accent);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .input-group {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-  input[type="number"], input[type="text"] {
-    width: 75px;
-    padding: 11px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: rgba(0,0,0,0.25);
-    color: var(--text);
-    font-size: 16px;
+  .auth-card .subtitle {
     text-align: center;
-    font-weight: bold;
-    transition: all 0.2s;
-  }
-  [data-theme="light"] input {
-    background: #fff;
-    color: #1e293b;
-  }
-  input:focus {
-    outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(249,212,35,0.2);
-    transform: scale(1.05);
-  }
-  button {
-    padding: 11px 18px;
-    border-radius: 8px;
-    border: none;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: #000;
-    font-weight: bold;
-    cursor: pointer;
+    color: var(--text-muted);
     font-size: 14px;
+    margin-bottom: 24px;
+  }
+  .form-group { margin-bottom: 16px; }
+  .form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .form-group input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-group input:focus { border-color: var(--primary); }
+  .btn-primary {
+    width: 100%;
+    padding: 13px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    transition: all 0.2s;
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(99,102,241,0.4); }
+  .auth-switch {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+  .auth-switch a { color: var(--primary); font-weight: 700; cursor: pointer; }
+  .auth-error {
+    background: #fef2f2;
+    color: var(--danger);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 16px;
+    display: none;
+    border-left: 3px solid var(--danger);
+  }
+  .auth-error.show { display: block; }
+
+  /* ===== APP ===== */
+  .app { display: none; min-height: 100vh; }
+  .app.show { display: block; }
+
+  .topbar {
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--shadow);
+  }
+  .topbar-logo {
+    font-size: 18px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .topbar-user { display: flex; align-items: center; gap: 10px; }
+  .points-chip {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 800;
+    box-shadow: 0 3px 10px rgba(245, 158, 11, 0.3);
+  }
+  .admin-badge {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+  }
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    color: #fff;
+    font-size: 14px;
+  }
+  .btn-logout {
+    background: transparent;
+    color: var(--text-muted);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .btn-logout:hover { background: var(--bg); }
+
+  /* ===== TABS ===== */
+  .tabs {
+    display: flex;
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 60px;
+    z-index: 99;
+    overflow-x: auto;
+  }
+  .tab {
+    flex: 1;
+    min-width: 90px;
+    padding: 14px 8px;
+    background: transparent;
+    color: var(--text-muted);
+    font-weight: 700;
+    font-size: 14px;
+    border-bottom: 3px solid transparent;
     transition: all 0.2s;
     white-space: nowrap;
   }
-  button:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(249,212,35,0.4);
-  }
-  button:active { transform: translateY(0); }
-  button:disabled { opacity: 0.5; cursor: not-allowed; }
-  button.ghost {
-    background: var(--card);
-    color: var(--text);
-    border: 1px solid var(--border);
-  }
-  button.ghost:hover {
-    background: rgba(255,255,255,0.15);
-    box-shadow: none;
-  }
-  button.danger {
-    background: linear-gradient(135deg, #ef4444, #991b1b);
-    color: #fff;
-  }
-  button.success {
-    background: linear-gradient(135deg, var(--green), #059669);
-    color: #fff;
-  }
-  .dice-list {
-    max-height: 260px;
-    overflow-y: auto;
-    margin-top: 12px;
-    font-size: 13px;
-    padding-right: 5px;
-  }
-  .dice-list::-webkit-scrollbar { width: 6px; }
-  .dice-list::-webkit-scrollbar-thumb {
-    background: var(--accent); border-radius: 3px;
-  }
-  .dice-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 12px;
-    background: rgba(255,255,255,0.04);
-    margin-bottom: 5px;
-    border-radius: 6px;
-    border-left: 3px solid var(--accent);
-    animation: slideIn 0.3s ease;
-  }
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateX(-20px); }
-    to { opacity: 1; transform: translateX(0); }
-  }
-  .dice-item .result { font-weight: bold; }
-  .dice-item.tai { border-left-color: var(--blue); }
-  .dice-item.xiu { border-left-color: var(--accent); }
-  .dice-item.bao { border-left-color: #ef4444; background: rgba(239,68,68,0.1); }
+  .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+  .tab.admin-tab { color: var(--danger); }
+  .tab.admin-tab.active { color: var(--danger); border-bottom-color: var(--danger); }
+
+  /* ===== MAIN ===== */
+  .main { max-width: 900px; margin: 0 auto; padding: 16px; padding-bottom: 80px; }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ===== STATS CARDS (Admin Dashboard) ===== */
   .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 12px;
+    margin-bottom: 20px;
   }
   .stat-card {
-    background: rgba(255,255,255,0.05);
-    padding: 14px;
-    border-radius: 10px;
-    text-align: center;
-    border: 1px solid var(--border);
-    transition: transform 0.2s;
+    background: #fff;
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: var(--shadow);
+    border-left: 4px solid var(--primary);
   }
-  .stat-card:hover { transform: translateY(-3px); }
-  .stat-card .label { font-size: 11px; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.5px; }
-  .stat-card .value { font-size: 22px; font-weight: bold; color: var(--accent); margin-top: 6px; }
-  .stat-card .sub { font-size: 11px; opacity: 0.6; margin-top: 3px; }
-  .pred-row {
+  .stat-card.green { border-left-color: var(--success); }
+  .stat-card.orange { border-left-color: var(--warning); }
+  .stat-card.red { border-left-color: var(--danger); }
+  .stat-card .label {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .stat-card .value { font-size: 28px; font-weight: 800; line-height: 1; }
+  .stat-card .sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+  /* ===== PROFILE CARD ===== */
+  .profile-card {
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    border-radius: 16px;
+    padding: 24px;
+    color: #fff;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-lg);
+  }
+  .profile-card .user-info {
     display: flex;
     align-items: center;
-    margin-bottom: 10px;
-    gap: 12px;
+    gap: 14px;
+    margin-bottom: 18px;
   }
-  .pred-label { min-width: 130px; font-size: 13px; font-weight: bold; }
-  .pred-bar-bg {
-    flex: 1;
-    height: 22px;
-    background: rgba(255,255,255,0.08);
-    border-radius: 11px;
-    overflow: hidden;
-    position: relative;
+  .profile-card .avatar-lg {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 800;
+    border: 3px solid rgba(255,255,255,0.4);
   }
-  .pred-bar {
-    height: 100%;
-    background: linear-gradient(90deg, var(--green), var(--accent));
-    transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
-    border-radius: 11px;
-    box-shadow: 0 0 12px rgba(74,222,128,0.4);
+  .profile-card .name { font-size: 20px; font-weight: 800; }
+  .profile-card .rank { font-size: 13px; opacity: 0.9; }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
   }
-  .pred-bar.big { background: linear-gradient(90deg, var(--blue), var(--purple)); }
-  .pred-bar.small { background: linear-gradient(90deg, var(--accent), #f97316); }
-  .pred-percent {
-    min-width: 60px;
-    text-align: right;
-    font-weight: bold;
-    color: var(--green);
-    font-family: 'Courier New', monospace;
-  }
-  .top-pick {
-    margin-top: 18px;
-    padding: 20px;
-    background: linear-gradient(135deg, rgba(249,212,35,0.15), rgba(255,78,80,0.15), rgba(167,139,250,0.15));
-    border-radius: 14px;
-    border: 2px solid var(--accent);
+  .stat {
+    background: rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 12px;
     text-align: center;
+    backdrop-filter: blur(10px);
+  }
+  .stat .num { font-size: 22px; font-weight: 800; }
+  .stat .lbl { font-size: 11px; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* ===== SECTION ===== */
+  .section-title {
+    font-size: 15px;
+    font-weight: 800;
+    margin: 20px 0 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .section-title > span:first-child {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title > span:first-child::before {
+    content: '';
+    width: 4px;
+    height: 16px;
+    background: linear-gradient(180deg, #6366f1, #a855f7);
+    border-radius: 2px;
+  }
+
+  /* ===== SEARCH BAR ===== */
+  .search-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .search-bar input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-size: 14px;
+    outline: none;
+  }
+  .search-bar input:focus { border-color: var(--primary); }
+  .search-bar select {
+    padding: 10px 14px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+  }
+
+  /* ===== USER ROW ===== */
+  .user-row {
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: var(--shadow);
+    transition: transform 0.15s;
+    flex-wrap: wrap;
+  }
+  .user-row:hover { transform: translateX(2px); }
+  .user-row.banned {
+    background: #fef2f2;
+    border-left: 4px solid var(--danger);
+    opacity: 0.85;
+  }
+  .user-row .avatar { width: 44px; height: 44px; font-size: 16px; flex-shrink: 0; }
+  .user-row .info { flex: 1; min-width: 150px; }
+  .user-row .uname {
+    font-weight: 700;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .user-row .uname .crown { color: #f59e0b; }
+  .user-row .uname .banned-tag {
+    background: var(--danger);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+  .user-row .meta {
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    gap: 10px;
+    margin-top: 2px;
+    flex-wrap: wrap;
+  }
+  .user-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .btn-follow {
+    padding: 8px 18px;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 13px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn-follow:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(99,102,241,0.4); }
+  .btn-follow.following {
+    background: #fff;
+    color: var(--primary);
+    border: 2px solid var(--primary);
+  }
+
+  /* ===== ADMIN ACTION BUTTONS ===== */
+  .btn-icon {
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    background: var(--bg);
+    color: var(--text);
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn-icon:hover { background: var(--border); }
+  .btn-icon.primary { background: #eef2ff; color: var(--primary); }
+  .btn-icon.primary:hover { background: #e0e7ff; }
+  .btn-icon.warn { background: #fef3c7; color: #92400e; }
+  .btn-icon.warn:hover { background: #fde68a; }
+  .btn-icon.danger { background: #fee2e2; color: var(--danger); }
+  .btn-icon.danger:hover { background: #fecaca; }
+  .btn-icon.success { background: #d1fae5; color: #065f46; }
+  .btn-icon.success:hover { background: #a7f3d0; }
+
+  /* ===== COMPOSER ===== */
+  .composer {
+    background: #fff;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+  .composer textarea {
+    width: 100%;
+    min-height: 80px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 14px;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .composer textarea:focus { border-color: var(--primary); }
+  .composer-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  .boost-selector {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .boost-selector select {
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 2px solid var(--border);
+    font-size: 13px;
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+  }
+  .btn-post {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    padding: 9px 20px;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  /* ===== POST ===== */
+  .post {
+    background: #fff;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
     position: relative;
     overflow: hidden;
   }
-  .top-pick::before {
-    content: '';
+  .post.boosted { border: 2px solid #f59e0b; background: linear-gradient(135deg, #fffbeb, #ffffff); }
+  .post.boosted::before {
+    content: '🔥 BOOSTED';
     position: absolute;
-    top: -50%; left: -50%;
-    width: 200%; height: 200%;
-    background: conic-gradient(from 0deg, transparent, rgba(249,212,35,0.1), transparent);
-    animation: rotate 8s linear infinite;
+    top: 0;
+    right: 0;
+    background: linear-gradient(135deg, #f59e0b, #ea580c);
+    color: #fff;
+    padding: 4px 12px;
+    font-size: 10px;
+    font-weight: 800;
+    border-bottom-left-radius: 12px;
+    letter-spacing: 0.5px;
   }
-  @keyframes rotate { to { transform: rotate(360deg); } }
-  .top-pick > * { position: relative; z-index: 1; }
-  .top-pick .big {
-    font-size: 36px;
-    font-weight: bold;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin: 10px 0;
-    letter-spacing: 1px;
+  .post-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
   }
-  .note { font-size: 12px; opacity: 0.7; margin-top: 8px; font-style: italic; }
-  .chip {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: bold;
-    margin: 2px;
+  .post-header .avatar { width: 40px; height: 40px; font-size: 14px; }
+  .post-header .info { flex: 1; }
+  .post-header .uname { font-weight: 700; font-size: 14px; }
+  .post-header .time { font-size: 11px; color: var(--text-muted); }
+  .post-content { font-size: 14px; line-height: 1.6; margin-bottom: 10px; white-space: pre-wrap; word-wrap: break-word; }
+  .post-footer {
+    display: flex;
+    gap: 16px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
   }
-  .chip.tai { background: var(--blue); color: #000; }
-  .chip.xiu { background: var(--accent); color: #000; }
-  .chip.bao { background: #ef4444; color: #fff; }
-  .chip.chan { background: var(--purple); color: #fff; }
-  .chip.le { background: #06b6d4; color: #000; }
+  .post-action {
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.15s;
+  }
+  .post-action:hover { background: var(--bg); color: var(--primary); }
+  .post-action.liked { color: var(--danger); }
+  .post-action.admin-del { color: var(--danger); }
 
-  /* Toast */
+  /* ===== EMPTY ===== */
+  .empty { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+  .empty .emoji { font-size: 48px; margin-bottom: 10px; }
+  .empty p { font-size: 14px; }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 20px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: var(--shadow-lg);
+    animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .modal h3 { font-size: 18px; margin-bottom: 8px; }
+  .modal p { font-size: 14px; color: var(--text-muted); margin-bottom: 16px; }
+  .modal .form-group { margin-bottom: 14px; }
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 16px;
+  }
+  .btn {
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 14px;
+    transition: all 0.15s;
+  }
+  .btn-secondary {
+    background: var(--bg);
+    color: var(--text);
+  }
+  .btn-secondary:hover { background: var(--border); }
+  .btn-danger {
+    background: var(--danger);
+    color: #fff;
+  }
+  .btn-danger:hover { background: #dc2626; }
+  .btn-confirm {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+  }
+
+  /* ===== TOAST ===== */
   .toast-container {
     position: fixed;
     top: 20px;
-    right: 20px;
-    z-index: 9999;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000;
     display: flex;
     flex-direction: column;
     gap: 10px;
+    pointer-events: none;
   }
   .toast {
+    background: #fff;
     padding: 14px 20px;
-    border-radius: 10px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    backdrop-filter: blur(20px);
-    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-    animation: toastIn 0.3s ease;
-    min-width: 260px;
-    max-width: 380px;
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
     font-size: 14px;
-  }
-  .toast.warn { border-left: 4px solid var(--accent); }
-  .toast.success { border-left: 4px solid var(--green); }
-  .toast.error { border-left: 4px solid #ef4444; }
-  .toast.info { border-left: 4px solid var(--blue); }
-  @keyframes toastIn {
-    from { opacity: 0; transform: translateX(100%); }
-    to { opacity: 1; transform: translateX(0); }
-  }
-
-  /* Tabs */
-  .tabs {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 14px;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 10px;
-    flex-wrap: wrap;
-  }
-  .tab {
-    padding: 8px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: bold;
-    background: transparent;
-    color: var(--text2);
-    border: none;
-    transition: all 0.2s;
-  }
-  .tab:hover { background: rgba(255,255,255,0.05); }
-  .tab.active {
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: #000;
-  }
-  .tab-content { display: none; }
-  .tab-content.active { display: block; animation: fadeIn 0.3s; }
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-  /* Chart container */
-  .chart-container {
-    position: relative;
-    height: 280px;
-    margin: 10px 0;
-  }
-
-  /* Sim results */
-  .sim-result {
-    background: rgba(0,0,0,0.2);
-    padding: 15px;
-    border-radius: 10px;
-    margin-top: 12px;
-    font-family: 'Courier New', monospace;
-    font-size: 13px;
-    line-height: 1.8;
-  }
-  .sim-result .good { color: var(--green); }
-  .sim-result .bad { color: #ef4444; }
-
-  /* Pattern badges */
-  .patterns {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 10px;
-  }
-  .pattern-badge {
-    padding: 8px 14px;
-    border-radius: 8px;
-    background: rgba(255,255,255,0.08);
-    font-size: 12px;
-    border: 1px solid var(--border);
+    font-weight: 600;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 10px;
+    animation: slideDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: auto;
+    max-width: 90vw;
+    border-left: 4px solid var(--primary);
   }
-  .pattern-badge strong { color: var(--accent); }
+  .toast.success { border-left-color: var(--success); color: #065f46; }
+  .toast.warning { border-left-color: var(--warning); color: #92400e; }
+  .toast.error { border-left-color: var(--danger); color: #991b1b; }
+  .toast.fade-out { animation: slideUp 0.3s forwards; }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes slideUp { to { opacity: 0; transform: translateY(-20px); } }
 
-  /* Progress */
-  .progress-bar {
-    width: 100%;
-    height: 6px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 3px;
-    overflow: hidden;
-    margin-top: 8px;
-  }
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent), var(--green));
-    transition: width 0.4s;
-  }
-
+  /* ===== RESPONSIVE ===== */
   @media (max-width: 600px) {
-    h1 { font-size: 20px; }
-    input[type="number"] { width: 60px; padding: 9px; }
-    button { padding: 9px 14px; font-size: 13px; }
-    .pred-label { min-width: 90px; font-size: 12px; }
-    .top-pick .big { font-size: 26px; }
+    .user-row { padding: 12px; }
+    .user-actions { width: 100%; }
+    .btn-icon { flex: 1; text-align: center; }
   }
 </style>
 </head>
 <body>
-<div class="toast-container" id="toasts"></div>
 
-<div class="container">
-  <!-- HEADER -->
-  <div class="header">
-    <h1>🎲 Dice AI Pro Max</h1>
-    <div class="header-actions">
-      <button class="ghost" onclick="toggleTheme()" id="themeBtn">🌙 Dark</button>
-      <button class="ghost" onclick="exportCSV()">📥 CSV</button>
-      <button class="ghost" onclick="exportJSON()">💾 JSON</button>
-      <button class="ghost" onclick="document.getElementById('importFile').click()">📤 Import</button>
-      <input type="file" id="importFile" accept=".json,.csv" style="display:none" onchange="importFile(event)">
-      <button class="danger" onclick="clearAll()">🗑️</button>
+<!-- ============ AUTH ============ -->
+<div class="auth-screen" id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo">🚀</div>
+    <h1>CrossBoost</h1>
+    <p class="subtitle">Theo dõi chéo - Tích điểm - Tăng tương tác</p>
+
+    <div class="auth-error" id="authError"></div>
+
+    <div class="form-group">
+      <label>Tên đăng nhập</label>
+      <input type="text" id="authUsername" placeholder="Ít nhất 3 ký tự" autocomplete="username">
     </div>
-  </div>
-
-  <!-- INPUT -->
-  <div class="section">
-    <h2>📥 Nhập kết quả 3 viên xúc xắc</h2>
-    <div class="input-group">
-      <input type="number" id="d1" min="1" max="6" placeholder="X1" autocomplete="off">
-      <input type="number" id="d2" min="1" max="6" placeholder="X2" autocomplete="off">
-      <input type="number" id="d3" min="1" max="6" placeholder="X3" autocomplete="off">
-      <button onclick="addDice()">➕ Thêm</button>
-      <button class="ghost" onclick="randomAdd()">🎲 Random</button>
-      <button class="ghost" onclick="simulate(10)">⚡ Test 10</button>
-      <button class="ghost" onclick="simulate(100)">🔥 Test 100</button>
-    </div>
-    <div class="note">⌨️ Enter để thêm nhanh · Ctrl+R random · Ctrl+D xóa 1 phiên cuối</div>
-    <div class="dice-list" id="diceList"></div>
-  </div>
-
-  <!-- TABS -->
-  <div class="section">
-    <div class="tabs">
-      <button class="tab active" onclick="switchTab(event, 'tabStats')">📊 Thống kê</button>
-      <button class="tab" onclick="switchTab(event, 'tabPredict')">🤖 AI Dự đoán</button>
-      <button class="tab" onclick="switchTab(event, 'tabCharts')">📈 Biểu đồ</button>
-      <button class="tab" onclick="switchTab(event, 'tabPatterns')">🔍 Cầu & Patterns</button>
-      <button class="tab" onclick="switchTab(event, 'tabBacktest')">🏆 Backtest</button>
+    <div class="form-group">
+      <label>Mật khẩu</label>
+      <input type="password" id="authPassword" placeholder="Ít nhất 4 ký tự" autocomplete="current-password">
     </div>
 
-    <!-- TAB 1: STATS -->
-    <div id="tabStats" class="tab-content active">
-      <div class="stats-grid" id="statsGrid"></div>
-    </div>
+    <button class="btn-primary" id="authSubmit">Đăng nhập</button>
 
-    <!-- TAB 2: PREDICT -->
-    <div id="tabPredict" class="tab-content">
-      <button onclick="predict()">🔮 Phân tích & Dự đoán</button>
-      <button class="ghost" onclick="predictLSTM()" id="lstmBtn">🧠 Chạy LSTM Neural Net</button>
-      <div id="predictionBox"></div>
+    <div class="auth-switch">
+      <span id="switchText">Chưa có tài khoản?</span>
+      <a id="switchMode">Đăng ký ngay</a>
     </div>
-
-    <!-- TAB 3: CHARTS -->
-    <div id="tabCharts" class="tab-content">
-      <div class="chart-container"><canvas id="chartSums"></canvas></div>
-      <div class="chart-container"><canvas id="chartFaces"></canvas></div>
-      <div class="chart-container"><canvas id="chartTrend"></canvas></div>
-    </div>
-
-    <!-- TAB 4: PATTERNS -->
-    <div id="tabPatterns" class="tab-content">
-      <div id="patternsBox"></div>
-    </div>
-
-    <!-- TAB 5: BACKTEST -->
-    <div id="tabBacktest" class="tab-content">
-      <button onclick="runBacktest()">🏆 Chạy Backtest AI</button>
-      <div class="note">Kiểm tra độ chính xác AI nếu dự đoán trên 30 phiên gần nhất</div>
-      <div id="backtestBox"></div>
-    </div>
+    <p style="text-align:center; margin-top:16px; font-size:12px; color:#94a3b8;">
+      💡 Admin mặc định: <b>admin / admin123</b>
+    </p>
   </div>
 </div>
 
+<!-- ============ APP ============ -->
+<div class="app" id="app">
+  <div class="topbar">
+    <div class="topbar-logo">🚀 CrossBoost</div>
+    <div class="topbar-user">
+      <div class="points-chip" id="topPoints">0 điểm</div>
+      <div class="avatar" id="topAvatar"></div>
+      <button class="btn-logout" id="btnLogout">Đăng xuất</button>
+    </div>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-tab="feed">📰 Feed</button>
+    <button class="tab" data-tab="discover">🔍 Khám phá</button>
+    <button class="tab" data-tab="profile">👤 Cá nhân</button>
+    <!-- Admin tab sẽ được inject bằng JS nếu user là admin -->
+  </div>
+
+  <div class="main">
+
+    <!-- ===== FEED ===== -->
+    <div class="page active" id="page-feed">
+      <div class="composer">
+        <textarea id="postContent" placeholder="Bạn đang nghĩ gì? Chia sẻ để cộng đồng tương tác..."></textarea>
+        <div class="composer-actions">
+          <div class="boost-selector">
+            <span>🚀 Boost:</span>
+            <select id="boostLevel">
+              <option value="0">Không boost</option>
+              <option value="10">10 điểm - Ưu tiên nhẹ</option>
+              <option value="25">25 điểm - Ưu tiên cao</option>
+              <option value="50">50 điểm - Top feed</option>
+            </select>
+          </div>
+          <button class="btn-post" id="btnPost">Đăng bài</button>
+        </div>
+      </div>
+      <div class="section-title"><span>Bài viết mới nhất</span></div>
+      <div id="feedList"></div>
+    </div>
+
+    <!-- ===== DISCOVER ===== -->
+    <div class="page" id="page-discover">
+      <div class="section-title"><span>Gợi ý theo dõi</span></div>
+      <div id="userList"></div>
+    </div>
+
+    <!-- ===== PROFILE ===== -->
+    <div class="page" id="page-profile">
+      <div class="profile-card">
+        <div class="user-info">
+          <div class="avatar-lg" id="profileAvatar"></div>
+          <div>
+            <div class="name" id="profileName"></div>
+            <div class="rank" id="profileRank"></div>
+          </div>
+        </div>
+        <div class="stats">
+          <div class="stat"><div class="num" id="statPoints">0</div><div class="lbl">Điểm</div></div>
+          <div class="stat"><div class="num" id="statFollowers">0</div><div class="lbl">Followers</div></div>
+          <div class="stat"><div class="num" id="statFollowing">0</div><div class="lbl">Đang follow</div></div>
+        </div>
+      </div>
+      <div class="section-title"><span>Bài viết của bạn</span></div>
+      <div id="myPosts"></div>
+    </div>
+
+    <!-- ===== ADMIN ===== -->
+    <div class="page" id="page-admin">
+      <div class="section-title">
+        <span>🛡️ Dashboard Quản Trị</span>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="label">Tổng Users</div>
+          <div class="value" id="admTotalUsers">0</div>
+          <div class="sub" id="admBannedSub">0 bị khóa</div>
+        </div>
+        <div class="stat-card green">
+          <div class="label">Bài viết</div>
+          <div class="value" id="admTotalPosts">0</div>
+          <div class="sub" id="admBoostedSub">0 boosted</div>
+        </div>
+        <div class="stat-card orange">
+          <div class="label">Tổng điểm</div>
+          <div class="value" id="admTotalPoints">0</div>
+          <div class="sub">Toàn hệ thống</div>
+        </div>
+        <div class="stat-card red">
+          <div class="label">Lượt Follow</div>
+          <div class="value" id="admTotalFollows">0</div>
+          <div class="sub">Tương tác chéo</div>
+        </div>
+      </div>
+
+      <!-- Top Users -->
+      <div class="section-title"><span>🏆 Top 5 Users nhiều điểm</span></div>
+      <div id="admTopUsers" style="margin-bottom: 20px;"></div>
+
+      <!-- User Management -->
+      <div class="section-title">
+        <span>👥 Quản lý Users</span>
+      </div>
+      <div class="search-bar">
+        <input type="text" id="admSearch" placeholder="🔍 Tìm username...">
+        <select id="admFilter">
+          <option value="all">Tất cả</option>
+          <option value="active">Đang hoạt động</option>
+          <option value="banned">Đã khóa</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <div id="admUserList"></div>
+
+      <!-- Danger Zone -->
+      <div class="section-title" style="margin-top:32px;">
+        <span>⚠️ Vùng nguy hiểm</span>
+      </div>
+      <div style="background:#fff; border-radius:14px; padding:16px; box-shadow:var(--shadow); border-left:4px solid var(--danger);">
+        <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">
+          Các hành động dưới đây không thể hoàn tác. Hãy chắc chắn trước khi thực hiện.
+        </p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn-icon warn" id="btnResetPoints">🔄 Reset toàn bộ điểm</button>
+          <button class="btn-icon warn" id="btnClearPosts">🗑️ Xóa tất cả bài viết</button>
+          <button class="btn-icon danger" id="btnResetAll">💣 Xóa toàn bộ hệ thống</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============ MODAL ============ -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
 <script>
-/* ============================================================
-   1. STORAGE & STATE
-   ============================================================ */
-let history = JSON.parse(localStorage.getItem('diceHistoryPro') || '[]');
-let chartSums, chartFaces, chartTrend;
+(function() {
+  'use strict';
 
-function saveHistory() {
-  localStorage.setItem('diceHistoryPro', JSON.stringify(history));
-  // Backup
-  localStorage.setItem('diceHistoryPro_backup_' + new Date().toDateString(), JSON.stringify(history));
-}
+  // ============ CONFIG ============
+  const CONFIG = {
+    userKey: 'crossboost_users_v2',
+    sessionKey: 'crossboost_session_v2',
+    postKey: 'crossboost_posts_v2',
+    initKey: 'crossboost_initialized_v2',
+    pointsPerFollower: 5,
+    pointsPerFollow: 1,
+    minUsername: 3,
+    minPassword: 4,
+    ranks: [
+      { min: 0,   label: '🌱 Tân binh' },
+      { min: 30,  label: '⭐ Thành viên tích cực' },
+      { min: 80,  label: '🔥 Cao thủ' },
+      { min: 150, label: '👑 Huyền thoại' }
+    ]
+  };
 
-/* ============================================================
-   2. TOAST NOTIFICATIONS
-   ============================================================ */
-function toast(msg, type = 'info', duration = 3000) {
-  const container = document.getElementById('toasts');
-  const el = document.createElement('div');
-  el.className = 'toast ' + type;
-  el.innerHTML = msg;
-  container.appendChild(el);
-  setTimeout(() => {
-    el.style.transition = 'all 0.3s';
-    el.style.opacity = '0';
-    el.style.transform = 'translateX(100%)';
-    setTimeout(() => el.remove(), 300);
-  }, duration);
-}
+  // ============ STATE ============
+  let currentUser = null;
+  let users = {};
+  let posts = [];
+  let authMode = 'login';
 
-/* ============================================================
-   3. THEME TOGGLE
-   ============================================================ */
-function toggleTheme() {
-  const current = document.documentElement.getAttribute('data-theme');
-  const next = current === 'light' ? 'dark' : 'light';
-  document.documentElement.setAttribute('data-theme', next);
-  document.getElementById('themeBtn').textContent = next === 'light' ? '☀️ Light' : '🌙 Dark';
-  localStorage.setItem('diceTheme', next);
-  // Refresh charts
-  setTimeout(() => { renderCharts(); }, 100);
-}
-// Load theme
-const savedTheme = localStorage.getItem('diceTheme') || 'dark';
-if (savedTheme === 'light') {
-  document.documentElement.setAttribute('data-theme', 'light');
-  document.getElementById('themeBtn').textContent = '☀️ Light';
-}
-
-/* ============================================================
-   4. ADD DICE
-   ============================================================ */
-function addDice() {
-  const v1 = parseInt(document.getElementById('d1').value);
-  const v2 = parseInt(document.getElementById('d2').value);
-  const v3 = parseInt(document.getElementById('d3').value);
-
-  if ([v1,v2,v3].some(v => isNaN(v) || v < 1 || v > 6)) {
-    toast('⚠️ Vui lòng nhập 3 số từ 1 đến 6!', 'error');
-    return;
+  // ============ STORAGE ============
+  function loadAll() {
+    try {
+      users = JSON.parse(localStorage.getItem(CONFIG.userKey) || '{}');
+      posts = JSON.parse(localStorage.getItem(CONFIG.postKey) || '[]');
+      const session = localStorage.getItem(CONFIG.sessionKey);
+      if (session && users[session]) currentUser = session;
+    } catch(e) { console.error(e); }
   }
 
-  pushDice([v1, v2, v3]);
-  document.getElementById('d1').value = '';
-  document.getElementById('d2').value = '';
-  document.getElementById('d3').value = '';
-  document.getElementById('d1').focus();
-}
-
-function pushDice(dice) {
-  const sum = dice.reduce((a,b) => a+b, 0);
-  const isTriple = (dice[0] === dice[1] && dice[1] === dice[2]);
-  const isBig = sum >= 11 && sum <= 18;
-  const parity = sum % 2 === 0 ? 'Chẵn' : 'Lẻ';
-
-  history.push({
-    dice,
-    sum,
-    isBig,
-    isTriple,
-    parity,
-    time: new Date().toLocaleTimeString('vi-VN'),
-    ts: Date.now()
-  });
-
-  saveHistory();
-  refreshAll();
-
-  // Smart alerts
-  const len = history.length;
-  if (len >= 3) {
-    const last3 = history.slice(-3);
-    if (last3.every(h => h.isBig)) toast('🔵 3 phiên TÀI liên tiếp — có thể sắp đảo!', 'warn');
-    if (last3.every(h => !h.isBig)) toast('🟡 3 phiên XỈU liên tiếp — có thể sắp đảo!', 'warn');
-    if (last3.every(h => h.parity === 'Chẵn')) toast('⚪ 3 phiên CHẴN — chú ý!', 'warn');
-    if (last3.every(h => h.parity === 'Lẻ')) toast('⚫ 3 phiên LẺ — chú ý!', 'warn');
-  }
-  if (isTriple) toast(`🎯 BÃO! Tổng ${sum} (3 số ${dice[0]})`, 'success', 5000);
-}
-
-function randomAdd() {
-  pushDice([
-    Math.floor(Math.random()*6)+1,
-    Math.floor(Math.random()*6)+1,
-    Math.floor(Math.random()*6)+1
-  ]);
-}
-
-function simulate(n) {
-  for (let i = 0; i < n; i++) {
-    pushDice([
-      Math.floor(Math.random()*6)+1,
-      Math.floor(Math.random()*6)+1,
-      Math.floor(Math.random()*6)+1
-    ]);
-  }
-  toast(`✅ Đã thêm ${n} phiên ngẫu nhiên`, 'success');
-}
-
-function clearAll() {
-  if (confirm('Xóa toàn bộ lịch sử? (Không thể hoàn tác)')) {
-    history = [];
-    saveHistory();
-    refreshAll();
-    document.getElementById('predictionBox').innerHTML = '';
-    document.getElementById('backtestBox').innerHTML = '';
-    document.getElementById('patternsBox').innerHTML = '';
-    toast('🗑️ Đã xóa toàn bộ lịch sử', 'info');
-  }
-}
-
-/* ============================================================
-   5. REFRESH ALL
-   ============================================================ */
-function refreshAll() {
-  renderHistory();
-  renderStats();
-  renderPatterns();
-  renderCharts();
-}
-
-/* ============================================================
-   6. RENDER HISTORY
-   ============================================================ */
-function renderHistory() {
-  const list = document.getElementById('diceList');
-  if (history.length === 0) {
-    list.innerHTML = '<div class="note">Chưa có dữ liệu. Hãy thêm phiên đầu tiên!</div>';
-    return;
-  }
-  list.innerHTML = history.slice().reverse().map((h, i) => {
-    const idx = history.length - i;
-    let cls = 'xiu';
-    if (h.isTriple) cls = 'bao';
-    else if (h.isBig) cls = 'tai';
-    const chip = h.isTriple ? '<span class="chip bao">BÃO</span>'
-              : h.isBig ? '<span class="chip tai">TÀI</span>'
-              : '<span class="chip xiu">XỈU</span>';
-    const pchip = h.parity === 'Chẵn' ? '<span class="chip chan">C</span>' : '<span class="chip le">L</span>';
-    return `<div class="dice-item ${cls}">
-      <span style="opacity:0.6;font-size:11px">#${idx} · ${h.time}</span>
-      <span style="font-size:16px">🎲 ${h.dice.join(' · ')}</span>
-      <span class="result">${h.sum} ${chip} ${pchip}</span>
-    </div>`;
-  }).join('');
-}
-
-/* ============================================================
-   7. RENDER STATS
-   ============================================================ */
-function renderStats() {
-  const grid = document.getElementById('statsGrid');
-  if (history.length === 0) { grid.innerHTML = '<div class="note">Chưa có dữ liệu để thống kê.</div>'; return; }
-
-  const total = history.length;
-  const big = history.filter(h => h.isBig).length;
-  const small = total - big;
-  const triple = history.filter(h => h.isTriple).length;
-  const even = history.filter(h => h.parity === 'Chẵn').length;
-  const odd = total - even;
-  const avgSum = (history.reduce((a,h) => a + h.sum, 0) / total).toFixed(2);
-
-  // Streak hiện tại
-  let streak = 1;
-  const lastType = history[history.length-1].isBig;
-  for (let i = history.length - 2; i >= 0; i--) {
-    if (history[i].isBig === lastType) streak++;
-    else break;
+  function saveUsers() { localStorage.setItem(CONFIG.userKey, JSON.stringify(users)); }
+  function savePosts() { localStorage.setItem(CONFIG.postKey, JSON.stringify(posts)); }
+  function saveSession(u) {
+    if (u) localStorage.setItem(CONFIG.sessionKey, u);
+    else localStorage.removeItem(CONFIG.sessionKey);
   }
 
-  grid.innerHTML = `
-    <div class="stat-card"><div class="label">Tổng phiên</div><div class="value">${total}</div></div>
-    <div class="stat-card"><div class="label">🔵 Tài (11-18)</div><div class="value">${big}</div><div class="sub">${((big/total)*100).toFixed(1)}%</div></div>
-    <div class="stat-card"><div class="label">🟡 Xỉu (3-10)</div><div class="value">${small}</div><div class="sub">${((small/total)*100).toFixed(1)}%</div></div>
-    <div class="stat-card"><div class="label">🎯 Bão</div><div class="value">${triple}</div><div class="sub">${((triple/total)*100).toFixed(1)}%</div></div>
-    <div class="stat-card"><div class="label">⚪ Chẵn / Lẻ</div><div class="value">${even} / ${odd}</div><div class="sub">${((even/total)*100).toFixed(1)}% / ${((odd/total)*100).toFixed(1)}%</div></div>
-    <div class="stat-card"><div class="label">📊 Tổng trung bình</div><div class="value">${avgSum}</div></div>
-    <div class="stat-card"><div class="label">🔥 Chuỗi hiện tại</div><div class="value">${streak}</div><div class="sub">${lastType ? 'TÀI' : 'XỈU'}</div></div>
-    <div class="stat-card"><div class="label">🎲 Mặt nóng nhất</div><div class="value">${hottestFace()}</div><div class="sub">xuất hiện nhiều nhất</div></div>
-  `;
-}
-
-function hottestFace() {
-  const cnt = {1:0,2:0,3:0,4:0,5:0,6:0};
-  history.forEach(h => h.dice.forEach(d => cnt[d]++));
-  let best = 1, max = 0;
-  for (let i = 1; i <= 6; i++) if (cnt[i] > max) { max = cnt[i]; best = i; }
-  return `⚀⚁⚂⚃⚄⚅`.charAt(best - 1) + ' ' + best;
-}
-
-/* ============================================================
-   8. PATTERN RECOGNITION
-   ============================================================ */
-function renderPatterns() {
-  const box = document.getElementById('patternsBox');
-  if (history.length < 4) {
-    box.innerHTML = '<div class="note">Cần ít nhất 4 phiên để nhận diện cầu.</div>';
-    return;
-  }
-
-  const patterns = [];
-  const types = history.map(h => h.isBig ? 'B' : 'S'); // B=Tài, S=Xỉu
-
-  // 1-1 pattern (Tài-Xỉu-Tài-Xỉu...)
-  let alt = 1;
-  for (let i = types.length - 1; i >= 1; i--) {
-    if (types[i] !== types[i-1]) alt++;
-    else break;
-  }
-  if (alt >= 4) patterns.push({ icon: '🔄', name: 'Cầu 1-1', desc: `${alt} phiên đảo liên tục`, strength: 'strong' });
-
-  // Bệt (bệt Tài hoặc bệt Xỉu)
-  let streak = 1;
-  for (let i = types.length - 1; i >= 1; i--) {
-    if (types[i] === types[i-1]) streak++;
-    else break;
-  }
-  if (streak >= 3) patterns.push({ icon: '🔥', name: `Bệt ${types[types.length-1] === 'B' ? 'TÀI' : 'XỈU'}`, desc: `${streak} phiên liên tiếp`, strength: 'strong' });
-
-  // Cầu 2-2
-  let twoTwo = 0;
-  for (let i = types.length - 4; i >= 0; i -= 2) {
-    if (types[i] === types[i+1] && types[i+2] === types[i+3] && types[i] !== types[i+2]) twoTwo++;
-    else break;
-  }
-  if (twoTwo >= 2) patterns.push({ icon: '📐', name: 'Cầu 2-2', desc: `${twoTwo*2} phiên theo nhịp 2-2`, strength: 'medium' });
-
-  // Cầu 3-3
-  if (types.length >= 6) {
-    const a = types.slice(-6);
-    if (a[0]===a[1] && a[1]===a[2] && a[3]===a[4] && a[4]===a[5] && a[0]!==a[3]) {
-      patterns.push({ icon: '📏', name: 'Cầu 3-3', desc: 'Nhịp 3-3 vừa xuất hiện', strength: 'medium' });
+  // Tạo admin mặc định lần đầu  function ensureAdmin() {
+    if (!localStorage.getItem(CONFIG.initKey)) {
+      if (!users['admin']) {
+        users['admin'] = {
+          username: 'admin',
+          password: hash('admin123'),
+          points: 999,
+          followers: [],
+          following: [],
+          isAdmin: true,
+          banned: false,
+          createdAt: Date.now()
+        };
+        saveUsers();
+      }
+      localStorage.setItem(CONFIG.initKey, '1');
     }
   }
 
-  // Chẵn/Lẻ streak
-  let parStreak = 1;
-  for (let i = history.length - 1; i >= 1; i--) {
-    if (history[i].parity === history[i-1].parity) parStreak++;
-    else break;
+  // ============ UTILS ============
+  function hash(str) {
+    let h = 0;
+    for (let i = 0; i < str.length; i++) {
+      h = ((h << 5) - h) + str.charCodeAt(i);
+      h |= 0;
+    }
+    return 'h' + Math.abs(h).toString(36);
   }
-  if (parStreak >= 4) patterns.push({ icon: '⚖️', name: `Bệt ${history[history
+
+  function colorFromName(name) {
+    let h = 0;
+    for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
+    const colors = ['#6366f1','#8b5cf6','#ec4899','#f59e0b','#10b981','#06b6d4','#ef4444','#84cc16','#f97316','#14b8a6'];
+    return colors[Math.abs(h) % colors.length];
+  }
+
+  function getRank(points) {
+    let r = CONFIG.ranks[0];
+    for (const rank of CONFIG.ranks) if (points >= rank.min) r = rank;
+    return r.label;
+  }
+
+  function initials(name) { return name.slice(0, 2).toUpperCase(); }
+
+  function timeAgo(ts) {
+    const diff = Date.now() - ts;
+    const m = Math.floor(diff / 60000);
+    if (m < 1) return 'vừa xong';
+    if (m < 60) return `${m} phút trước`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h} giờ trước`;
+    const d = Math.floor(h / 24);
+    return `${d} ngày trước`;
+  }
+
+  function escapeHtml(s) {
+    const div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+  }
+
+  function $(sel) { return document.querySelector(sel); }
+  function $$(sel) { return document.querySelectorAll(sel); }
+
+  function showToast(msg, type = '') {
+    const container = $('#toastContainer');
+    const toast = document.createElement('div');
+    toast.className = 'toast ' + type;
+    toast.textContent = msg;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.classList.add('fade-out');
+      setTimeout(() => toast.remove(), 300);
+    }, 2400);
+  }
+
+  function isAdmin(u) {
+    return u && u.isAdmin === true;
+  }
+
+  // ============ MODAL ============
+  function showModal(html) {
+    $('#modalContent').innerHTML = html;
+    $('#modalOverlay').classList.add('show');
+  }
+  function hideModal() {
+    $('#modalOverlay').classList.remove('show');
+  }
+  $('#modalOverlay').addEventListener('click', e => {
+    if (e.target.id === 'modalOverlay') hideModal();
+  });
+
+  // ============ AUTH ============
+  function showAuthError(msg) {
+    const el = $('#authError');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 3000);
+  }
+
+  function handleAuth() {
+    const username = $('#authUsername').value.trim().toLowerCase();
+    const password = $('#authPassword').value;
+
+    if (username.length < CONFIG.minUsername) {
+      showAuthError(`Tên đăng nhập phải có ít nhất ${CONFIG.minUsername} ký tự`);
+      return;
+    }
+    if (password.length < CONFIG.minPassword) {
+      showAuthError(`Mật khẩu phải có ít nhất ${CONFIG.minPassword} ký tự`);
+      return;
+    }
+
+    if (authMode === 'register') {
+      if (users[username]) {
+        showAuthError('Tên đăng nhập đã tồn tại!');
+        return;
+      }
+      users[username] = {
+        username,
+        password: hash(password),
+        points: 10,
+        followers: [],
+        following: [],
+        isAdmin: false,
+        banned: false,
+        createdAt: Date.now()
+      };
+      saveUsers();
+      login(username);
+      showToast('🎉 Đăng ký thành công! Bạn nhận 10 điểm khởi đầu', 'success');
+    } else {
+      const user = users[username];
+      if (!user || user.password !== hash(password)) {
+        showAuthError('Sai tên đăng nhập hoặc mật khẩu!');
+        return;
+      }
+      if (user.banned) {
+        showAuthError('Tài khoản của bạn đã bị khóa. Liên hệ admin!');
+        return;
+      }
+      login(username);
+      showToast(`👋 Chào mừng, ${username}!`, 'success');
+    }
+  }
+
+  function login(username) {
+    currentUser = username;
+    saveSession(username);
+    renderApp();
+  }
+
+  function logout() {
+    currentUser = null;
+    saveSession(null);
+    $('#app').classList.remove('show');
+    $('#authScreen').style.display = 'flex';
+    $('#authPassword').value = '';
+  }
+
+  // ============ RENDER APP ============
+  function renderApp() {
+    $('#authScreen').style.display = 'none';
+    $('#app').classList.add('show');
+
+    // Inject/remove admin tab
+    const tabsContainer = $('#tabs');
+    const existingAdminTab = tabsContainer.querySelector('.admin-tab');
+    if (isAdmin(users[currentUser])) {
+      if (!existingAdminTab) {
+        const tab = document.createElement('button');
+        tab.className = 'tab admin-tab';
+        tab.dataset.tab = 'admin';
+        tab.textContent = '🛡️ Admin';
+        tab.addEventListener('click', () => switchTab('admin'));
+        tabsContainer.appendChild(tab);
+      }
+    } else if (existingAdminTab) {
+      existingAdminTab.remove();
+    }
+
+    renderTopbar();
+    renderFeed();
+    renderUsers();
+    renderProfile();
+    if (isAdmin(users[currentUser])) renderAdmin();
+  }
+
+  function switchTab(tabName) {
+    $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
+    $$('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + tabName));
+    if (tabName === 'feed') renderFeed();
+    if (tabName === 'discover') renderUsers();
+    if (tabName === 'profile') renderProfile();
+    if (tabName === 'admin') renderAdmin();
+  }
+
+  function renderTopbar() {
+    const u = users[currentUser];
+    if (!u) return;
+    $('#topPoints').textContent = `${u.points} điểm`;
+    const av = $('#topAvatar');
+    av.textContent = initials(u.username);
+    av.style.background = colorFromName(u.username);
+  }
+
+  // ============ FEED ============
+  function renderFeed() {
+    const list = $('#feedList');
+    const sorted = [...posts].sort((a, b) => {
+      if (b.boost !== a.boost) return b.boost - a.boost;
+      return b.createdAt - a.createdAt;
+    });
+
+    if (sorted.length === 0) {
+      list.innerHTML = `<div class="empty"><div class="emoji">📭</div><p>Chưa có bài viết nào</p></div>`;
+      return;
+    }
+    list.innerHTML = sorted.map(p => renderPost(p)).join('');
+    bindPostActions(list);
+  }
+
+  function renderMyPosts() {
+    const list = $('#myPosts');
+    const mine = posts.filter(p => p.author === currentUser).sort((a, b) => b.createdAt - a.createdAt);
+    if (mine.length === 0) {
+      list.innerHTML = `<div class="empty"><div class="emoji">✍️</div><p>Bạn chưa có bài viết nào</p></div>`;
+      return;
+    }
+    list.innerHTML = mine.map(p => renderPost(p)).join('');
+    bindPostActions(list);
+  }
+
+  function renderPost(post) {
+    const author = users[post.author];
+    if (!author) return '';
+    const liked = post.likes.includes(currentUser);
+    const admin = isAdmin(users[currentUser]);
+    const isOwner = post.author === currentUser;
+
+    return `
+      <div class="post ${post.boost > 0 ? 'boosted' : ''}" data-post-id="${post.id}">
+        <div class="post-header">
+          <div class="avatar" style="background:${colorFromName(post.author)}">${initials(post.author)}</div>
+          <div class="info">
+            <div class="uname">@${escapeHtml(post.author)} ${author.isAdmin ? '👑' : ''} ${author.banned ? '🚫' : ''}</div>
+            <div class="time">${timeAgo(post.createdAt)}</div>
+          </div>
+        </div>
+        <div class="post-content">${escapeHtml(post.content)}</div>
+        <div class="post-footer">
+          <button class="post-action ${liked ? 'liked' : ''}" data-action="like" data-post="${post.id}">
+            ${liked ? '❤️' : '🤍'} ${post.likes.length} Thích
+          </button>
+          <button class="post-action" data-action="boost" data-post="${post.id}">
+            🚀 Boost (25đ)
+          </button>
+          ${(admin || isOwner) ? `<button class="post-action admin-del" data-action="delete" data-post="${post.id}">🗑️ Xóa</button>` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  function bindPostActions(container) {
+    container.querySelectorAll('[data-action]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const action = btn.dataset.action;
+        const postId = btn.dataset.post;
+        if (action === 'like') handleLike(postId);
+        else if (action === 'boost') handleBoostPost(postId);
+        else if (action === 'delete') handleDeletePost(postId);
+      });
+    });
+  }
+
+  // ============ USERS ============
+  function renderUsers() {
+    const list = $('#userList');
+    const me = users[currentUser];
+    const otherUsers = Object.values(users).filter(u => u.username !== currentUser && !u.banned);
+
+    if (otherUsers.length === 0) {
+      list.innerHTML = `<div class="empty"><div class="emoji">👥</div><p>Chưa có người dùng khác</p></div>`;
+      return;
+    }
+
+    list.innerHTML = otherUsers.map(u => {
+      const isFollowing = me.following.includes(u.username);
+      return `
+        <div class="user-row">
+          <div class="avatar" style="background:${colorFromName(u.username)}">${initials(u.username)}</div>
+          <div class="info">
+            <div class="uname">@${escapeHtml(u.username)} ${u.isAdmin ? '<span class="crown">👑</span>' : ''}</div>
+            <div class="meta">
+              <span>🏆 ${u.points} điểm</span>
+              <span>👥 ${u.followers.length} followers</span>
+            </div>
+          </div>
+          <button class="btn-follow ${isFollowing ? 'following' : ''}" data-user="${u.username}">
+            ${isFollowing ? '✓ Đang follow' : '+ Follow'}
+          </button>
+        </div>
+      `;
+    }).join('');
+
+    list.querySelectorAll('.btn-follow').forEach(btn => {
+      btn.addEventListener('click', () => handleFollow(btn.dataset.user));
+    });
+  }
+
+  function renderProfile() {
+    const u = users[currentUser];
+    if (!u) return;
+    $('#profileAvatar').textContent = initials(u.username);
+    $('#profileName').textContent = '@' + u.username;
+    $('#profileRank').textContent = getRank(u.points) + (u.isAdmin ? ' • Admin 👑' : '');
+    $('#statPoints').textContent = u.points;
+    $('#statFollowers').textContent = u.followers.length;
+    $('#statFollowing').textContent = u.following.length;
+    renderMyPosts();
+    renderTopbar();
+  }
+
+  // ============ ACTIONS ============
+  function handleFollow(targetUsername) {
+    const me = users[currentUser];
+    const target = users[targetUsername];
+    if (!me || !target) return;
+    if (target.banned) { showToast('User này đã bị khóa', 'error'); return; }
+
+    const isFollowing = me.following.includes(targetUsername);
+
+    if (isFollowing) {
+      me.following = me.following.filter(u => u !== targetUsername);
+      target.followers = target.followers.filter(u => u !== currentUser);
+      target.points = Math.max(0, target.points - CONFIG.pointsPerFollower);
+      showToast(`Đã hủy follow @${targetUsername}`, 'warning');
+    } else {
+      me.following.push(targetUsername);
+      target.followers.push(currentUser);
+      me.points += CONFIG.pointsPerFollow;
+      target.points += CONFIG.pointsPerFollower;
+      showToast(`+${CONFIG.pointsPerFollow} điểm | @${targetUsername} +${CONFIG.pointsPerFollower} điểm`, 'success');
+    }
+
+    saveUsers();
+    renderUsers();
+    renderProfile();
+  }
+
+  function handlePost() {
+    const content = $('#postContent').value.trim();
+    const boostLevel = parseInt($('#boostLevel').value, 10) || 0;
+    const me = users[currentUser];
+
+    if (content.length < 1) { showToast('Vui lòng nhập nội dung!', 'warning'); return; }
+    if (content.length > 500) { showToast('Nội dung tối đa 500 ký tự!', 'warning'); return; }
+    if (boostLevel > 0 && me.points < boostLevel) {
+      showToast(`Cần ${boostLevel} điểm để boost (bạn có ${me.points})`, 'error');
+      return;
+    }
+
+    if (boostLevel > 0) {
+      me.points -= boostLevel;
+      showToast(`Đã dùng ${boostLevel} điểm để boost 🔥`, 'success');
+    }
+
+    posts.unshift({
+      id: 'p' + Date.now() + Math.random().toString(36).slice(2, 6),
+      author: currentUser,
+      content,
+      boost: boostLevel,
+      likes: [],
+      createdAt: Date.now()
+    });
+
+    saveUsers();
+    savePosts();
+    $('#postContent').value = '';
+    $('#boostLevel').value = '0';
+    renderFeed();
+    renderProfile();
+    showToast('✅ Đăng bài thành công!', 'success');
+  }
+
+  function handleLike(postId) {
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+    const idx = post.likes.indexOf(currentUser);
+    if (idx === -1) {
+      post.likes.push(currentUser);
+      const author = users[post.author];
+      if (author && post.author !== currentUser) author.points += 1;
+    } else {
+      post.likes.splice(idx, 1);
+    }
+    saveUsers();
+    savePosts();
+    renderFeed();
+    renderProfile();
+  }
+
+  function handleBoostPost(postId) {
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+    const me = users[currentUser];
+    const BOOST_COST = 25;
+    if (me.points < BOOST_COST) { showToast(`Cần ${BOOST_COST} điểm (bạn có ${me.points})`, 'error'); return; }
+
+    me.points -= BOOST_COST;
+    post.boost += BOOST_COST;
+    saveUsers();
+    savePosts();
+    showToast(`🚀 Đã boost! Còn ${me.points} điểm`, 'success');
+    renderFeed();
+    renderProfile();
+  }
+
+  function handleDeletePost(postId) {
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+    if (post.author !== currentUser && !isAdmin(users[currentUser])) {
+      showToast('Bạn không có quyền xóa bài này', 'error');
+      return;
+    }
+    showModal(`
+      <h3>🗑️ Xóa bài viết?</h3>
+      <p>Hành động này không thể hoàn tác.</p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="document.getElementById('modalOverlay').classList.remove('show')">Hủy</button>
+        <button class="btn btn-danger" id="confirmDeletePost">Xóa</button>
+      </div>
+    `);
+    $('#confirmDeletePost').addEventListener('click', () => {
+      posts = posts.filter(p => p.id !== postId);
+      savePosts();
+      hideModal();
+      renderFeed();
+      renderProfile();
+      if (isAdmin(users[currentUser])) renderAdmin();
+      showToast('Đã xóa bài viết', 'success');
+    });
+  }
+
+  // ============ ADMIN PANEL ============
+  let admFilterValue = 'all';
+  let admSearchValue = '';
+
+  function renderAdmin() {
+    if (!isAdmin(users[currentUser])) return;
+
+    const allUsers = Object.values(users);
+    const banned = allUsers.filter(u => u.banned).length;
+    const totalPoints = allUsers.reduce((s, u) => s + u.points, 0);
+    const totalFollows = allUsers.reduce((s, u) => s + u.following.length, 0);
+    const boosted = posts.filter(p => p.boost > 0).length;
+
+    $('#admTotalUsers').textContent = allUsers.length;
+    $('#admBannedSub').textContent = `${banned} bị khóa`;
+    $('#admTotalPosts').textContent = posts.length;
+    $('#admBoostedSub').textContent = `${boosted} boosted`;
+    $('#admTotalPoints').textContent = totalPoints.toLocaleString();
+    $('#admTotalFollows').textContent = totalFollows;
+
+    // Top users
+    const top = [...allUsers].sort((a, b) => b.points - a.points).slice(0, 5);
+    $('#admTopUsers').innerHTML = top.map((u, i) => `
+      <div class="user-row">
+        <div class="avatar" style="background:${colorFromName(u.username)}">${initials(u.username)}</div>
+        <div class="info">
+          <div class="uname">#${i+1} @${escapeHtml(u.username)} ${u.isAdmin ? '<span class="crown">👑</span>' : ''}</div>
+          <div class="meta">
+            <span>🏆 ${u.points} điểm</span>
+            <span>👥 ${u.followers.length} followers</span>
+            <span>➡️ ${u.following.length} following</span>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    renderAdminUsers();
+  }
+
+  function renderAdminUsers() {
+    let list = Object.values(users);
+
+    // Filter
+    if (admFilterValue === 'active') list = list.filter(u => !u.banned);
+    else if (admFilterValue === 'banned') list = list.filter(u => u.banned);
+    else if (admFilterValue === 'admin') list = list.filter(u => u.isAdmin);
+
+    // Search
+    if (admSearchValue) {
+      const q = admSearchValue.toLowerCase();
+      list = list.filter(u => u.username.toLowerCase().includes(q));
+    }
+
+    // Sort
+    list.sort((a, b) => b.points - a.points);
+
+    const container = $('#admUserList');
+    if (list.length === 0) {
+      container.innerHTML = `<div class="empty"><div class="emoji">🔍</div><p>Không tìm thấy user nào</p></div>`;
+      return;
+    }
+
+    container.innerHTML = list.map(u => {
+      const isMe = u.username === currentUser;
+      return `
+        <div class="user-row ${u.banned ? 'banned' : ''}">
+          <div class="avatar" style="background:${colorFromName(u.username)}">${initials(u.username)}</div>
+          <div class="info">
+            <div class="uname">
+              @${escapeHtml(u.username)}
+              ${u.isAdmin ? '<span class="crown">👑</span>' : ''}
+              ${u.banned ? '<span class="banned-tag">Bị khóa</span>' : ''}
+            </div>
+            <div class="meta">
+              <span>🏆 ${u.points} điểm</span>
+              <span>👥 ${u.followers.length}</span>
+              <span>➡️ ${u.following.length}</span>
+              <span>📅 ${new Date(u.createdAt).toLocaleDateString('vi-VN')}</span>
+            </div>
+          </div>
+          <div class="user-actions">
+            <button class="btn-icon primary" data-adm="points" data-user="${u.username}" title="Chỉnh điểm">💰</button>
+            ${!isMe ? `
+              <button class="btn-icon ${u.banned ? 'success' : 'warn'}" data-adm="ban" data-user="${u.username}" title="${u.banned ? 'Mở khóa' : 'Khóa'}">
+                ${u.banned ? '🔓' : '🔒'}
+              </button>
+              <button class="btn-icon ${u.isAdmin ? 'warn' : 'primary'}" data-adm="toggleadmin" data-user="${u.username}" title="${u.isAdmin ? 'Hạ quyền' : 'Cấp quyền admin'}">
+                ${u.isAdmin ? '👤' : '👑'}
+              </button>
+              <button class="btn-icon danger" data-adm="delete" data-user="${u.username}" title="Xóa user">🗑️</button>
+            ` : '<span style="font-size:12px;color:#94a3b8;padding:8px;">(Bạn)</span>'}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    container.querySelectorAll('[data-adm]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const action = btn.dataset.adm;
+        const username = btn.dataset.user;
+        if (action === 'points') admEditPoints(username);
+        else if (action === 'ban') admToggleBan(username);
+        else if (action === 'toggleadmin') admToggleAdmin(username);
+        else if (action === 'delete') admDeleteUser(username);
+      });
+    });
+  }
+
+  function admEditPoints(username) {
+    const u = users[username];
+    if (!u) return;
+    showModal(`
+      <h3>💰 Chỉnh điểm cho @${escapeHtml(username)}</h3>
+      <p>Điểm hiện tại: <b>${u.points}</b></p>
+      <div class="form-group">
+        <label>Số điểm muốn thêm (có thể nhập số âm để trừ)</label>
+        <input type="number" id="admPointsInput" value="10" style="width:100%; padding:10px 14px; border:2px solid #e2e8f0; border-radius:10px; font-size:15px; outline:none;">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="document.getElementById('modalOverlay').classList.remove('show')">Hủy</button>
+        <button class="btn btn-confirm" id="confirmPoints">Áp dụng</button>
+      </div>
+    `);
+    $('#confirmPoints').addEventListener('click', () => {
+      const val = parseInt($('#admPointsInput').value, 10);
+      if (isNaN(val)) { showToast('Số không hợp lệ', 'error'); return; }
+      u.points = Math.max(0, u.points + val);
+      saveUsers();
+      hideModal();
+      renderAdmin();
+      renderTopbar();
+      showToast(`${val >= 0 ? '+' : ''}${val} điểm cho @${username}`, 'success');
+    });
+  }
+
+  function admToggleBan(username) {
+    const u = users[username];
+    if (!u) return;
+    const willBan = !u.banned;
+
+    if (willBan) {
+      showModal(`
+        <h3>🔒 Khóa user @${escapeHtml(username)}?</h3>
+        <p>User sẽ không thể đăng nhập. Hành động có thể hoàn tác.</p>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" onclick="document.getElementById('modalOverlay').classList.remove('show')">Hủy</button>
+          <button class="btn btn-danger" id="confirmBan">Khóa ngay</button>
+        </div>
+      `);
+      $('#confirmBan').addEventListener('click', () => {
+        u.banned = true;
+        saveUsers();
+        hideModal();
+        renderAdmin();
+        showToast(`Đã khóa @${username}`, 'warning');
+      });
+    } else {
+      u.banned = false;
+      saveUsers();
+      renderAdmin();
+      showToast(`Đã mở khóa @${username}`, 'success');
+    }
+  }
+
+  function admToggleAdmin(username) {
+    const u = users[username];
+    if (!u) return;
+    u.isAdmin = !u.isAdmin;
+    saveUsers();
+    renderAdmin();
+    showToast(u.isAdmin ? `👑 Đã cấp quyền admin cho @${username}` : `Đã hạ quyền admin của @${username}`, 'success');
+  }
+
+  function admDeleteUser(username) {
+    const u = users[username];
+    if (!u) return;
+    showModal(`
+      <h3>⚠️ Xóa vĩnh viễn @${escapeHtml(username)}?</h3>
+      <p style="color:#ef4444; font-weight:600;">Toàn bộ bài viết, follow của user này sẽ bị xóa. Không thể hoàn tác!</p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="document.getElementById('modalOverlay').classList.remove('show')">Hủy</button>
+        <button class="btn btn-danger" id="confirmDeleteUser">Xóa vĩnh viễn</button>
+      </div>
+    `);
+    $('#confirmDeleteUser').addEventListener('click', () => {
+      // Xóa bài viết của user
+      posts = posts.filter(p => p.author !== username);
+      savePosts();
+
+      // Xóa user khỏi danh sách following của người khác
+      Object.values(users).forEach(other => {
+        other.following = other.following.filter(u => u !== username);
+        other.followers = other.followers.filter(u => u !== username);
+      });
+
+      // Xóa user
+      delete users[username];
+      saveUsers();
+      hideModal();
+      renderAdmin();
+      renderUsers();
+      renderFeed();
+      showToast(`Đã xóa @${username}`, 'success');
+    });
+  }
+
+  // ============ DANGER ZONE ============
+  function admResetPoints() {
+    showModal(`
+      <h3>🔄 Reset toàn bộ điểm?</h3>
+      <p>Tất cả user sẽ về 0 điểm. Hành động không thể hoàn tác.</p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="document.getElementById('modalOverlay').classList.remove('show')">Hủy</button>
+        <button class="btn btn-danger" id="confirmResetPoints">Reset</button>
+      </div>
+    `);
+    $('#confirmResetPoints').addEventListener('click', () => {
+      Object.values(users).forEach(u => u.points = 0);
+      saveUsers();
+      hideModal();
+      renderAdmin();
+      showToast('Đã reset toàn bộ điểm', 'success');
+    });
+  }
+
+  function admClearPosts() {
+    showModal(`
+      <h3>🗑️ Xóa tất cả bài viết?</h3>
+      <p>Toàn bộ bài viết sẽ bị xóa vĩnh viễn.</p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="document.getElementById('modalOverlay').classList.remove('show')">Hủy</button>
+        <button class="btn btn-danger" id="confirmClearPosts">Xóa hết</button>
+      </div>
+    `);
+    $('#confirmClearPosts').addEventListener('click', () => {
+      posts = [];
+      savePosts();
+      hideModal();
+      renderAdmin();
+      renderFeed();
+      showToast('Đã xóa tất cả bài viết', 'success');
+    });
+  }
+
+  function admResetAll() {
+    showModal(`
+      <h3 style="color:#ef4444;">💣 XÓA TOÀN BỘ HỆ THỐNG?</h3>
+      <p style="color:#ef4444; font-weight:600;">Tất cả user, bài viết, điểm sẽ bị xóa. Hệ thống sẽ reset về trạng thái ban đầu (chỉ còn admin).</p>
+      <p style="font-size:13px;">Nhập <b>XOA HET</b> để xác nhận:</p>
+      <input type="text" id="confirmText" placeholder="Nhập: XOA HET" style="width:100%; padding:10px 14px; border:2px solid #e2e8f0; border-radius:10px; font-size:15px; outline:none;">
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="document.getElementById('modalOverlay').classList.remove('show')">Hủy</button>
+        <button class="btn btn-danger" id="confirmResetAll">XÓA TẤT CẢ</button>
+      </div>
+    `);
+    $('#confirmResetAll').addEventListener('click', () => {
+      if ($('#confirmText').value.trim().toUpperCase() !== 'XOA HET') {
+        showToast('Vui lòng nhập đúng "XOA HET"', 'error');
+        return;
+      }
+      localStorage.removeItem(CONFIG.userKey);
+      localStorage.removeItem(CONFIG.postKey);
+      localStorage.removeItem(CONFIG.sessionKey);
+      localStorage.removeItem(CONFIG.initKey);
+      location.reload();
+    });
+  }
+
+  // ============ EVENTS ============
+  function bindEvents() {
+    $('#authSubmit').addEventListener('click', handleAuth);
+    $('#authUsername').addEventListener('keypress', e => { if (e.key === 'Enter') $('#authPassword').focus(); });
+    $('#authPassword').addEventListener('keypress', e => { if (e.key === 'Enter') handleAuth(); });
+
+    $('#switchMode').addEventListener('click', () => {
+      authMode = authMode === 'login' ? 'register' : 'login';
+      $('#authSubmit').textContent = authMode === 'login' ? 'Đăng nhập' : 'Đăng ký';
+      $('#switchText').textContent = authMode === 'login' ? 'Chưa có tài khoản?' : 'Đã có tài khoản?';
+      $('#switchMode').textContent = authMode === 'login' ? 'Đăng ký ngay' : 'Đăng nhập';
+      $('#authError').classList.remove('show');
+    });
+
+    $('#btnLogout').addEventListener('click', () => {
+      if (confirm('Đăng xuất khỏi tài khoản?')) logout();
+    });
+
+    // Tabs
+    $$('.tab').forEach(tab => {
+      tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+    });
+
+    // Post
+    $('#btnPost').addEventListener('click', handlePost);
+    $('#postContent').addEventListener('keypress', e => {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) handlePost();
+    });
+
+    // Admin search/filter
+    $('#admSearch').addEventListener('input', e => {
+      admSearchValue = e.target.value;
+      renderAdminUsers();
+    });
+    $('#admFilter').addEventListener('change', e => {
+      admFilterValue = e.target.value;
+      renderAdminUsers();
+    });
+
+    // Danger zone
+    $('#btnResetPoints').addEventListener('click', admResetPoints);
+    $('#btnClearPosts').addEventListener('click', admClearPosts);
+    $('#btnResetAll').addEventListener('click', admResetAll);
+  }
+
+  // ============ INIT ============
+  function init() {
+    loadAll();
+    ensureAdmin();
+    loadAll(); // reload sau khi tạo admin
+    bindEvents();
+
+    if (currentUser && users[currentUser]) {
+      renderApp();
+    } else {
+      currentUser = null;
+      saveSession(null);
+    }
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
