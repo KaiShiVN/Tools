@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>TikTok Boost Pro - Auto Verify</title>
+<title>TikTok Boost Pro</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   :root {
@@ -20,12 +20,32 @@
   body {
     font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
     background: var(--bg); color: var(--text);
-    min-height: 100vh; line-height: 1.5;
-    overflow-x: hidden;
+    min-height: 100vh; line-height: 1.5; overflow-x: hidden;
   }
   button { font-family: inherit; cursor: pointer; border: none; }
   input, textarea, select { font-family: inherit; }
   a { color: inherit; }
+
+  /* ===== SYNC INDICATOR ===== */
+  .sync-bar {
+    position: fixed; bottom: 12px; right: 12px;
+    background: rgba(15, 23, 42, 0.92);
+    color: #fff; padding: 8px 14px;
+    border-radius: 100px; font-size: 11px; font-weight: 700;
+    z-index: 9000; display: flex; align-items: center; gap: 6px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: opacity 0.3s;
+    max-width: calc(100vw - 24px);
+  }
+  .sync-bar .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--success);
+  }
+  .sync-bar.saving .dot { background: var(--warning); animation: blink 0.6s infinite; }
+  .sync-bar.error .dot { background: var(--danger); }
+  .sync-bar.syncing .dot { background: var(--info); animation: blink 0.4s infinite; }
+  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
 
   /* ===== AUTH ===== */
   .auth-screen {
@@ -71,8 +91,7 @@
   .btn-primary .spinner {
     width: 16px; height: 16px;
     border: 2px solid rgba(255,255,255,0.3);
-    border-top-color: #fff;
-    border-radius: 50%;
+    border-top-color: #fff; border-radius: 50%;
     animation: spin 0.6s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -108,16 +127,14 @@
   .points-chip {
     background: linear-gradient(135deg, #fbbf24, #f59e0b);
     color: #fff; padding: 8px 14px; border-radius: 100px;
-    font-size: 13px; font-weight: 800;
-    cursor: pointer;
+    font-size: 13px; font-weight: 800; cursor: pointer;
   }
   .points-chip.bump { animation: bump 0.5s; }
   @keyframes bump { 0%,100% { transform: scale(1); } 50% { transform: scale(1.2); } }
   .avatar {
     width: 36px; height: 36px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-weight: 800; color: #fff; font-size: 14px;
-    cursor: pointer;
+    font-weight: 800; color: #fff; font-size: 14px; cursor: pointer;
   }
   .notif-btn {
     background: transparent; padding: 6px; border-radius: 50%;
@@ -158,8 +175,7 @@
 
   .main { max-width: 720px; margin: 0 auto; padding: 16px; padding-bottom: 80px; }
   .page { display: none; }
-  .page.active { display: block; animation: fadeIn 0.2s; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .page.active { display: block; }
 
   .balance-card {
     background: linear-gradient(135deg, #000 0%, #1a1a2e 100%);
@@ -244,8 +260,7 @@
   .task-reward {
     font-size: 14px; font-weight: 800;
     color: #92400e; background: linear-gradient(135deg, #fef3c7, #fde68a);
-    padding: 6px 12px; border-radius: 100px;
-    white-space: nowrap;
+    padding: 6px 12px; border-radius: 100px; white-space: nowrap;
   }
   .task-actions { display: flex; gap: 8px; flex-wrap: wrap; }
   .btn-task {
@@ -269,7 +284,7 @@
   .task-progress-fill {
     height: 100%;
     background: linear-gradient(90deg, #25F4EE, #FE2C55);
-    border-radius: 100px; transition: width 0.5s;
+    border-radius: 100px;
   }
 
   .shop-card {
@@ -332,7 +347,6 @@
   .order-status.pending { background: #fef3c7; color: #92400e; }
   .order-status.done { background: #d1fae5; color: #065f46; }
   .order-status.cancelled { background: var(--bg); color: var(--text-muted); }
-  .order-status.verifying { background: #dbeafe; color: #1e40af; }
   .order-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
   .order-target {
     background: var(--bg); padding: 8px 12px; border-radius: 8px;
@@ -410,12 +424,7 @@
     background: #fff; border-radius: 16px;
     padding: 24px; max-width: 440px; width: 100%;
     box-shadow: var(--shadow-lg);
-    animation: popIn 0.3s;
     max-height: 90vh; overflow-y: auto;
-  }
-  @keyframes popIn {
-    from { opacity: 0; transform: scale(0.9); }
-    to { opacity: 1; transform: scale(1); }
   }
   .modal h3 { font-size: 18px; margin-bottom: 8px; }
   .modal p { font-size: 14px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.6; }
@@ -430,7 +439,6 @@
   .btn-danger { background: var(--danger); color: #fff; }
   .btn-confirm { background: linear-gradient(135deg, #25F4EE, #FE2C55); color: #fff; }
 
-  /* ===== VERIFY SYSTEM ===== */
   .verify-step {
     background: var(--bg);
     border-radius: 10px;
@@ -444,8 +452,7 @@
   .verify-step .step-num {
     width: 24px; height: 24px;
     background: linear-gradient(135deg, #25F4EE, #FE2C55);
-    color: #fff;
-    border-radius: 50%;
+    color: #fff; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     font-size: 12px; font-weight: 800;
     flex-shrink: 0;
@@ -454,7 +461,7 @@
   .verify-step.done { background: #f0fdf4; border-left-color: var(--success); }
   .verify-step.done .step-num { background: var(--success); }
   .verify-step.active { background: #eff6ff; border-left-color: var(--info); }
-  .verify-step.active .step-num { background: var(--info); animation: pulse 2s infinite; }
+  .verify-step.active .step-num { background: var(--info); }
 
   .verify-code-box {
     background: linear-gradient(135deg, #1e293b, #0f172a);
@@ -472,29 +479,21 @@
   .verify-code-box .hint { font-size: 12px; opacity: 0.7; }
 
   .verify-countdown {
-    text-align: center;
-    padding: 16px;
+    text-align: center; padding: 16px;
     background: linear-gradient(135deg, #fef3c7, #fde68a);
-    border-radius: 12px;
-    margin: 12px 0;
+    border-radius: 12px; margin: 12px 0;
   }
   .verify-countdown .cd-label {
     font-size: 12px; font-weight: 700;
-    color: #92400e; text-transform: uppercase;
-    letter-spacing: 1px;
+    color: #92400e; text-transform: uppercase; letter-spacing: 1px;
   }
   .verify-countdown .cd-timer {
     font-size: 36px; font-weight: 800;
-    color: #92400e; line-height: 1;
-    margin: 6px 0;
+    color: #92400e; line-height: 1; margin: 6px 0;
     font-variant-numeric: tabular-nums;
   }
-  .verify-countdown .cd-desc {
-    font-size: 12px; color: #92400e; opacity: 0.8;
-  }
-  .verify-countdown.done {
-    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
-  }
+  .verify-countdown .cd-desc { font-size: 12px; color: #92400e; opacity: 0.8; }
+  .verify-countdown.done { background: linear-gradient(135deg, #d1fae5, #a7f3d0); }
   .verify-countdown.done .cd-label,
   .verify-countdown.done .cd-timer,
   .verify-countdown.done .cd-desc { color: #065f46; }
@@ -504,21 +503,9 @@
     border: 2px solid var(--border); border-radius: 10px;
     font-size: 18px; text-transform: uppercase;
     letter-spacing: 4px; text-align: center;
-    font-weight: 800; outline: none;
-    margin: 8px 0;
+    font-weight: 800; outline: none; margin: 8px 0;
   }
   .verify-input:focus { border-color: var(--primary); }
-
-  .pending-badge {
-    display: inline-block;
-    background: #dbeafe;
-    color: #1e40af;
-    padding: 6px 12px;
-    border-radius: 100px;
-    font-size: 12px;
-    font-weight: 700;
-    margin: 8px 0;
-  }
 
   .notif-panel {
     position: fixed; top: 70px; right: 16px;
@@ -540,7 +527,6 @@
     padding: 12px 16px; border-bottom: 1px solid var(--border);
     font-size: 13px; display: flex; gap: 10px; align-items: flex-start;
   }
-  .notif-item:last-child { border-bottom: none; }
   .notif-item.unread { background: #f0f9ff; }
   .notif-item .notif-icon { font-size: 18px; flex-shrink: 0; }
   .notif-item .notif-body { flex: 1; min-width: 0; }
@@ -559,20 +545,18 @@
     box-shadow: var(--shadow-lg);
     font-size: 14px; font-weight: 600;
     display: flex; align-items: center; gap: 10px;
-    animation: slideDown 0.4s;
     pointer-events: auto; max-width: 90vw;
     border-left: 4px solid var(--primary);
+    animation: slideDown 0.3s;
   }
   .toast.success { border-left-color: var(--success); color: #065f46; }
   .toast.warning { border-left-color: var(--warning); color: #92400e; }
   .toast.error { border-left-color: var(--danger); color: #991b1b; }
   .toast.info { border-left-color: var(--info); color: #1e40af; }
-  .toast.fade-out { animation: slideUp 0.3s forwards; }
   @keyframes slideDown {
     from { opacity: 0; transform: translateY(-20px); }
     to { opacity: 1; transform: translateY(0); }
   }
-  @keyframes slideUp { to { opacity: 0; transform: translateY(-20px); } }
 
   .stats-grid {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -635,7 +619,6 @@
   .history-item .h-amount.plus { color: var(--success); }
   .history-item .h-amount.minus { color: var(--danger); }
 
-  /* Verify queue (admin) */
   .queue-item {
     background: #fff; border-radius: var(--radius);
     padding: 14px; margin-bottom: 10px;
@@ -651,6 +634,7 @@
   .queue-info {
     background: var(--bg); padding: 8px 12px; border-radius: 8px;
     font-size: 12px; margin-bottom: 10px; word-break: break-all;
+    line-height: 1.6;
   }
   .queue-actions { display: flex; gap: 8px; }
 
@@ -663,12 +647,19 @@
     .balance-card .value { font-size: 34px; }
     .notif-panel { top: 60px; right: 8px; left: 8px; width: auto; }
     .auth-card { padding: 28px 20px; }
+    .sync-bar { bottom: 8px; right: 8px; font-size: 10px; }
   }
 </style>
 </head>
 <body>
 
-<!-- ===== AUTH ===== -->
+<!-- SYNC INDICATOR -->
+<div class="sync-bar" id="syncBar">
+  <span class="dot"></span>
+  <span id="syncText">Đã đồng bộ</span>
+</div>
+
+<!-- AUTH -->
 <div class="auth-screen" id="authScreen">
   <div class="auth-card">
     <div class="auth-logo">🎵</div>
@@ -697,19 +688,18 @@
       <a id="switchMode" tabindex="0" role="button">Đăng ký ngay</a>
     </div>
 
-    <p class="auth-hint">🔒 Bảo mật đa lớp • Không chia sẻ tài khoản</p>
+    <p class="auth-hint">🔒 Auto-backup • Multi-tab sync • Bảo mật đa lớp</p>
   </div>
 </div>
 
-<!-- ===== APP ===== -->
+<!-- APP -->
 <div class="app" id="app">
   <div class="topbar">
     <div class="topbar-logo">🎵 <span class="tt">TikTok Boost Pro</span></div>
     <div class="topbar-user">
-      <div class="points-chip" id="topPoints" title="Xu của bạn">0 xu</div>
+      <div class="points-chip" id="topPoints">0 xu</div>
       <button class="notif-btn" id="btnNotif" type="button">
-        🔔
-        <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
+        🔔 <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
       </button>
       <div class="avatar" id="topAvatar"></div>
       <button class="btn-logout" id="btnLogout" type="button">Đăng xuất</button>
@@ -740,33 +730,19 @@
         <div class="sub" id="balanceSub">Hoàn thành nhiệm vụ để kiếm xu</div>
       </div>
 
-      <div class="info-box">
-        <strong>💡 Bảng giá kiếm xu:</strong>
-      </div>
+      <div class="info-box"><strong>💡 Bảng giá kiếm xu:</strong></div>
 
       <div class="rate-grid">
-        <div class="rate-item">
-          <div class="rate-icon">👥</div>
-          <div class="rate-label">1 Follow</div>
-          <div class="rate-value">+100 xu</div>
-        </div>
-        <div class="rate-item">
-          <div class="rate-icon">❤️</div>
-          <div class="rate-label">1 Tim</div>
-          <div class="rate-value">+50 xu</div>
-        </div>
-        <div class="rate-item">
-          <div class="rate-icon">💬</div>
-          <div class="rate-label">1 Comment</div>
-          <div class="rate-value">+50 xu</div>
-        </div>
+        <div class="rate-item"><div class="rate-icon">👥</div><div class="rate-label">1 Follow</div><div class="rate-value">+100 xu</div></div>
+        <div class="rate-item"><div class="rate-icon">❤️</div><div class="rate-label">1 Tim</div><div class="rate-value">+50 xu</div></div>
+        <div class="rate-item"><div class="rate-icon">💬</div><div class="rate-label">1 Comment</div><div class="rate-value">+50 xu</div></div>
       </div>
 
       <div class="section-title">
         <span>📋 Nhiệm vụ có sẵn</span>
         <button class="section-link" id="btnRefreshTasks" type="button">🔄 Làm mới</button>
       </div>
-      <div class="section-desc">Nhấn "Mở TikTok" → làm theo yêu cầu → quay lại nhập mã xác nhận</div>
+      <div class="section-desc">Mở TikTok → làm theo yêu cầu → nhập mã xác nhận</div>
       <div id="taskList"></div>
     </div>
 
@@ -776,18 +752,15 @@
         <div class="value" id="shopBalance">0<small>xu</small></div>
         <div class="sub">Dùng xu mua tương tác cho TikTok của bạn</div>
       </div>
-
       <div class="info-box warning" id="shopWarning" style="display:none;">
-        <strong>⚠️ Chưa có TikTok:</strong> Vào tab <b>Cá nhân</b> để cập nhật username TikTok trước!
+        <strong>⚠️ Chưa có TikTok:</strong> Vào tab <b>Cá nhân</b> để cập nhật!
       </div>
-
       <div class="section-title"><span>🛒 Chọn gói tương tác</span></div>
       <div id="shopList"></div>
     </div>
 
     <div class="page" id="page-orders">
       <div class="section-title"><span>📦 Đơn mua của bạn</span></div>
-      <div class="section-desc">Theo dõi tiến độ các đơn đã mua</div>
       <div id="myOrders"></div>
     </div>
 
@@ -808,57 +781,51 @@
       </div>
 
       <div class="section-title"><span>🎵 TikTok của bạn</span></div>
-      <div class="section-desc">Nhập username TikTok để nhận follow/like khi mua</div>
       <div class="input-group">
         <input type="text" id="tiktokUsername" placeholder="@username_tiktok" maxlength="24" autocomplete="off">
         <button class="btn-buy" id="btnSaveTikTok" type="button">Lưu</button>
       </div>
 
-      <div class="section-title"><span>📊 Lịch sử hoạt động</span></div>
+      <div class="section-title"><span>📊 Lịch sử</span></div>
       <div id="historyList"></div>
 
       <div class="section-title"><span>⚙️ Cài đặt</span></div>
       <button id="btnChangePassword" type="button" style="width:100%; padding:12px; background:var(--bg); border-radius:10px; font-weight:700; margin-bottom:8px;">🔑 Đổi mật khẩu</button>
       <button id="btnExportMyData" type="button" style="width:100%; padding:12px; background:var(--bg); border-radius:10px; font-weight:700; margin-bottom:8px;">💾 Tải dữ liệu của tôi</button>
+      <button id="btnRestoreFromBackup" type="button" style="width:100%; padding:12px; background:var(--bg); border-radius:10px; font-weight:700; margin-bottom:8px;">📥 Khôi phục từ backup tự động</button>
     </div>
 
     <div class="page" id="page-admin">
-      <div class="section-title"><span>🛡️ Dashboard Quản Trị</span></div>
-
+      <div class="section-title"><span>🛡️ Dashboard</span></div>
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="label">Tổng Users</div>
+          <div class="label">Users</div>
           <div class="value" id="admTotalUsers">0</div>
           <div class="sub" id="admBannedSub">0 bị khóa</div>
         </div>
         <div class="stat-card cyan">
-          <div class="label">Nhiệm vụ chờ</div>
+          <div class="label">Task chờ</div>
           <div class="value" id="admPendingTasks">0</div>
-          <div class="sub">Cần user làm</div>
         </div>
         <div class="stat-card pink">
-          <div class="label">Đơn hoàn thành</div>
+          <div class="label">Đơn xong</div>
           <div class="value" id="admCompletedOrders">0</div>
-          <div class="sub">Tổng đơn mua</div>
         </div>
         <div class="stat-card orange">
-          <div class="label">Verify chờ duyệt</div>
+          <div class="label">Verify chờ</div>
           <div class="value" id="admPendingVerifies">0</div>
-          <div class="sub">Cần kiểm tra</div>
         </div>
       </div>
 
-      <!-- VERIFY QUEUE -->
       <div class="section-title">
         <span>🔍 Hàng chờ xác minh</span>
-        <button class="section-link" id="btnAutoApprove" type="button">⚡ Auto duyệt hết</button>
+        <button class="section-link" id="btnAutoApprove" type="button">⚡ Duyệt hết</button>
       </div>
-      <div class="section-desc">User đã hoàn thành nhiệm vụ — duyệt hoặc từ chối</div>
       <div id="verifyQueue"></div>
 
       <div class="section-title"><span>👥 Quản lý Users</span></div>
       <div class="input-group" style="flex-wrap:wrap;">
-        <input type="text" id="admSearch" placeholder="🔍 Tìm username..." style="min-width:150px;">
+        <input type="text" id="admSearch" placeholder="🔍 Tìm..." style="min-width:150px;">
         <select id="admFilter" style="padding:12px 14px; border:2px solid var(--border); border-radius:10px; font-weight:600; outline:none;">
           <option value="all">Tất cả</option>
           <option value="active">Hoạt động</option>
@@ -869,9 +836,14 @@
       </div>
       <div id="admUserList"></div>
 
-      <div class="section-title" style="margin-top:32px;"><span>💾 Bảo trì</span></div>
-      <button id="btnExport" type="button" style="width:100%; padding:12px; background:var(--bg); border-radius:10px; font-weight:700; margin-bottom:8px;">💾 Sao lưu hệ thống</button>
-      <button id="btnImport" type="button" style="width:100%; padding:12px; background:var(--bg); border-radius:10px; font-weight:700; margin-bottom:8px;">📂 Khôi phục backup</button>
+      <div class="section-title" style="margin-top:32px;"><span>💾 Bảo trì & Backup</span></div>
+      <div class="info-box success" id="backupStatus">
+        <strong>✅ Auto-backup đang hoạt động</strong><br>
+        <span id="backupInfo">Chưa có backup</span>
+      </div>
+      <button id="btnExport" type="button" style="width:100%; padding:12px; background:var(--bg); border-radius:10px; font-weight:700; margin-bottom:8px;">💾 Sao lưu hệ thống (tải file)</button>
+      <button id="btnImport" type="button" style="width:100%; padding:12px; background:var(--bg); border-radius:10px; font-weight:700; margin-bottom:8px;">📂 Khôi phục từ file</button>
+      <button id="btnListBackups" type="button" style="width:100%; padding:12px; background:var(--bg); border-radius:10px; font-weight:700; margin-bottom:8px;">📋 Xem backup tự động</button>
       <input type="file" id="importFile" accept=".json" style="display:none;">
 
       <div class="section-title" style="margin-top:32px;"><span>⚠️ Vùng nguy hiểm</span></div>
@@ -894,7 +866,7 @@
 
 <script>
 /* ============================================================
-   TikTok Boost Pro v4.0 - Auto Verify System
+   TikTok Boost Pro v5.0 - Persistent + Auto-backup + Sync
    Admin: admingang / Rmg16062007
    Tỷ giá: Follow = 100 xu | Like = 50 xu | Comment = 50 xu
    ============================================================ */
@@ -902,7 +874,412 @@
   'use strict';
 
   // ══════════════════════════════════════════════════════════
-  // CRYPTO
+  // 🗄️ STORAGE LAYER - KHÔNG BAO GIỜ ĐỔI CÁC HẰNG SỐ NÀY
+  // ══════════════════════════════════════════════════════════
+  const STORAGE_NS = 'ttboost_persistent';   // 🔒 KHÔNG ĐỔI
+  const DATA_VERSION = 5;                     // Chỉ tăng khi schema đổi
+  const SCHEMA_VERSION_KEY = STORAGE_NS + '_schema';
+  
+  // Keys cố định — không phụ thuộc version code
+  const KEYS = {
+    users: STORAGE_NS + '_users',
+    tasks: STORAGE_NS + '_tasks',
+    orders: STORAGE_NS + '_orders',
+    notifications: STORAGE_NS + '_notifications',
+    verifyQueue: STORAGE_NS + '_verifyQueue',
+    session: STORAGE_NS + '_session',
+    loginAttempts: STORAGE_NS + '_loginAttempts',
+    meta: STORAGE_NS + '_meta'
+  };
+
+  // ══════════════════════════════════════════════════════════
+  // 📦 INDEXEDDB - Tầng backup thứ 2
+  // ══════════════════════════════════════════════════════════
+  const IDB_NAME = 'ttboost_backup_db';
+  const IDB_VERSION = 1;
+  const IDB_STORE = 'backups';
+  let idbInstance = null;
+
+  async function idbOpen() {
+    if (idbInstance) return idbInstance;
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(IDB_NAME, IDB_VERSION);
+      req.onupgradeneeded = e => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains(IDB_STORE)) {
+          const store = db.createObjectStore(IDB_STORE, { keyPath: 'id', autoIncrement: true });
+          store.createIndex('timestamp', 'timestamp');
+        }
+      };
+      req.onsuccess = () => { idbInstance = req.result; resolve(idbInstance); };
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async function idbSave(snapshot) {
+    try {
+      const db = await idbOpen();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(IDB_STORE, 'readwrite');
+        const store = tx.objectStore(IDB_STORE);
+        const record = {
+          timestamp: Date.now(),
+          version: DATA_VERSION,
+          data: snapshot
+        };
+        store.add(record);
+        
+        // Chỉ giữ 10 backup gần nhất
+        const countReq = store.count();
+        countReq.onsuccess = () => {
+          if (countReq.result > 10) {
+            const cursor = store.openCursor();
+            let toDelete = countReq.result - 10;
+            cursor.onsuccess = e => {
+              const c = e.target.result;
+              if (c && toDelete > 0) {
+                c.delete();
+                toDelete--;
+                c.continue();
+              }
+            };
+          }
+        };
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => reject(tx.error);
+      });
+    } catch (e) {
+      console.warn('IndexedDB save failed:', e);
+      return false;
+    }
+  }
+
+  async function idbLoadLatest() {
+    try {
+      const db = await idbOpen();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(IDB_STORE, 'readonly');
+        const store = tx.objectStore(IDB_STORE);
+        const idx = store.index('timestamp');
+        const req = idx.openCursor(null, 'prev');
+        req.onsuccess = e => {
+          const cursor = e.target.result;
+          if (cursor) resolve(cursor.value);
+          else resolve(null);
+        };
+        req.onerror = () => reject(req.error);
+      });
+    } catch (e) {
+      return null;
+    }
+  }
+
+  async function idbListAll() {
+    try {
+      const db = await idbOpen();
+      return new Promise((resolve) => {
+        const tx = db.transaction(IDB_STORE, 'readonly');
+        const store = tx.objectStore(IDB_STORE);
+        const req = store.getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => resolve([]);
+      });
+    } catch (e) { return []; }
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // 🔄 BROADCAST CHANNEL - Multi-tab sync
+  // ══════════════════════════════════════════════════════════
+  let syncChannel = null;
+  const TAB_ID = 'tab_' + Math.random().toString(36).slice(2, 10);
+
+  function initBroadcast() {
+    if (typeof BroadcastChannel === 'undefined') return;
+    try {
+      syncChannel = new BroadcastChannel('ttboost_sync_' + STORAGE_NS);
+      syncChannel.onmessage = (event) => {
+        const { type, tabId, payload } = event.data || {};
+        if (tabId === TAB_ID) return; // Bỏ qua tin nhắn của chính mình
+        
+        if (type === 'data_changed') {
+          showSyncBar('syncing', 'Đồng bộ từ tab khác...');
+          // Reload data từ storage
+          loadAll(true);
+          // Re-render nếu đang login
+          if (currentUser && users[currentUser]) {
+            renderApp();
+          }
+          setTimeout(() => showSyncBar('idle', 'Đã đồng bộ'), 1000);
+        }
+        
+        if (type === 'user_logged_out') {
+          if (payload && payload.username === currentUser) {
+            logout(true);
+          }
+        }
+        
+        if (type === 'ping') {
+          // Respond
+          syncChannel.postMessage({ type: 'pong', tabId: TAB_ID });
+        }
+      };
+      console.log('📡 BroadcastChannel active');
+    } catch (e) {
+      console.warn('BroadcastChannel not supported');
+    }
+  }
+
+  function broadcastChange(type, payload) {
+    if (!syncChannel) return;
+    try {
+      syncChannel.postMessage({ type, tabId: TAB_ID, payload });
+    } catch (e) {}
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // 🛡️ AUTO-RECOVERY - Phát hiện & sửa data hỏng
+  // ══════════════════════════════════════════════════════════
+  function safeGet(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return fallback;
+      const parsed = JSON.parse(raw);
+      // Validate type
+      if (fallback !== null && typeof fallback === 'object') {
+        if (Array.isArray(fallback) && !Array.isArray(parsed)) return fallback;
+        if (!Array.isArray(fallback) && (typeof parsed !== 'object' || Array.isArray(parsed))) return fallback;
+      }
+      return parsed;
+    } catch (e) {
+      console.warn('⚠️ Corrupted data detected for:', key, '— Attempting recovery');
+      // Auto-recovery: trả về fallback
+      return fallback;
+    }
+  }
+
+  function safeSet(key, value) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+      return true;
+    } catch (e) {
+      if (e.name === 'QuotaExceededError') {
+        showToast('⚠️ Bộ nhớ đầy', 'error');
+      }
+      return false;
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // 🔀 AUTO-MIGRATION - Nâng cấp schema tự động
+  // ══════════════════════════════════════════════════════════
+  function migrateData() {
+    const currentSchema = safeGet(SCHEMA_VERSION_KEY, 0);
+    
+    if (currentSchema >= DATA_VERSION) return;
+    
+    console.log('🔄 Migrating schema from', currentSchema, 'to', DATA_VERSION);
+    
+    // Migration từ v0 → v1 (thêm welcome bonus)
+    if (currentSchema < 1) {
+      Object.values(users).forEach(u => {
+        if (!u.history) u.history = [];
+        if (typeof u.earned === 'undefined') u.earned = u.points || 0;
+        if (typeof u.spent === 'undefined') u.spent = 0;
+      });
+    }
+    
+    // Migration v1 → v2 (thêm checksum cho admin)
+    if (currentSchema < 2) {
+      Object.values(users).forEach(u => {
+        if (!u.checksum && typeof crypto2 !== 'undefined' && crypto2.checksum) {
+          try { u.checksum = crypto2.checksum(u); } catch(e) {}
+        }
+      });
+    }
+    
+    // Migration v2 → v3 (thêm verifyQueue)
+    if (currentSchema < 3) {
+      if (!Array.isArray(verifyQueue)) verifyQueue = [];
+    }
+    
+    // Migration v3 → v4 (thêm dailyTasks)
+    if (currentSchema < 4) {
+      Object.values(users).forEach(u => {
+        if (!u.dailyTasks) u.dailyTasks = {};
+      });
+    }
+    
+    // Migration v4 → v5 (thêm taskOpenedAt)
+    if (currentSchema < 5) {
+      Object.values(users).forEach(u => {
+        if (!u.taskOpenedAt) u.taskOpenedAt = {};
+      });
+    }
+    
+    // Save migrated data
+    saveUsers();
+    saveTasks();
+    saveOrders();
+    saveNotifs();
+    saveVerifyQueue();
+    
+    safeSet(SCHEMA_VERSION_KEY, DATA_VERSION);
+    console.log('✅ Migration complete');
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // 💾 DATA PERSISTENCE
+  // ══════════════════════════════════════════════════════════
+  let currentUser = null;
+  let users = {};
+  let tasks = [];
+  let orders = [];
+  let notifications = [];
+  let verifyQueue = [];
+  let authMode = 'login';
+  let admFilterValue = 'all';
+  let admSearchValue = '';
+  let isProcessing = false;
+  let lastActivity = Date.now();
+  let adminLastActive = 0;
+  let loginAttempts = {};
+  let verifyTimers = {};
+  let isDirty = false; // Có thay đổi chưa save
+  let lastBackupTime = 0;
+
+  function loadAll(silent) {
+    users = safeGet(KEYS.users, {});
+    tasks = safeGet(KEYS.tasks, []);
+    orders = safeGet(KEYS.orders, []);
+    notifications = safeGet(KEYS.notifications, []);
+    verifyQueue = safeGet(KEYS.verifyQueue, []);
+    loginAttempts = safeGet(KEYS.loginAttempts, {});
+    
+    const session = safeGet(KEYS.session, null);
+    if (session && session.username && session.expiresAt > Date.now()) {
+      if (crypto2.verifySessionToken(session.username, session.token)) {
+        if (users[session.username] && !users[session.username].banned) {
+          currentUser = session.username;
+          lastActivity = Date.now();
+        }
+      }
+    }
+    
+    if (!silent) console.log('📦 Loaded:', Object.keys(users).length, 'users');
+  }
+
+  function saveUsers() { isDirty = true; return safeSet(KEYS.users, users); }
+  function saveTasks() { isDirty = true; return safeSet(KEYS.tasks, tasks); }
+  function saveOrders() { isDirty = true; return safeSet(KEYS.orders, orders); }
+  function saveNotifs() { isDirty = true; return safeSet(KEYS.notifications, notifications); }
+  function saveVerifyQueue() { isDirty = true; return safeSet(KEYS.verifyQueue, verifyQueue); }
+  function saveLoginAttempts() { return safeSet(KEYS.loginAttempts, loginAttempts); }
+
+  function saveSession(username, remember) {
+    if (username && remember) {
+      const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
+      safeSet(KEYS.session, {
+        username,
+        token: crypto2.sessionToken(username, expiresAt),
+        expiresAt
+      });
+    } else {
+      try { localStorage.removeItem(KEYS.session); } catch(e) {}
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // 💓 HEARTBEAT - Auto-save mỗi 5 giây
+  // ══════════════════════════════════════════════════════════
+  function heartbeat() {
+    if (isDirty && currentUser) {
+      showSyncBar('saving', 'Đang lưu...');
+      // Đã save ngay trong các hàm rồi, chỉ cần force sync
+      isDirty = false;
+      setTimeout(() => showSyncBar('idle', 'Đã lưu'), 500);
+    }
+    updateAdminActivity();
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // 📤 AUTO-BACKUP - Định kỳ lưu vào IndexedDB
+  // ══════════════════════════════════════════════════════════
+  async function autoBackup() {
+    const now = Date.now();
+    if (now - lastBackupTime < 60000) return; // Tối thiểu 1 phút giữa các backup
+    if (!currentUser && Object.keys(users).length === 0) return; // Không backup khi trống
+    
+    lastBackupTime = now;
+    
+    const snapshot = {
+      users,
+      tasks,
+      orders,
+      notifications,
+      verifyQueue,
+      timestamp: now,
+      version: DATA_VERSION
+    };
+    
+    const ok = await idbSave(snapshot);
+    if (ok) {
+      safeSet(KEYS.meta, {
+        lastBackup: now,
+        version: DATA_VERSION,
+        userCount: Object.keys(users).length
+      });
+      updateBackupStatus();
+      console.log('💾 Auto-backup saved to IndexedDB');
+    }
+  }
+
+  async function restoreFromBackup() {
+    const backup = await idbLoadLatest();
+    if (!backup) {
+      showToast('Không có backup tự động', 'warning');
+      return false;
+    }
+    
+    if (!confirm(`Khôi phục từ backup ${new Date(backup.timestamp).toLocaleString('vi-VN')}?\nDữ liệu hiện tại sẽ bị ghi đè.`)) {
+      return false;
+    }
+    
+    const data = backup.data;
+    users = data.users || {};
+    tasks = data.tasks || [];
+    orders = data.orders || [];
+    notifications = data.notifications || [];
+    verifyQueue = data.verifyQueue || [];
+    
+    saveUsers(); saveTasks(); saveOrders(); saveNotifs(); saveVerifyQueue();
+    
+    broadcastChange('data_changed');
+    showToast('✅ Đã khôi phục từ backup', 'success');
+    return true;
+  }
+
+  function updateBackupStatus() {
+    const meta = safeGet(KEYS.meta, null);
+    const info = $('#backupInfo');
+    if (info && meta) {
+      const ago = Math.floor((Date.now() - meta.lastBackup) / 60000);
+      info.textContent = `Backup lần cuối: ${ago < 1 ? 'vừa xong' : ago + ' phút trước'} • ${meta.userCount || 0} users • Schema v${meta.version}`;
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // 📊 SYNC INDICATOR UI
+  // ══════════════════════════════════════════════════════════
+  function showSyncBar(state, text) {
+    const bar = $('#syncBar');
+    const txt = $('#syncText');
+    if (!bar || !txt) return;
+    bar.className = 'sync-bar ' + (state !== 'idle' ? state : '');
+    txt.textContent = text;
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // CRYPTO (giữ nguyên)
   // ══════════════════════════════════════════════════════════
   const crypto2 = {
     SECRET_1: 'TT_Boost_x9K2m_2024_prod_key_A',
@@ -910,7 +1287,7 @@
     SECRET_3: 'TT_Boost_z3R8w_2024_prod_key_C',
     DEFAULT_ADMIN_USER: 'admingang',
     DEFAULT_ADMIN_PASS: 'Rmg16062007',
-    PBKDF2_ITERATIONS: 100000,
+    PBKDF2_ITERATIONS: 50000,  // Giảm để nhanh hơn trên mobile
     SALT: 'TTBoost_Salt_v3_2024',
 
     fallbackHash(str) {
@@ -928,25 +1305,21 @@
     async hashPassword(password, salt) {
       salt = salt || this.SALT;
       if (window.crypto && window.crypto.subtle) {
-        const enc = new TextEncoder();
-        const keyMaterial = await window.crypto.subtle.importKey(
-          'raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']
-        );
-        const bits = await window.crypto.subtle.deriveBits(
-          {
-            name: 'PBKDF2',
-            salt: enc.encode(salt),
-            iterations: this.PBKDF2_ITERATIONS,
-            hash: 'SHA-256'
-          },
-          keyMaterial,
-          256
-        );
-        return Array.from(new Uint8Array(bits))
-          .map(b => b.toString(16).padStart(2, '0')).join('');
+        try {
+          const enc = new TextEncoder();
+          const keyMaterial = await window.crypto.subtle.importKey(
+            'raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']
+          );
+          const bits = await window.crypto.subtle.deriveBits(
+            { name: 'PBKDF2', salt: enc.encode(salt), iterations: this.PBKDF2_ITERATIONS, hash: 'SHA-256' },
+            keyMaterial, 256
+          );
+          return Array.from(new Uint8Array(bits)).map(b => b.toString(16).padStart(2, '0')).join('');
+        } catch(e) {}
       }
+      // Fallback
       let h = password + salt;
-      for (let i = 0; i < 1000; i++) h = this.fallbackHash(h + i);
+      for (let i = 0; i < 500; i++) h = this.fallbackHash(h + i);
       return h;
     },
 
@@ -961,11 +1334,8 @@
 
     checksum(user) {
       const payload = [
-        user.username,
-        user.passwordHash,
-        user.createdAt,
-        user.isAdmin ? '1' : '0',
-        user.isGuest ? '1' : '0',
+        user.username, user.passwordHash, user.createdAt,
+        user.isAdmin ? '1' : '0', user.isGuest ? '1' : '0',
         this.SECRET_1
       ].join('|');
       return this.syncHash(payload);
@@ -1003,60 +1373,30 @@
   // CONFIG
   // ══════════════════════════════════════════════════════════
   const CONFIG = {
-    VERSION: 4.0,
-    PREFIX: 'ttb4_',
-    userKey: 'u',
-    sessionKey: 's',
-    taskKey: 't',
-    orderKey: 'o',
-    notifKey: 'n',
-    verifyQueueKey: 'vq',
-    initKey: 'i',
-    minUsername: 3,
-    minPassword: 6,
+    minUsername: 3, minPassword: 6,
     taskCooldownMs: 30 * 1000,
     dailyTaskLimit: 50,
     verifyCodeTTL: 10 * 60 * 1000,
     maxLoginAttempts: 5,
     loginLockoutMs: 5 * 60 * 1000,
     sessionIdleMs: 30 * 60 * 1000,
-    
-    // 🔍 VERIFY SETTINGS
-    minTimeOnTikTokMs: 10000,           // Bắt buộc ở TikTok ít nhất 10s
-    minDelayBeforeVerifyMs: 30000,      // Chờ 30s mới được verify
-    autoApproveAfterMs: 5 * 60 * 1000,  // Tự động duyệt sau 5 phút nếu admin không online
-    adminOnlineTimeoutMs: 60 * 1000,    // Admin coi như offline nếu không hoạt động 1 phút
-    
+    minTimeOnTikTokMs: 5000,              // Rút xuống 5s cho trải nghiệm nhanh
+    minDelayBeforeVerifyMs: 15000,        // 15s chờ verify
+    autoApproveAfterMs: 3 * 60 * 1000,    // Auto duyệt sau 3 phút
+    adminOnlineTimeoutMs: 60 * 1000,
+    heartbeatMs: 5000,                    // Lưu mỗi 5s
+    autoBackupMs: 30000,                  // Backup mỗi 30s
     rewards: { follow: 100, like: 50, comment: 50 },
     welcomeBonus: 500,
-    
     packages: [
       { id: 'f10',  type: 'follow',  qty: 10,  price: 1000, name: '10 Follow TikTok',  desc: '100 xu/follow' },
-      { id: 'f50',  type: 'follow',  qty: 50,  price: 4500, name: '50 Follow TikTok',  desc: '90 xu/follow • Tiết kiệm 10%', badge: 'HOT' },
-      { id: 'f100', type: 'follow',  qty: 100, price: 8000, name: '100 Follow TikTok', desc: '80 xu/follow • Tiết kiệm 20%', badge: 'BEST' },
+      { id: 'f50',  type: 'follow',  qty: 50,  price: 4500, name: '50 Follow TikTok',  desc: '90 xu/follow • -10%', badge: 'HOT' },
+      { id: 'f100', type: 'follow',  qty: 100, price: 8000, name: '100 Follow TikTok', desc: '80 xu/follow • -20%', badge: 'BEST' },
       { id: 'l20',  type: 'like',    qty: 20,  price: 1000, name: '20 Tim video',      desc: '50 xu/tim' },
-      { id: 'l100', type: 'like',    qty: 100, price: 4500, name: '100 Tim video',     desc: '45 xu/tim • Tiết kiệm 10%', badge: 'HOT' },
+      { id: 'l100', type: 'like',    qty: 100, price: 4500, name: '100 Tim video',     desc: '45 xu/tim • -10%', badge: 'HOT' },
       { id: 'c10',  type: 'comment', qty: 10,  price: 500,  name: '10 Comment',        desc: '50 xu/comment' }
     ]
   };
-
-  // ══════════════════════════════════════════════════════════
-  // STATE
-  // ══════════════════════════════════════════════════════════
-  let currentUser = null;
-  let users = {};
-  let tasks = [];
-  let orders = [];
-  let notifications = [];
-  let verifyQueue = [];
-  let authMode = 'login';
-  let admFilterValue = 'all';
-  let admSearchValue = '';
-  let isProcessing = false;
-  let lastActivity = Date.now();
-  let adminLastActive = 0;
-  let loginAttempts = {};
-  let verifyTimers = {};
 
   // ══════════════════════════════════════════════════════════
   // UTILS
@@ -1078,10 +1418,7 @@
     return colors[Math.abs(h) % colors.length];
   }
 
-  function initials(name) {
-    if (!name) return '??';
-    return name.slice(0, 2).toUpperCase();
-  }
+  function initials(name) { return name ? name.slice(0, 2).toUpperCase() : '??'; }
 
   function timeAgo(ts) {
     const diff = Date.now() - ts;
@@ -1099,96 +1436,10 @@
     const d = new Date();
     return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
   }
-
-  function normalizeTikTok(u) {
-    if (!u) return '';
-    return String(u).trim().replace(/^@+/, '').toLowerCase();
-  }
+  function normalizeTikTok(u) { return !u ? '' : String(u).trim().replace(/^@+/, '').toLowerCase(); }
   function isValidTikTok(u) { return /^[a-zA-Z0-9._]{2,24}$/.test(u); }
   function isValidUsername(u) { return /^[a-z0-9_]{3,20}$/.test(u); }
 
-  // ══════════════════════════════════════════════════════════
-  // STORAGE
-  // ══════════════════════════════════════════════════════════
-  function safeGet(key, fallback) {
-    try {
-      const raw = localStorage.getItem(CONFIG.PREFIX + key);
-      if (!raw) return fallback;
-      return JSON.parse(raw);
-    } catch (e) { return fallback; }
-  }
-
-  function safeSet(key, value) {
-    try {
-      localStorage.setItem(CONFIG.PREFIX + key, JSON.stringify(value));
-      return true;
-    } catch (e) { return false; }
-  }
-
-  function loadAll() {
-    try {
-      users = safeGet(CONFIG.userKey, {});
-      tasks = safeGet(CONFIG.taskKey, []);
-      orders = safeGet(CONFIG.orderKey, []);
-      notifications = safeGet(CONFIG.notifKey, []);
-      verifyQueue = safeGet(CONFIG.verifyQueueKey, []);
-      loginAttempts = safeGet('login_attempts', {});
-      
-      const session = safeGet(CONFIG.sessionKey, null);
-      if (session && session.username && session.expiresAt > Date.now()) {
-        if (crypto2.verifySessionToken(session.username, session.token)) {
-          if (users[session.username] && !users[session.username].banned) {
-            currentUser = session.username;
-            lastActivity = Date.now();
-          }
-        }
-      }
-    } catch (e) {}
-  }
-
-  function saveUsers() { return safeSet(CONFIG.userKey, users); }
-  function saveTasks() { return safeSet(CONFIG.taskKey, tasks); }
-  function saveOrders() { return safeSet(CONFIG.orderKey, orders); }
-  function saveNotifs() { return safeSet(CONFIG.notifKey, notifications); }
-  function saveVerifyQueue() { return safeSet(CONFIG.verifyQueueKey, verifyQueue); }
-
-  function saveSession(username, remember) {
-    if (username && remember) {
-      const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
-      safeSet(CONFIG.sessionKey, { 
-        username, 
-        token: crypto2.sessionToken(username, expiresAt),
-        expiresAt 
-      });
-    } else {
-      try { localStorage.removeItem(CONFIG.PREFIX + CONFIG.sessionKey); } catch(e) {}
-    }
-  }
-
-  // ══════════════════════════════════════════════════════════
-  // NOTIFICATIONS
-  // ══════════════════════════════════════════════════════════
-  function pushNotif(user, type, title, body) {
-    if (!user) return;
-    const notif = {
-      id: crypto2.genId('n'),
-      user, type, title,
-      body: body || '',
-      read: false,
-      time: Date.now()
-    };
-    notifications.unshift(notif);
-    const userNotifs = notifications.filter(n => n.user === user);
-    if (userNotifs.length > 100) {
-      const keep = new Set(userNotifs.slice(0, 100).map(n => n.id));
-      notifications = notifications.filter(n => n.user !== user || keep.has(n.id));
-    }
-    saveNotifs();
-  }
-
-  // ══════════════════════════════════════════════════════════
-  // TOAST
-  // ══════════════════════════════════════════════════════════
   function showToast(msg, type) {
     type = type || '';
     const container = $('#toastContainer');
@@ -1198,8 +1449,7 @@
     toast.textContent = msg;
     container.appendChild(toast);
     setTimeout(() => {
-      toast.classList.add('fade-out');
-      setTimeout(() => { if (toast.parentNode) toast.remove(); }, 300);
+      if (toast.parentNode) toast.remove();
     }, 2600);
   }
 
@@ -1218,7 +1468,6 @@
 
   function hideModal() {
     $('#modalOverlay').classList.remove('show');
-    // Clear any timers
     Object.keys(verifyTimers).forEach(k => {
       clearInterval(verifyTimers[k]);
       delete verifyTimers[k];
@@ -1226,7 +1475,7 @@
   }
 
   // ══════════════════════════════════════════════════════════
-  // ADMIN VERIFY
+  // ADMIN
   // ══════════════════════════════════════════════════════════
   function requireAdmin() {
     if (!currentUser) return false;
@@ -1237,9 +1486,7 @@
   }
 
   function updateAdminActivity() {
-    if (requireAdmin()) {
-      adminLastActive = Date.now();
-    }
+    if (requireAdmin()) adminLastActive = Date.now();
   }
 
   function isAdminOnline() {
@@ -1247,31 +1494,21 @@
   }
 
   // ══════════════════════════════════════════════════════════
-  // RATE LIMIT
+  // NOTIFICATIONS
   // ══════════════════════════════════════════════════════════
-  function checkLoginRateLimit(username) {
-    const a = loginAttempts[username] || { count: 0, lockedUntil: 0 };
-    if (a.lockedUntil > Date.now()) {
-      const mins = Math.ceil((a.lockedUntil - Date.now()) / 60000);
-      return { blocked: true, msg: `Tài khoản khóa ${mins} phút` };
+  function pushNotif(user, type, title, body) {
+    if (!user) return;
+    notifications.unshift({
+      id: crypto2.genId('n'),
+      user, type, title, body: body || '',
+      read: false, time: Date.now()
+    });
+    const userNotifs = notifications.filter(n => n.user === user);
+    if (userNotifs.length > 100) {
+      const keep = new Set(userNotifs.slice(0, 100).map(n => n.id));
+      notifications = notifications.filter(n => n.user !== user || keep.has(n.id));
     }
-    return { blocked: false };
-  }
-
-  function recordLoginFailure(username) {
-    const a = loginAttempts[username] || { count: 0, lockedUntil: 0 };
-    a.count++;
-    if (a.count >= CONFIG.maxLoginAttempts) {
-      a.lockedUntil = Date.now() + CONFIG.loginLockoutMs;
-      a.count = 0;
-    }
-    loginAttempts[username] = a;
-    safeSet('login_attempts', loginAttempts);
-  }
-
-  function clearLoginAttempts(username) {
-    delete loginAttempts[username];
-    safeSet('login_attempts', loginAttempts);
+    saveNotifs();
   }
 
   // ══════════════════════════════════════════════════════════
@@ -1308,23 +1545,27 @@
 
     if (username.length < CONFIG.minUsername) {
       usernameGroup.classList.add('error');
-      showAuthError(`Tên đăng nhập phải có ít nhất ${CONFIG.minUsername} ký tự`);
+      showAuthError('Tên đăng nhập ≥ ' + CONFIG.minUsername + ' ký tự');
       return;
     }
     if (!isValidUsername(username)) {
       usernameGroup.classList.add('error');
-      showAuthError('Tên đăng nhập chỉ chứa a-z, 0-9 và dấu _');
+      showAuthError('Tên chỉ chứa a-z, 0-9, _');
       return;
     }
     if (password.length < CONFIG.minPassword) {
       passwordGroup.classList.add('error');
-      showAuthError(`Mật khẩu phải có ít nhất ${CONFIG.minPassword} ký tự`);
+      showAuthError('Mật khẩu ≥ ' + CONFIG.minPassword + ' ký tự');
       return;
     }
 
     if (authMode === 'login') {
-      const rl = checkLoginRateLimit(username);
-      if (rl.blocked) { showAuthError(rl.msg); return; }
+      const a = loginAttempts[username] || { count: 0, lockedUntil: 0 };
+      if (a.lockedUntil > Date.now()) {
+        const mins = Math.ceil((a.lockedUntil - Date.now()) / 60000);
+        showAuthError(`Khóa ${mins} phút`);
+        return;
+      }
     }
 
     isProcessing = true;
@@ -1333,29 +1574,24 @@
     try {
       if (authMode === 'register') {
         if (username === crypto2.DEFAULT_ADMIN_USER) {
-          showAuthError('Tên đăng nhập không khả dụng!');
-          setAuthLoading(false);
-          isProcessing = false;
-          return;
+          showAuthError('Tên không khả dụng');
+          setAuthLoading(false); isProcessing = false; return;
         }
         if (users[username]) {
           usernameGroup.classList.add('error');
-          showAuthError('Tên đăng nhập đã tồn tại!');
-          setAuthLoading(false);
-          isProcessing = false;
-          return;
+          showAuthError('Tên đã tồn tại!');
+          setAuthLoading(false); isProcessing = false; return;
         }
 
         const passwordHash = await crypto2.hashPassword(password);
         const bonus = CONFIG.welcomeBonus;
         
         const newUser = {
-          username,
-          passwordHash,
+          username, passwordHash,
           points: bonus, earned: bonus, spent: 0,
           tiktokUsername: '',
           history: [{ type: 'earn', action: 'welcome', points: bonus, time: Date.now() }],
-          dailyTasks: {}, lastTaskAt: 0,
+          dailyTasks: {}, lastTaskAt: 0, taskOpenedAt: {},
           isAdmin: false, banned: false, isGuest: false,
           createdAt: Date.now(), lastLoginAt: Date.now()
         };
@@ -1364,8 +1600,9 @@
         users[username] = newUser;
         saveUsers();
         pushNotif(username, 'success', '🎉 Chào mừng!', `Bạn nhận ${formatNumber(bonus)} xu khởi đầu.`);
+        broadcastChange('data_changed');
         login(username, true);
-        showToast(`🎉 Đăng ký thành công! +${formatNumber(bonus)} xu`, 'success');
+        showToast(`🎉 +${formatNumber(bonus)} xu`, 'success');
         
       } else {
         // Admin đầu tiên
@@ -1380,8 +1617,8 @@
               username: crypto2.DEFAULT_ADMIN_USER,
               passwordHash,
               points: 999999, earned: 999999, spent: 0,
-              tiktokUsername: '',
-              history: [], dailyTasks: {}, lastTaskAt: 0,
+              tiktokUsername: '', history: [],
+              dailyTasks: {}, lastTaskAt: 0, taskOpenedAt: {},
               isAdmin: true, banned: false, isGuest: false,
               createdAt: Date.now(), lastLoginAt: Date.now()
             };
@@ -1389,9 +1626,11 @@
             
             users[crypto2.DEFAULT_ADMIN_USER] = adminUser;
             saveUsers();
-            clearLoginAttempts(crypto2.DEFAULT_ADMIN_USER);
+            delete loginAttempts[crypto2.DEFAULT_ADMIN_USER];
+            saveLoginAttempts();
+            broadcastChange('data_changed');
             login(crypto2.DEFAULT_ADMIN_USER, true);
-            setTimeout(() => showToast('👑 Admin đã kích hoạt!', 'success'), 500);
+            setTimeout(() => showToast('👑 Admin kích hoạt!', 'success'), 500);
             return;
           }
         }
@@ -1399,10 +1638,8 @@
         const user = users[username];
         if (!user) {
           recordLoginFailure(username);
-          showAuthError('Sai tên đăng nhập hoặc mật khẩu!');
-          setAuthLoading(false);
-          isProcessing = false;
-          return;
+          showAuthError('Sai tên hoặc mật khẩu!');
+          setAuthLoading(false); isProcessing = false; return;
         }
         
         const passwordHash = await crypto2.hashPassword(password);
@@ -1411,31 +1648,39 @@
           const attempts = loginAttempts[username] || { count: 0 };
           const left = CONFIG.maxLoginAttempts - attempts.count;
           showAuthError(left > 0 && left <= 2 
-            ? `Sai mật khẩu! Còn ${left} lần thử` 
-            : 'Sai tên đăng nhập hoặc mật khẩu!');
-          setAuthLoading(false);
-          isProcessing = false;
-          return;
+            ? `Sai! Còn ${left} lần thử` 
+            : 'Sai tên hoặc mật khẩu!');
+          setAuthLoading(false); isProcessing = false; return;
         }
         
         if (user.banned) {
-          showAuthError('Tài khoản đã bị khóa!');
-          setAuthLoading(false);
-          isProcessing = false;
-          return;
+          showAuthError('Tài khoản bị khóa!');
+          setAuthLoading(false); isProcessing = false; return;
         }
         
-        clearLoginAttempts(username);
+        delete loginAttempts[username];
+        saveLoginAttempts();
         user.lastLoginAt = Date.now();
         saveUsers();
         login(username, true);
         showToast(`👋 Chào mừng, ${username}!`, 'success');
       }
     } catch (e) {
-      showAuthError('Có lỗi xảy ra, thử lại sau');
-      setAuthLoading(false);
-      isProcessing = false;
+      console.error(e);
+      showAuthError('Có lỗi, thử lại');
+      setAuthLoading(false); isProcessing = false;
     }
+  }
+
+  function recordLoginFailure(username) {
+    const a = loginAttempts[username] || { count: 0, lockedUntil: 0 };
+    a.count++;
+    if (a.count >= CONFIG.maxLoginAttempts) {
+      a.lockedUntil = Date.now() + CONFIG.loginLockoutMs;
+      a.count = 0;
+    }
+    loginAttempts[username] = a;
+    saveLoginAttempts();
   }
 
   function login(username, remember) {
@@ -1445,11 +1690,10 @@
     isProcessing = false;
     setAuthLoading(false);
     renderApp();
-    
     if (requireAdmin()) adminLastActive = Date.now();
   }
 
-  function logout() {
+  function logout(silent) {
     currentUser = null;
     saveSession(null, false);
     $('#app').classList.remove('show');
@@ -1462,41 +1706,35 @@
     $('#authBtnText').textContent = 'Đăng nhập';
     $('#switchText').textContent = 'Chưa có tài khoản?';
     $('#switchMode').textContent = 'Đăng ký ngay';
+    if (!silent) broadcastChange('user_logged_out', { username: currentUser });
   }
 
   function checkIdle() {
     if (!currentUser) return;
-    const idle = Date.now() - lastActivity;
-    if (idle > CONFIG.sessionIdleMs) {
-      showToast('⏰ Phiên hết hạn do không hoạt động', 'warning');
-      setTimeout(logout, 1500);
+    if (Date.now() - lastActivity > CONFIG.sessionIdleMs) {
+      showToast('⏰ Phiên hết hạn', 'warning');
+      setTimeout(() => logout(), 1500);
     }
   }
 
   ['click', 'keypress', 'mousemove', 'touchstart', 'scroll'].forEach(evt => {
-    document.addEventListener(evt, () => { 
-      lastActivity = Date.now();
-      updateAdminActivity();
-    }, { passive: true });
+    document.addEventListener(evt, () => { lastActivity = Date.now(); }, { passive: true });
   });
 
   // ══════════════════════════════════════════════════════════
-  // RENDER APP
+  // RENDER
   // ══════════════════════════════════════════════════════════
   function renderApp() {
-    const authScreen = $('#authScreen');
-    const app = $('#app');
-    if (!authScreen || !app) return;
-
     if (!currentUser || !users[currentUser]) {
-      authScreen.style.display = 'flex';
-      app.classList.remove('show');
+      $('#authScreen').style.display = 'flex';
+      $('#app').classList.remove('show');
       return;
     }
 
-    authScreen.style.display = 'none';
-    app.classList.add('show');
+    $('#authScreen').style.display = 'none';
+    $('#app').classList.add('show');
 
+    // Admin tab
     const tabsContainer = $('#tabs');
     const existing = tabsContainer.querySelector('.admin-tab');
     if (requireAdmin()) {
@@ -1509,9 +1747,7 @@
         tab.addEventListener('click', () => switchTab('admin'));
         tabsContainer.appendChild(tab);
       }
-    } else if (existing) {
-      existing.remove();
-    }
+    } else if (existing) existing.remove();
 
     renderTopbar();
     renderTasks();
@@ -1519,7 +1755,10 @@
     renderOrders();
     renderProfile();
     renderNotifs();
-    if (requireAdmin()) renderAdmin();
+    if (requireAdmin()) {
+      renderAdmin();
+      updateBackupStatus();
+    }
   }
 
   function switchTab(tabName) {
@@ -1534,7 +1773,7 @@
     if (tabName === 'shop') renderShop();
     if (tabName === 'orders') renderOrders();
     if (tabName === 'profile') renderProfile();
-    if (tabName === 'admin') renderAdmin();
+    if (tabName === 'admin') { renderAdmin(); updateBackupStatus(); }
   }
 
   function renderTopbar() {
@@ -1577,7 +1816,7 @@
     }
 
     if (dailyCount >= CONFIG.dailyTaskLimit) {
-      list.innerHTML = '<div class="info-box warning"><strong>⏰ Đã đạt giới hạn:</strong> ' + CONFIG.dailyTaskLimit + ' nhiệm vụ/ngày.</div>';
+      list.innerHTML = '<div class="info-box warning"><strong>⏰ Đạt giới hạn:</strong> ' + CONFIG.dailyTaskLimit + ' task/ngày.</div>';
       return;
     }
 
@@ -1608,7 +1847,7 @@
           '<span>' + task.slotsLeft + ' chỗ</span>' +
         '</div>' +
         '<div class="task-actions">' +
-          '<a class="btn-task btn-open" href="' + getTikTokUrl(task, taskUser) + '" target="_blank" rel="noopener noreferrer" data-open="' + task.id + '">🔗 Mở TikTok</a>' +
+          '<a class="btn-task btn-open" href="' + getTikTokUrl(task, taskUser) + '" target="_blank" rel="noopener" data-open="' + task.id + '">🔗 Mở TikTok</a>' +
           '<button class="btn-task btn-complete" data-complete="' + task.id + '" type="button" disabled>' +
             (cooldownLeft > 0 ? '⏱ Chờ ' + Math.ceil(cooldownLeft / 1000) + 's' : '✓ Đã ' + actionText.toLowerCase()) +
           '</button>' +
@@ -1616,30 +1855,23 @@
       '</div>';
     }).join('');
 
-    // Bind open button → start timer for this task
     list.querySelectorAll('[data-open]').forEach(btn => {
       btn.addEventListener('click', () => {
         const taskId = btn.dataset.open;
         const me = users[currentUser];
-        
-        // Đánh dấu thời điểm mở TikTok
         if (!me.taskOpenedAt) me.taskOpenedAt = {};
         me.taskOpenedAt[taskId] = Date.now();
         saveUsers();
         
-        // Enable complete button
         const completeBtn = list.querySelector('[data-complete="' + taskId + '"]');
         if (completeBtn) {
           completeBtn.disabled = false;
           completeBtn.textContent = '✓ Đã hoàn thành';
         }
-        
-        // Notify user
-        showToast('⏱ Hãy làm nhiệm vụ, chờ ít nhất ' + (CONFIG.minTimeOnTikTokMs/1000) + 's', 'info');
+        showToast('⏱ Chờ ' + (CONFIG.minTimeOnTikTokMs/1000) + 's', 'info');
       });
     });
 
-    // Bind complete button
     list.querySelectorAll('[data-complete]').forEach(btn => {
       btn.addEventListener('click', () => {
         if (btn.disabled) return;
@@ -1664,51 +1896,40 @@
   }
 
   // ══════════════════════════════════════════════════════════
-  // VERIFY MODAL - MULTI-STEP
+  // VERIFY MODAL
   // ══════════════════════════════════════════════════════════
   function openVerifyModal(taskId) {
     const task = tasks.find(t => t.id === taskId);
-    if (!task) { showToast('Nhiệm vụ không tồn tại', 'error'); return; }
+    if (!task) { showToast('Không tồn tại', 'error'); return; }
     const me = users[currentUser];
     if (!me) return;
 
-    // Check cooldown
     const cooldownLeft = Math.max(0, CONFIG.taskCooldownMs - (Date.now() - (me.lastTaskAt || 0)));
     if (cooldownLeft > 0) {
       showToast(`⏱ Chờ ${Math.ceil(cooldownLeft / 1000)}s`, 'warning');
       return;
     }
 
-    // Check daily limit
     const today = todayKey();
-    const dailyCount = (me.dailyTasks && me.dailyTasks[today]) || 0;
-    if (dailyCount >= CONFIG.dailyTaskLimit) {
-      showToast('⏰ Đạt giới hạn hôm nay', 'warning');
+    if (((me.dailyTasks && me.dailyTasks[today]) || 0) >= CONFIG.dailyTaskLimit) {
+      showToast('⏰ Đạt giới hạn', 'warning');
       return;
     }
 
-    // Validate task
     if (task.completed || task.slotsLeft <= 0) {
-      showToast('Hết chỗ', 'error');
-      renderTasks();
-      return;
+      showToast('Hết chỗ', 'error'); renderTasks(); return;
     }
     if (task.workers.indexOf(currentUser) !== -1) {
-      showToast('Đã làm rồi', 'warning');
-      return;
+      showToast('Đã làm rồi', 'warning'); return;
     }
 
-    // 🔍 CHECK: User phải ở TikTok ít nhất X giây
     const openedAt = (me.taskOpenedAt && me.taskOpenedAt[taskId]) || 0;
     const timeOnTikTok = Date.now() - openedAt;
-    
     if (timeOnTikTok < CONFIG.minTimeOnTikTokMs) {
-      const remaining = Math.ceil((CONFIG.minTimeOnTikTokMs - timeOnTikTok) / 1000);
-      showToast(`⚠️ Bạn cần ở TikTok thêm ${remaining}s nữa!`, 'warning');
+      showToast(`⚠️ Cần thêm ${Math.ceil((CONFIG.minTimeOnTikTokMs - timeOnTikTok) / 1000)}s`, 'warning');
       return;
     }
 
-    // Generate verify code if not exists
     if (!task.verifyCode) {
       task.verifyCode = crypto2.genVerifyCode();
       task.verifyCodeAt = Date.now();
@@ -1716,70 +1937,45 @@
     }
 
     const reward = CONFIG.rewards[task.type] || 0;
-    const taskUser = users[task.targetUser];
-    const tiktokHandle = taskUser && taskUser.tiktokUsername ? '@' + taskUser.tiktokUsername : 'N/A';
 
     showModal(
-      '<h3>🔐 Xác minh nhiệm vụ</h3>' +
-      '<p>Làm theo 3 bước để xác minh</p>' +
-      
-      // STEP 1: Copy code
+      '<h3>🔐 Xác minh</h3>' +
+      '<p>Làm 3 bước để hoàn thành</p>' +
       '<div class="verify-step active" id="step1">' +
         '<div class="step-num">1</div>' +
-        '<div class="step-body">' +
-          'Copy mã bên dưới và dán vào <strong>bình luận TikTok</strong> ' + 
-          '(hoặc lưu lại làm bằng chứng)' +
-        '</div>' +
+        '<div class="step-body">Copy mã và dán vào <strong>bình luận TikTok</strong></div>' +
       '</div>' +
-      
       '<div class="verify-code-box">' +
         '<div style="font-size:12px; opacity:0.7;">Mã xác nhận</div>' +
         '<div class="code" id="verifyCodeDisplay">' + task.verifyCode + '</div>' +
         '<div class="hint">👆 Nhấn để copy</div>' +
       '</div>' +
-      
-      // STEP 2: Wait countdown
       '<div class="verify-step" id="step2">' +
         '<div class="step-num">2</div>' +
-        '<div class="step-body">' +
-          'Chờ <strong>' + Math.ceil(CONFIG.minDelayBeforeVerifyMs/1000) + ' giây</strong> ' +
-          'để hệ thống xác minh với TikTok' +
-        '</div>' +
+        '<div class="step-body">Chờ <strong>' + Math.ceil(CONFIG.minDelayBeforeVerifyMs/1000) + 's</strong> hệ thống xác minh</div>' +
       '</div>' +
-      
       '<div class="verify-countdown" id="countdownBox">' +
-        '<div class="cd-label">⏳ Thời gian chờ</div>' +
+        '<div class="cd-label">⏳ Đang xác minh</div>' +
         '<div class="cd-timer" id="cdTimer">' + Math.ceil(CONFIG.minDelayBeforeVerifyMs/1000) + '</div>' +
-        '<div class="cd-desc">Đang xác minh với TikTok...</div>' +
+        '<div class="cd-desc">Vui lòng đợi...</div>' +
       '</div>' +
-      
-      // STEP 3: Enter code
       '<div class="verify-step" id="step3">' +
         '<div class="step-num">3</div>' +
-        '<div class="step-body">' +
-          'Nhập lại mã để hoàn tất' +
-        '</div>' +
+        '<div class="step-body">Nhập lại mã để hoàn tất</div>' +
       '</div>' +
-      
-      '<input type="text" class="verify-input" id="verifyInput" ' +
-        'placeholder="MÃ 6 KÝ TỰ" maxlength="6" autocomplete="off" disabled>' +
-      
-      '<p style="font-size:12px; margin-top:12px;">' +
-        'Phần thưởng: <b style="color:#10b981;">+' + formatNumber(reward) + ' xu</b>' +
-      '</p>' +
-      
+      '<input type="text" class="verify-input" id="verifyInput" placeholder="MÃ 6 KÝ TỰ" maxlength="6" autocomplete="off" disabled>' +
+      '<p style="font-size:12px; margin-top:12px;">Thưởng: <b style="color:#10b981;">+' + formatNumber(reward) + ' xu</b></p>' +
       '<div class="modal-actions">' +
         '<button class="btn btn-secondary" id="cancelVerify" type="button">Hủy</button>' +
         '<button class="btn btn-confirm" id="confirmVerify" type="button" disabled>Hoàn tất</button>' +
       '</div>'
     );
 
-    // Copy code
     const codeDisplay = $('#verifyCodeDisplay');
     codeDisplay.addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText(task.verifyCode);
-        showToast('📋 Đã copy mã!', 'success');
+        showToast('📋 Đã copy!', 'success');
         $('#step1').classList.add('done');
       } catch (e) {
         const range = document.createRange();
@@ -1788,13 +1984,12 @@
         window.getSelection().addRange(range);
         try { 
           document.execCommand('copy'); 
-          showToast('📋 Đã copy mã!', 'success');
+          showToast('📋 Đã copy!', 'success');
           $('#step1').classList.add('done');
         } catch(err) {}
       }
     });
 
-    // Start countdown
     $('#step2').classList.add('active');
     let countdown = Math.ceil(CONFIG.minDelayBeforeVerifyMs / 1000);
     const cdTimer = $('#cdTimer');
@@ -1808,32 +2003,27 @@
         clearInterval(verifyTimers.verify);
         delete verifyTimers.verify;
         
-        // Countdown done
         countdownBox.classList.add('done');
-        countdownBox.querySelector('.cd-label').textContent = '✅ Xác minh hoàn tất';
+        countdownBox.querySelector('.cd-label').textContent = '✅ Xác minh xong';
         countdownBox.querySelector('.cd-timer').textContent = '✓';
-        countdownBox.querySelector('.cd-desc').textContent = 'Bây giờ nhập mã để hoàn tất';
+        countdownBox.querySelector('.cd-desc').textContent = 'Nhập mã để hoàn tất';
         
         $('#step2').classList.remove('active');
         $('#step2').classList.add('done');
         $('#step3').classList.add('active');
         
-        // Enable input
         const input = $('#verifyInput');
         input.disabled = false;
         input.focus();
       }
     }, 1000);
 
-    // Input handler
     const verifyInput = $('#verifyInput');
     const confirmBtn = $('#confirmVerify');
 
     verifyInput.addEventListener('input', () => {
-      const val = verifyInput.value.trim().toUpperCase();
-      confirmBtn.disabled = val.length !== 6;
+      confirmBtn.disabled = verifyInput.value.trim().toUpperCase().length !== 6;
     });
-
     verifyInput.addEventListener('keypress', e => {
       if (e.key === 'Enter' && !confirmBtn.disabled) confirmBtn.click();
     });
@@ -1843,29 +2033,22 @@
     confirmBtn.addEventListener('click', () => {
       const input = verifyInput.value.trim().toUpperCase();
       if (input !== task.verifyCode) {
-        showToast('❌ Sai mã, thử lại!', 'error');
+        showToast('❌ Sai mã', 'error');
         verifyInput.value = '';
         confirmBtn.disabled = true;
         return;
       }
-      
       if (Date.now() - task.verifyCodeAt > CONFIG.verifyCodeTTL) {
         showToast('⏰ Mã hết hạn', 'warning');
         task.verifyCode = null;
-        saveTasks();
-        hideModal();
-        renderTasks();
+        saveTasks(); hideModal(); renderTasks();
         return;
       }
-      
       hideModal();
       submitForVerification(task.id);
     });
   }
 
-  // ══════════════════════════════════════════════════════════
-  // SUBMIT FOR VERIFICATION (Queue)
-  // ══════════════════════════════════════════════════════════
   function submitForVerification(taskId) {
     if (isProcessing) return;
     isProcessing = true;
@@ -1877,75 +2060,50 @@
 
       if (task.completed || task.slotsLeft <= 0 || task.workers.indexOf(currentUser) !== -1) {
         showToast('Không thể hoàn thành', 'error');
-        isProcessing = false;
-        return;
+        isProcessing = false; return;
       }
 
       const reward = CONFIG.rewards[task.type] || 0;
       const now = Date.now();
       const today = todayKey();
 
-      // 🎯 Đưa vào queue để admin duyệt
-      const queueItem = {
+      verifyQueue.unshift({
         id: crypto2.genId('q'),
-        taskId: task.id,
-        orderId: task.orderId,
-        type: task.type,
+        taskId: task.id, orderId: task.orderId, type: task.type,
         worker: currentUser,
         workerTiktok: me.tiktokUsername || '',
         targetUser: task.targetUser,
         targetTiktok: users[task.targetUser] ? users[task.targetUser].tiktokUsername : '',
         verifyCode: task.verifyCode,
-        reward: reward,
-        status: 'pending', // pending | approved | rejected
-        submittedAt: now,
-        reviewedAt: null,
-        reviewedBy: null,
+        reward, status: 'pending',
+        submittedAt: now, reviewedAt: null, reviewedBy: null,
         autoApproveAt: now + CONFIG.autoApproveAfterMs
-      };
-
-      verifyQueue.unshift(queueItem);
+      });
       saveVerifyQueue();
 
-      // Đánh dấu user đang chờ
       task.workers.push(currentUser);
       task.slotsLeft--;
-
-      // Trừ cooldown, tính daily
       me.lastTaskAt = now;
       if (!me.dailyTasks) me.dailyTasks = {};
       me.dailyTasks[today] = (me.dailyTasks[today] || 0) + 1;
-
-      // Xóa dấu mở TikTok
-      if (me.taskOpenedAt && me.taskOpenedAt[taskId]) {
-        delete me.taskOpenedAt[taskId];
-      }
-
+      if (me.taskOpenedAt && me.taskOpenedAt[taskId]) delete me.taskOpenedAt[taskId];
       if (task.slotsLeft <= 0) task.completed = true;
 
-      saveUsers();
-      saveTasks();
+      saveUsers(); saveTasks();
+      broadcastChange('data_changed');
 
-      showToast('✅ Đã gửi để xác minh! Chờ duyệt...', 'success');
-
-      // Check queue item
+      showToast('✅ Đã gửi xác minh!', 'success');
       renderTasks();
       renderProfile();
 
-      // 🎯 Auto-approve nếu admin offline
-      scheduleAutoApprove(queueItem.id);
-      
+      scheduleAutoApprove();
     } catch (e) {
-      console.error('Submit error:', e);
       showToast('Có lỗi', 'error');
     } finally {
       isProcessing = false;
     }
   }
 
-  // ══════════════════════════════════════════════════════════
-  // APPROVE / REJECT / AUTO-APPROVE
-  // ══════════════════════════════════════════════════════════
   function approveVerification(queueId, adminUser) {
     const item = verifyQueue.find(q => q.id === queueId);
     if (!item || item.status !== 'pending') return false;
@@ -1953,40 +2111,33 @@
     const worker = users[item.worker];
     if (!worker) return false;
 
-    // Cộng xu cho worker
     worker.points += item.reward;
     worker.earned += item.reward;
     if (!worker.history) worker.history = [];
     worker.history.unshift({
-      type: 'earn',
-      action: item.type,
+      type: 'earn', action: item.type,
       targetUser: item.targetUser,
-      points: item.reward,
-      time: Date.now()
+      points: item.reward, time: Date.now()
     });
     worker.history = worker.history.slice(0, 50);
     worker.checksum = crypto2.checksum(worker);
 
-    // Update order
     const order = orders.find(o => o.id === item.orderId);
     if (order) {
       order.completedSlots = (order.completedSlots || 0) + 1;
       if (order.completedSlots >= order.qty) {
         order.status = 'done';
         order.completedAt = Date.now();
-        pushNotif(order.buyer, 'success', '🎉 Đơn hoàn thành!', order.qty + ' ' + order.type);
+        pushNotif(order.buyer, 'success', '🎉 Đơn xong!', order.qty + ' ' + order.type);
       }
     }
 
-    // Mark item
     item.status = 'approved';
     item.reviewedAt = Date.now();
     item.reviewedBy = adminUser || 'system';
 
-    saveUsers();
-    saveOrders();
-    saveVerifyQueue();
-
+    saveUsers(); saveOrders(); saveVerifyQueue();
+    broadcastChange('data_changed');
     pushNotif(item.worker, 'success', '✅ Nhiệm vụ được duyệt!', '+' + formatNumber(item.reward) + ' xu');
 
     return true;
@@ -1997,8 +2148,6 @@
     if (!item || item.status !== 'pending') return false;
 
     const worker = users[item.worker];
-    
-    // Trả lại slot cho task
     const task = tasks.find(t => t.id === item.taskId);
     if (task) {
       task.workers = task.workers.filter(w => w !== item.worker);
@@ -2006,7 +2155,6 @@
       if (task.slotsLeft > 0) task.completed = false;
     }
 
-    // Trừ cooldown, giảm daily count (trả lại)
     if (worker) {
       const today = todayKey();
       if (worker.dailyTasks && worker.dailyTasks[today]) {
@@ -2017,36 +2165,37 @@
     item.status = 'rejected';
     item.reviewedAt = Date.now();
     item.reviewedBy = adminUser || 'system';
-    item.reason = reason || 'Không đạt yêu cầu';
+    item.reason = reason || 'Không đạt';
 
-    saveUsers();
-    saveTasks();
-    saveVerifyQueue();
-
-    pushNotif(item.worker, 'error', '❌ Nhiệm vụ bị từ chối', item.reason);
+    saveUsers(); saveTasks(); saveVerifyQueue();
+    broadcastChange('data_changed');
+    pushNotif(item.worker, 'error', '❌ Bị từ chối', item.reason);
 
     return true;
   }
 
-  function scheduleAutoApprove(queueId) {
-    const item = verifyQueue.find(q => q.id === queueId);
-    if (!item) return;
-    
-    const waitMs = CONFIG.autoApproveAfterMs;
-    
-    setTimeout(() => {
-      const freshItem = verifyQueue.find(q => q.id === queueId);
-      if (!freshItem || freshItem.status !== 'pending') return;
+  function scheduleAutoApprove() {
+    const pending = verifyQueue.filter(q => q.status === 'pending');
+    pending.forEach(item => {
+      if (item._scheduled) return;
+      item._scheduled = true;
       
-      // Chỉ auto-approve nếu admin offline
-      if (!isAdminOnline()) {
-        approveVerification(queueId, 'system_auto');
-        console.log('🎯 Auto-approved:', queueId);
-      } else {
-        // Nếu admin online, lên lịch lại 1 phút sau
-        setTimeout(() => scheduleAutoApprove(queueId), 60000);
-      }
-    }, waitMs);
+      setTimeout(() => {
+        const fresh = verifyQueue.find(q => q.id === item.id);
+        if (!fresh || fresh.status !== 'pending') return;
+        
+        if (Date.now() >= fresh.autoApproveAt && !isAdminOnline()) {
+          if (approveVerification(fresh.id, 'system_auto')) {
+            console.log('🎯 Auto-approved:', fresh.id);
+            if (currentUser) renderTopbar();
+            if (requireAdmin()) renderAdmin();
+          }
+        } else {
+          fresh._scheduled = false;
+          scheduleAutoApprove();
+        }
+      }, Math.max(1000, item.autoApproveAt - Date.now()));
+    });
   }
 
   // ══════════════════════════════════════════════════════════
@@ -2068,8 +2217,7 @@
       const canAfford = u.points >= pkg.price;
       const badgeHtml = pkg.badge ? '<span class="badge ' + (pkg.badge === 'BEST' ? 'best' : '') + '">' + pkg.badge + '</span>' : '';
       
-      return '<div class="shop-card">' +
-        badgeHtml +
+      return '<div class="shop-card">' + badgeHtml +
         '<div class="shop-icon ' + iconClass + '">' + icon + '</div>' +
         '<div class="shop-info">' +
           '<div class="shop-name">' + escapeHtml(pkg.name) + '</div>' +
@@ -2096,7 +2244,7 @@
       return;
     }
     if (me.points < pkg.price) {
-      showToast(`Không đủ xu! Cần ${formatNumber(pkg.price)}`, 'error');
+      showToast(`Cần ${formatNumber(pkg.price)} xu`, 'error');
       return;
     }
 
@@ -2109,7 +2257,7 @@
         '</div>' +
         '<div class="modal-actions">' +
           '<button class="btn btn-secondary" id="cancelBuy" type="button">Hủy</button>' +
-          '<button class="btn btn-confirm" id="confirmBuy" type="button">Mua ( -' + formatNumber(pkg.price) + ' xu )</button>' +
+          '<button class="btn btn-confirm" id="confirmBuy" type="button">Mua (-' + formatNumber(pkg.price) + ' xu)</button>' +
         '</div>'
       );
       $('#cancelBuy').addEventListener('click', hideModal);
@@ -2126,7 +2274,7 @@
       setTimeout(() => $('#videoUrlInput') && $('#videoUrlInput').focus(), 100);
     } else {
       showModal(
-        '<h3>🛒 Xác nhận mua</h3>' +
+        '<h3>🛒 Xác nhận</h3>' +
         '<p>Mua <b>' + escapeHtml(pkg.name) + '</b> với <b style="color:#f59e0b;">' + formatNumber(pkg.price) + ' xu</b>?</p>' +
         '<div class="info-box success">🎵 @' + escapeHtml(me.tiktokUsername) + '</div>' +
         '<div class="modal-actions">' +
@@ -2146,8 +2294,7 @@
       const me = users[currentUser];
       if (me.points < pkg.price) {
         showToast('Không đủ xu!', 'error');
-        isProcessing = false;
-        return;
+        isProcessing = false; return;
       }
       const now = Date.now();
       me.points -= pkg.price;
@@ -2159,10 +2306,9 @@
 
       const order = {
         id: crypto2.genId('o'),
-        buyer: currentUser,
-        type: pkg.type, qty: pkg.qty, price: pkg.price,
-        videoUrl, status: 'pending', completedSlots: 0,
-        createdAt: now
+        buyer: currentUser, type: pkg.type,
+        qty: pkg.qty, price: pkg.price, videoUrl,
+        status: 'pending', completedSlots: 0, createdAt: now
       };
       orders.unshift(order);
 
@@ -2177,10 +2323,11 @@
       tasks.unshift(task);
 
       saveUsers(); saveOrders(); saveTasks();
+      broadcastChange('data_changed');
 
       pushNotif(currentUser, 'success', '🛒 Đã mua!', pkg.qty + ' ' + pkg.type + ' đang chờ');
       bumpPoints();
-      showToast(`🎉 Đã mua! ${pkg.qty} ${pkg.type}`, 'success');
+      showToast(`🎉 Đã mua ${pkg.qty} ${pkg.type}`, 'success');
       
       renderShop(); renderTopbar(); renderOrders(); renderTasks(); renderProfile();
       switchTab('orders');
@@ -2199,7 +2346,7 @@
     const mine = orders.filter(o => o.buyer === currentUser);
 
     if (mine.length === 0) {
-      list.innerHTML = '<div class="empty"><div class="emoji">📦</div><p>Chưa có đơn</p><p class="hint">Vào "Mua tương tác" để tạo đơn!</p></div>';
+      list.innerHTML = '<div class="empty"><div class="emoji">📦</div><p>Chưa có đơn</p><p class="hint">Mua tương tác để tạo đơn!</p></div>';
       return;
     }
 
@@ -2219,7 +2366,7 @@
         '<div class="order-header">' +
           '<div class="order-type">' + icon + ' ' + o.qty + ' ' + name + '</div>' +
           '<div class="order-status ' + (isDone ? 'done' : isCancelled ? 'cancelled' : 'pending') + '">' +
-            (isDone ? '✓ Hoàn thành' : isCancelled ? '✗ Đã hủy' : '⏳ Chờ') +
+            (isDone ? '✓ Xong' : isCancelled ? '✗ Hủy' : '⏳ Chờ') +
           '</div>' +
         '</div>' +
         '<div class="order-meta">💰 ' + formatNumber(o.price) + ' xu • ' + timeAgo(o.createdAt) + '</div>' +
@@ -2241,17 +2388,14 @@
   function cancelOrder(orderId) {
     const order = orders.find(o => o.id === orderId);
     if (!order || order.buyer !== currentUser) return;
-    if (order.completedSlots > 0) {
-      showToast('Không thể hủy', 'error');
-      return;
-    }
+    if (order.completedSlots > 0) { showToast('Không thể hủy', 'error'); return; }
 
     showModal(
       '<h3>✗ Hủy đơn?</h3>' +
-      '<p>Hoàn lại <b>' + formatNumber(order.price) + ' xu</b>?</p>' +
+      '<p>Hoàn <b>' + formatNumber(order.price) + ' xu</b>?</p>' +
       '<div class="modal-actions">' +
         '<button class="btn btn-secondary" id="cancelModal" type="button">Không</button>' +
-        '<button class="btn btn-danger" id="confirmCancel" type="button">Hủy đơn</button>' +
+        '<button class="btn btn-danger" id="confirmCancel" type="button">Hủy</button>' +
       '</div>'
     );
     $('#cancelModal').addEventListener('click', hideModal);
@@ -2263,6 +2407,7 @@
       me.checksum = crypto2.checksum(me);
       tasks = tasks.filter(t => t.orderId !== orderId);
       saveUsers(); saveOrders(); saveTasks();
+      broadcastChange('data_changed');
       hideModal();
       bumpPoints();
       showToast('✅ Hoàn ' + formatNumber(order.price) + ' xu', 'success');
@@ -2284,7 +2429,6 @@
     $('#statEarned').textContent = formatNumber(u.earned);
     $('#statSpent').textContent = formatNumber(u.spent);
     $('#tiktokUsername').value = u.tiktokUsername || '';
-
     renderHistory();
   }
 
@@ -2307,8 +2451,7 @@
         icon = '🛒';
         const actName = h.action.replace('buy_', '');
         text = 'Mua ' + h.qty + ' ' + (actName === 'like' ? 'tim' : actName);
-        sign = '-';
-        cls = 'minus';
+        sign = '-'; cls = 'minus';
       }
       return '<div class="history-item">' +
         '<div class="h-icon">' + icon + '</div>' +
@@ -2328,8 +2471,9 @@
     u.tiktokUsername = val;
     u.checksum = crypto2.checksum(u);
     saveUsers();
+    broadcastChange('data_changed');
     el.value = val;
-    showToast('✅ Đã lưu: @' + val, 'success');
+    showToast('✅ Đã lưu @' + val, 'success');
     renderProfile();
     renderShop();
   }
@@ -2380,15 +2524,8 @@
     }
   }
 
-  function clearAllNotifs() {
-    notifications = notifications.filter(n => n.user !== currentUser);
-    saveNotifs();
-    renderNotifs();
-    showToast('Đã xóa', 'success');
-  }
-
   // ══════════════════════════════════════════════════════════
-  // ADMIN
+  // ADMIN PANEL
   // ══════════════════════════════════════════════════════════
   function renderAdmin() {
     if (!requireAdmin()) return;
@@ -2409,24 +2546,16 @@
     renderAdminUsers();
   }
 
-  // ══════════════════════════════════════════════════════════
-  // VERIFY QUEUE (Admin)
-  // ══════════════════════════════════════════════════════════
   function renderVerifyQueue() {
-    if (!requireAdmin()) return;
     const list = $('#verifyQueue');
     const pending = verifyQueue.filter(q => q.status === 'pending').sort((a, b) => b.submittedAt - a.submittedAt);
     
     if (pending.length === 0) {
-      list.innerHTML = '<div class="empty"><div class="emoji">✨</div><p>Không có nhiệm vụ chờ duyệt</p></div>';
+      list.innerHTML = '<div class="empty"><div class="emoji">✨</div><p>Không có gì chờ duyệt</p></div>';
       return;
     }
 
     list.innerHTML = pending.map(q => {
-      const worker = users[q.worker];
-      const target = users[q.targetUser];
-      if (!worker || !target) return '';
-      
       let typeIcon = '👥', typeName = 'Follow';
       if (q.type === 'like') { typeIcon = '❤️'; typeName = 'Tim'; }
       else if (q.type === 'comment') { typeIcon = '💬'; typeName = 'Comment'; }
@@ -2444,7 +2573,7 @@
           '🔑 Mã: <b>' + escapeHtml(q.verifyCode) + '</b> • 💰 +' + formatNumber(q.reward) + ' xu' +
         '</div>' +
         '<div style="font-size:11px; color:var(--text-muted); margin-bottom:8px;">' +
-          '⏰ Tự động duyệt sau: <b>' + autoIn + 's</b> (nếu admin offline)' +
+          '⏰ Auto duyệt sau: <b>' + autoIn + 's</b>' +
         '</div>' +
         '<div class="queue-actions">' +
           '<button class="btn-icon success" data-verify="approve" data-qid="' + q.id + '" type="button">✅ Duyệt</button>' +
@@ -2474,10 +2603,10 @@
     if (!item) return;
     
     showModal(
-      '<h3>❌ Từ chối nhiệm vụ?</h3>' +
-      '<p>Nhiệm vụ của @' + escapeHtml(item.worker) + ' sẽ bị từ chối</p>' +
+      '<h3>❌ Từ chối?</h3>' +
+      '<p>Nhiệm vụ của @' + escapeHtml(item.worker) + '</p>' +
       '<div class="form-group">' +
-        '<label>Lý do (không bắt buộc)</label>' +
+        '<label>Lý do</label>' +
         '<input type="text" id="rejectReason" placeholder="VD: Không có mã trong comment" maxlength="100">' +
       '</div>' +
       '<div class="modal-actions">' +
@@ -2499,31 +2628,26 @@
   function autoApproveAll() {
     if (!requireAdmin()) return;
     const pending = verifyQueue.filter(q => q.status === 'pending');
-    if (pending.length === 0) { showToast('Không có gì để duyệt', 'info'); return; }
+    if (pending.length === 0) { showToast('Không có gì', 'info'); return; }
     
     showModal(
-      '<h3>⚡ Auto duyệt tất cả?</h3>' +
-      '<p>Sẽ duyệt <b>' + pending.length + '</b> nhiệm vụ đang chờ.</p>' +
+      '<h3>⚡ Duyệt tất cả?</h3>' +
+      '<p>Duyệt <b>' + pending.length + '</b> nhiệm vụ?</p>' +
       '<div class="modal-actions">' +
         '<button class="btn btn-secondary" id="cancelModal" type="button">Hủy</button>' +
-        '<button class="btn btn-confirm" id="confirmAuto" type="button">Duyệt hết</button>' +
+        '<button class="btn btn-confirm" id="confirmAuto" type="button">Duyệt</button>' +
       '</div>'
     );
     $('#cancelModal').addEventListener('click', hideModal);
     $('#confirmAuto').addEventListener('click', () => {
       let count = 0;
-      pending.forEach(q => {
-        if (approveVerification(q.id, currentUser)) count++;
-      });
+      pending.forEach(q => { if (approveVerification(q.id, currentUser)) count++; });
       hideModal();
-      showToast('✅ Đã duyệt ' + count + ' nhiệm vụ', 'success');
+      showToast('✅ Đã duyệt ' + count, 'success');
       renderAdmin();
     });
   }
 
-  // ══════════════════════════════════════════════════════════
-  // ADMIN USERS
-  // ══════════════════════════════════════════════════════════
   function renderAdminUsers() {
     if (!requireAdmin()) return;
     let list = Object.values(users);
@@ -2600,10 +2724,10 @@
       u.points = Math.max(0, u.points + val);
       u.checksum = crypto2.checksum(u);
       saveUsers();
+      broadcastChange('data_changed');
       hideModal();
-      pushNotif(username, 'info', '💰 Xu đã cập nhật', (val >= 0 ? '+' : '') + formatNumber(val) + ' xu từ admin');
-      renderAdmin();
-      renderTopbar();
+      pushNotif(username, 'info', '💰 Xu cập nhật', (val >= 0 ? '+' : '') + formatNumber(val) + ' xu');
+      renderAdmin(); renderTopbar();
       showToast((val >= 0 ? '+' : '') + formatNumber(val) + ' xu', 'success');
     });
   }
@@ -2615,9 +2739,11 @@
     u.banned = !u.banned;
     u.checksum = crypto2.checksum(u);
     saveUsers();
-    pushNotif(username, u.banned ? 'warning' : 'success', u.banned ? '🔒 Tài khoản bị khóa' : '🔓 Đã mở khóa', '');
+    broadcastChange('data_changed');
+    pushNotif(username, u.banned ? 'warning' : 'success', 
+      u.banned ? '🔒 Tài khoản bị khóa' : '🔓 Đã mở khóa', '');
     renderAdmin();
-    showToast(u.banned ? 'Đã khóa' : 'Đã mở khóa', u.banned ? 'warning' : 'success');
+    showToast(u.banned ? 'Đã khóa' : 'Đã mở', u.banned ? 'warning' : 'success');
   }
 
   function admToggleAdmin(username) {
@@ -2627,7 +2753,8 @@
     u.isAdmin = !u.isAdmin;
     u.checksum = crypto2.checksum(u);
     saveUsers();
-    pushNotif(username, 'info', u.isAdmin ? '👑 Được cấp Admin' : 'Mất quyền Admin', '');
+    broadcastChange('data_changed');
+    pushNotif(username, 'info', u.isAdmin ? '👑 Được cấp Admin' : 'Mất Admin', '');
     renderAdmin();
     showToast(u.isAdmin ? '👑 Đã cấp' : 'Đã hạ', 'success');
   }
@@ -2650,9 +2777,9 @@
       verifyQueue = verifyQueue.filter(q => q.worker !== username && q.targetUser !== username);
       delete users[username];
       saveUsers(); saveTasks(); saveOrders(); saveNotifs(); saveVerifyQueue();
+      broadcastChange('data_changed');
       hideModal();
-      renderAdmin();
-      renderTasks();
+      renderAdmin(); renderTasks();
       showToast('Đã xóa', 'success');
     });
   }
@@ -2664,7 +2791,7 @@
     if (!requireAdmin()) return;
     try {
       const data = {
-        version: CONFIG.VERSION,
+        version: DATA_VERSION,
         exportedAt: Date.now(),
         users, tasks, orders, notifications, verifyQueue
       };
@@ -2673,12 +2800,10 @@
       const a = document.createElement('a');
       a.href = url;
       a.download = 'ttb_backup_' + new Date().toISOString().slice(0, 10) + '.json';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
       setTimeout(() => URL.revokeObjectURL(url), 1000);
       showToast('💾 Đã xuất', 'success');
-    } catch (e) { showToast('Không xuất được', 'error'); }
+    } catch (e) { showToast('Lỗi xuất', 'error'); }
   }
 
   function exportMyData() {
@@ -2686,7 +2811,7 @@
     if (!me) return;
     try {
       const data = {
-        version: CONFIG.VERSION,
+        version: DATA_VERSION,
         exportedAt: Date.now(),
         myData: {
           username: me.username, points: me.points,
@@ -2694,20 +2819,17 @@
           tiktokUsername: me.tiktokUsername,
           history: me.history, createdAt: me.createdAt
         },
-        myOrders: orders.filter(o => o.buyer === currentUser),
-        myVerifyQueue: verifyQueue.filter(q => q.worker === currentUser)
+        myOrders: orders.filter(o => o.buyer === currentUser)
       };
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = 'mydata_' + currentUser + '_' + new Date().toISOString().slice(0, 10) + '.json';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
       setTimeout(() => URL.revokeObjectURL(url), 1000);
       showToast('💾 Đã tải', 'success');
-    } catch (e) { showToast('Không xuất được', 'error'); }
+    } catch (e) { showToast('Lỗi xuất', 'error'); }
   }
 
   function importData() {
@@ -2737,6 +2859,7 @@
             notifications = data.notifications || [];
             verifyQueue = data.verifyQueue || [];
             saveUsers(); saveTasks(); saveOrders(); saveNotifs(); saveVerifyQueue();
+            broadcastChange('data_changed');
             hideModal();
             showToast('✅ Đã khôi phục', 'success');
             if (currentUser && !users[currentUser]) logout();
@@ -2750,6 +2873,58 @@
     input.click();
   }
 
+  async function showBackupList() {
+    if (!requireAdmin()) return;
+    const backups = await idbListAll();
+    if (backups.length === 0) {
+      showModal('<h3>📋 Backups</h3><p>Chưa có backup tự động nào.</p><div class="modal-actions"><button class="btn btn-secondary" id="cancelModal" type="button">Đóng</button></div>');
+      $('#cancelModal').addEventListener('click', hideModal);
+      return;
+    }
+
+    backups.sort((a, b) => b.timestamp - a.timestamp);
+    
+    showModal(
+      '<h3>📋 Auto-backups (' + backups.length + ')</h3>' +
+      '<div style="max-height:400px; overflow-y:auto;">' +
+      backups.map((b, i) => {
+        const uCount = Object.keys((b.data && b.data.users) || {}).length;
+        return '<div style="padding:12px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; gap:8px;">' +
+          '<div style="min-width:0;">' +
+            '<div style="font-weight:700; font-size:13px;">' + new Date(b.timestamp).toLocaleString('vi-VN') + '</div>' +
+            '<div style="font-size:11px; color:var(--text-muted);">' + uCount + ' users • v' + b.version + '</div>' +
+          '</div>' +
+          '<button class="btn-icon primary" data-restore="' + b.id + '" type="button">Khôi phục</button>' +
+        '</div>';
+      }).join('') +
+      '</div>' +
+      '<div class="modal-actions"><button class="btn btn-secondary" id="cancelModal" type="button">Đóng</button></div>'
+    );
+    
+    $('#cancelModal').addEventListener('click', hideModal);
+    $('#modalContent').querySelectorAll('[data-restore]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = parseInt(btn.dataset.restore, 10);
+        const backup = backups.find(b => b.id === id);
+        if (!backup) return;
+        if (!confirm('Khôi phục từ backup này?')) return;
+        
+        const data = backup.data;
+        users = data.users || {};
+        tasks = data.tasks || [];
+        orders = data.orders || [];
+        notifications = data.notifications || [];
+        verifyQueue = data.verifyQueue || [];
+        
+        saveUsers(); saveTasks(); saveOrders(); saveNotifs(); saveVerifyQueue();
+        broadcastChange('data_changed');
+        hideModal();
+        showToast('✅ Đã khôi phục', 'success');
+        renderApp();
+      });
+    });
+  }
+
   // ══════════════════════════════════════════════════════════
   // CHANGE PASSWORD
   // ══════════════════════════════════════════════════════════
@@ -2757,7 +2932,7 @@
     showModal(
       '<h3>🔑 Đổi mật khẩu</h3>' +
       '<div class="form-group"><label>Mật khẩu hiện tại</label><input type="password" id="oldPass" maxlength="50"></div>' +
-      '<div class="form-group"><label>Mật khẩu mới</label><input type="password" id="newPass" placeholder="Ít nhất ' + CONFIG.minPassword + ' ký tự" maxlength="50"></div>' +
+      '<div class="form-group"><label>Mật khẩu mới</label><input type="password" id="newPass" maxlength="50"></div>' +
       '<div class="form-group"><label>Nhập lại</label><input type="password" id="confirmPass" maxlength="50"></div>' +
       '<div class="modal-actions">' +
         '<button class="btn btn-secondary" id="cancelModal" type="button">Hủy</button>' +
@@ -2773,14 +2948,15 @@
 
       const oldHash = await crypto2.hashPassword(oldP);
       if (u.passwordHash !== oldHash) { showToast('Mật khẩu sai', 'error'); return; }
-      if (newP.length < CONFIG.minPassword) { showToast('Mật khẩu mới quá ngắn', 'error'); return; }
+      if (newP.length < CONFIG.minPassword) { showToast('Quá ngắn', 'error'); return; }
       if (newP !== confP) { showToast('Không khớp', 'error'); return; }
       
       u.passwordHash = await crypto2.hashPassword(newP);
       u.checksum = crypto2.checksum(u);
       saveUsers();
+      broadcastChange('data_changed');
       hideModal();
-      showToast('✅ Đã đổi mật khẩu', 'success');
+      showToast('✅ Đã đổi', 'success');
     });
   }
 
@@ -2789,12 +2965,8 @@
   // ══════════════════════════════════════════════════════════
   function bindEvents() {
     $('#authSubmit').addEventListener('click', handleAuth);
-    $('#authUsername').addEventListener('keypress', e => {
-      if (e.key === 'Enter') $('#authPassword').focus();
-    });
-    $('#authPassword').addEventListener('keypress', e => {
-      if (e.key === 'Enter') handleAuth();
-    });
+    $('#authUsername').addEventListener('keypress', e => { if (e.key === 'Enter') $('#authPassword').focus(); });
+    $('#authPassword').addEventListener('keypress', e => { if (e.key === 'Enter') handleAuth(); });
 
     $('#switchMode').addEventListener('click', () => {
       authMode = authMode === 'login' ? 'register' : 'login';
@@ -2821,13 +2993,13 @@
       tab.addEventListener('click', () => switchTab(tab.dataset.tab));
     });
 
-    $('#btnNotif').addEventListener('click', (e) => {
-      e.stopPropagation();
-      toggleNotifPanel();
-    });
+    $('#btnNotif').addEventListener('click', (e) => { e.stopPropagation(); toggleNotifPanel(); });
     $('#btnClearNotif').addEventListener('click', (e) => {
       e.stopPropagation();
-      clearAllNotifs();
+      notifications = notifications.filter(n => n.user !== currentUser);
+      saveNotifs();
+      renderNotifs();
+      showToast('Đã xóa', 'success');
     });
 
     document.addEventListener('click', (e) => {
@@ -2840,32 +3012,24 @@
 
     $('#topAvatar').addEventListener('click', () => switchTab('profile'));
     $('#topPoints').addEventListener('click', () => switchTab('tasks'));
-
-    $('#btnRefreshTasks').addEventListener('click', () => {
-      renderTasks();
-      showToast('🔄 Đã làm mới', 'info');
-    });
-
+    $('#btnRefreshTasks').addEventListener('click', () => { renderTasks(); showToast('🔄 Đã làm mới', 'info'); });
     $('#btnSaveTikTok').addEventListener('click', saveTikTokUsername);
-    $('#tiktokUsername').addEventListener('keypress', e => {
-      if (e.key === 'Enter') saveTikTokUsername();
-    });
-
+    $('#tiktokUsername').addEventListener('keypress', e => { if (e.key === 'Enter') saveTikTokUsername(); });
     $('#btnChangePassword').addEventListener('click', changePassword);
     $('#btnExportMyData').addEventListener('click', exportMyData);
+    
+    $('#btnRestoreFromBackup').addEventListener('click', async () => {
+      const ok = await restoreFromBackup();
+      if (ok) renderApp();
+    });
 
-    $('#admSearch').addEventListener('input', e => {
-      admSearchValue = e.target.value;
-      renderAdminUsers();
-    });
-    $('#admFilter').addEventListener('change', e => {
-      admFilterValue = e.target.value;
-      renderAdminUsers();
-    });
+    $('#admSearch').addEventListener('input', e => { admSearchValue = e.target.value; renderAdminUsers(); });
+    $('#admFilter').addEventListener('change', e => { admFilterValue = e.target.value; renderAdminUsers(); });
 
     $('#btnExport').addEventListener('click', exportData);
     $('#btnImport').addEventListener('click', importData);
     $('#btnAutoApprove').addEventListener('click', autoApproveAll);
+    $('#btnListBackups').addEventListener('click', showBackupList);
 
     $('#btnResetPoints').addEventListener('click', () => {
       if (!requireAdmin()) return;
@@ -2879,13 +3043,12 @@
       $('#cancelModal').addEventListener('click', hideModal);
       $('#confirmResetPoints').addEventListener('click', () => {
         Object.values(users).forEach(u => { 
-          u.points = 0; 
-          u.checksum = crypto2.checksum(u); 
+          u.points = 0; u.checksum = crypto2.checksum(u); 
         });
         saveUsers();
+        broadcastChange('data_changed');
         hideModal();
-        renderAdmin();
-        renderTopbar();
+        renderAdmin(); renderTopbar();
         showToast('Đã reset xu', 'success');
       });
     });
@@ -2894,7 +3057,7 @@
       if (!requireAdmin()) return;
       showModal(
         '<h3 style="color:#ef4444;">💣 RESET TOÀN BỘ?</h3>' +
-        '<p style="color:#ef4444;">Dữ liệu sẽ bị xóa vĩnh viễn!</p>' +
+        '<p style="color:#ef4444;">Tất cả dữ liệu sẽ bị xóa!</p>' +
         '<input type="text" id="confirmText" placeholder="Nhập XOA HET" style="width:100%; padding:12px; border:2px solid #e2e8f0; border-radius:10px; text-transform:uppercase;">' +
         '<div class="modal-actions">' +
           '<button class="btn btn-secondary" id="cancelModal" type="button">Hủy</button>' +
@@ -2908,7 +3071,7 @@
           return;
         }
         Object.keys(localStorage).forEach(k => {
-          if (k.indexOf(CONFIG.PREFIX) === 0) localStorage.removeItem(k);
+          if (k.indexOf(STORAGE_NS) === 0) localStorage.removeItem(k);
         });
         location.reload();
       });
@@ -2924,23 +3087,35 @@
         $('#notifPanel').classList.remove('show');
       }
     });
+
+    // Save on unload
+    window.addEventListener('beforeunload', () => {
+      if (isDirty) {
+        saveUsers(); saveTasks(); saveOrders(); saveNotifs(); saveVerifyQueue();
+      }
+    });
+    
+    // Save on visibility hidden (mobile)
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && isDirty) {
+        saveUsers(); saveTasks(); saveOrders(); saveNotifs(); saveVerifyQueue();
+        autoBackup();
+      }
+    });
   }
 
   // ══════════════════════════════════════════════════════════
-  // AUTO PROCESSOR — chạy mỗi 30s
+  // PROCESS QUEUE
   // ══════════════════════════════════════════════════════════
-  function processVerifyQueue() {
+  function processQueue() {
     const now = Date.now();
     let changed = false;
 
     verifyQueue.forEach(item => {
       if (item.status !== 'pending') return;
-      
-      // Auto-approve nếu admin offline & quá thời gian
       if (now >= item.autoApproveAt && !isAdminOnline()) {
         if (approveVerification(item.id, 'system_auto')) {
           changed = true;
-          console.log('🎯 Auto-approved:', item.id);
         }
       }
     });
@@ -2954,24 +3129,55 @@
   // ══════════════════════════════════════════════════════════
   // INIT
   // ══════════════════════════════════════════════════════════
-  function init() {
+  async function init() {
+    console.log('%c🚀 TikTok Boost Pro v5.0', 'color:#FE2C55; font-weight:bold;');
+    console.log('📌 7 features: Persistent, Backup, Sync, Migration, Recovery, Heartbeat, Export');
+
+    // 1. Load data
     loadAll();
+    
+    // 2. Migration
+    try { migrateData(); } catch(e) { console.warn('Migration error:', e); }
+    
+    // 3. Broadcast channel
+    initBroadcast();
+    
+    // 4. Bind events
     bindEvents();
 
+    // 5. Heartbeat mỗi 5s
+    setInterval(heartbeat, CONFIG.heartbeatMs);
+    
+    // 6. Auto-backup mỗi 30s
+    setInterval(autoBackup, CONFIG.autoBackupMs);
+    
+    // 7. Idle check
     setInterval(checkIdle, 30000);
-    setInterval(processVerifyQueue, 30000);
-    processVerifyQueue(); // Chạy 1 lần ngay
+    
+    // 8. Process verify queue
+    setInterval(processQueue, 30000);
+    
+    // 9. Initial backup
+    setTimeout(autoBackup, 5000);
 
+    // 10. Render
     if (currentUser && users[currentUser] && !users[currentUser].banned) {
       renderApp();
       if (requireAdmin()) adminLastActive = Date.now();
-    } else {
-      currentUser = null;
-      saveSession(null, false);
     }
 
-    console.log('✅ TikTok Boost Pro v4.0 ready');
-    console.log('📌 Auto-verify system active');
+    showSyncBar('idle', 'Đã đồng bộ');
+    
+    // Welcome message
+    setTimeout(() => {
+      const meta = safeGet(KEYS.meta, null);
+      if (meta && meta.lastBackup) {
+        const ago = Math.floor((Date.now() - meta.lastBackup) / 60000);
+        console.log('💾 Last backup:', ago < 1 ? 'just now' : ago + 'm ago');
+      }
+    }, 1000);
+
+    console.log('%c✅ Ready!', 'color:#10b981; font-weight:bold;');
   }
 
   if (document.readyState === 'loading') {
@@ -2980,7 +3186,9 @@
     init();
   }
 
-  window.addEventListener('error', () => {});
+  window.addEventListener('error', (e) => {
+    console.warn('Global error:', e.message);
+  });
   window.addEventListener('unhandledrejection', () => {});
 
 })();
