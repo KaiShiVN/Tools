@@ -1,317 +1,727 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Tools Tài Xỉu (GaNg 2007)</title>
-  <style>
-    :root {
-      --bg: #0f1419;
-      --card: #1a2332;
-      --line: #2a3548;
-      --text: #e8eef6;
-      --muted: #8b9bb4;
-      --tai: #ff6b6b;
-      --xiu: #4dabf7;
-      --tri: #fcc419;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      padding: 16px 16px 48px;
-    }
-    h1 { font-size: 1.25rem; margin: 0 0 6px; }
-    .sub { color: var(--muted); font-size: 0.85rem; margin-bottom: 16px; line-height: 1.45; }
-    .card {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 14px;
-      margin-bottom: 12px;
-    }
-    label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
-    .dice {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-    select, button {
-      font: inherit;
-      width: 100%;
-      border-radius: 10px;
-      border: 1px solid var(--line);
-      background: #0f1419;
-      color: var(--text);
-      padding: 12px;
-    }
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-    button.primary { background: #2b6cb0; border-color: #2b6cb0; font-weight: 600; }
-    button.danger { background: #3a1c1c; border-color: #7a2e2e; color: #ffb4b4; }
-    button.ghost { background: #243044; }
-    .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; text-align: center; }
-    .tai { color: var(--tai); }
-    .xiu { color: var(--xiu); }
-    .tri { color: var(--tri); }
-    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-    th, td { padding: 8px 4px; border-bottom: 1px solid var(--line); text-align: left; }
-    th { color: var(--muted); font-weight: 600; }
-    .pill {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      font-weight: 700;
-    }
-    .pill.TAI { background: #3a1c1c; color: var(--tai); }
-    .pill.XIU { background: #102a44; color: var(--xiu); }
-    .pill.TRIPLE { background: #3a2f10; color: var(--tri); }
-    .warn { color: #ffd43b; font-size: 0.8rem; line-height: 1.45; margin: 0; }
-    .bar {
-      height: 8px;
-      background: #0f1419;
-      border-radius: 99px;
-      overflow: hidden;
-      display: flex;
-      margin: 6px 0 10px;
-    }
-    .bar span { display: block; height: 100%; }
-    .guess {
-      font-size: 1.35rem;
-      font-weight: 800;
-      margin: 4px 0 8px;
-    }
-    .tiny { color: var(--muted); font-size: 0.78rem; line-height: 1.45; }
-    .kv { font-size: 0.88rem; margin: 4px 0; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎲 Dice AI Pro Max - Phân Tích Xúc Xắc Thông Minh</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0/dist/tf.min.js"></script>
+<style>
+  :root {
+    --bg1: #0f0c29; --bg2: #302b63; --bg3: #24243e;
+    --card: rgba(255,255,255,0.06);
+    --border: rgba(255,255,255,0.12);
+    --text: #ffffff;
+    --text2: rgba(255,255,255,0.7);
+    --accent: #f9d423;
+    --accent2: #ff4e50;
+    --green: #4ade80;
+    --blue: #38bdf8;
+    --purple: #a78bfa;
+  }
+  [data-theme="light"] {
+    --bg1: #e0e7ff; --bg2: #f0f4ff; --bg3: #dbeafe;
+    --card: rgba(255,255,255,0.85);
+    --border: rgba(0,0,0,0.1);
+    --text: #1e293b;
+    --text2: rgba(30,41,59,0.7);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Segoe UI', -apple-system, sans-serif;
+    background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+    background-attachment: fixed;
+    min-height: 100vh;
+    padding: 20px;
+    color: var(--text);
+    transition: all 0.3s;
+  }
+  .container {
+    max-width: 1300px;
+    margin: 0 auto;
+  }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  h1 {
+    font-size: 28px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 200% 200%;
+    animation: gradient 3s ease infinite;
+  }
+  @keyframes gradient {
+    0%,100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 18px;
+    border: 1px solid var(--border);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  }
+  h2 {
+    font-size: 17px;
+    margin-bottom: 14px;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .input-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  input[type="number"], input[type="text"] {
+    width: 75px;
+    padding: 11px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: rgba(0,0,0,0.25);
+    color: var(--text);
+    font-size: 16px;
+    text-align: center;
+    font-weight: bold;
+    transition: all 0.2s;
+  }
+  [data-theme="light"] input {
+    background: #fff;
+    color: #1e293b;
+  }
+  input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(249,212,35,0.2);
+    transform: scale(1.05);
+  }
+  button {
+    padding: 11px 18px;
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #000;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(249,212,35,0.4);
+  }
+  button:active { transform: translateY(0); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  button.ghost {
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  button.ghost:hover {
+    background: rgba(255,255,255,0.15);
+    box-shadow: none;
+  }
+  button.danger {
+    background: linear-gradient(135deg, #ef4444, #991b1b);
+    color: #fff;
+  }
+  button.success {
+    background: linear-gradient(135deg, var(--green), #059669);
+    color: #fff;
+  }
+  .dice-list {
+    max-height: 260px;
+    overflow-y: auto;
+    margin-top: 12px;
+    font-size: 13px;
+    padding-right: 5px;
+  }
+  .dice-list::-webkit-scrollbar { width: 6px; }
+  .dice-list::-webkit-scrollbar-thumb {
+    background: var(--accent); border-radius: 3px;
+  }
+  .dice-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.04);
+    margin-bottom: 5px;
+    border-radius: 6px;
+    border-left: 3px solid var(--accent);
+    animation: slideIn 0.3s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .dice-item .result { font-weight: bold; }
+  .dice-item.tai { border-left-color: var(--blue); }
+  .dice-item.xiu { border-left-color: var(--accent); }
+  .dice-item.bao { border-left-color: #ef4444; background: rgba(239,68,68,0.1); }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+  }
+  .stat-card {
+    background: rgba(255,255,255,0.05);
+    padding: 14px;
+    border-radius: 10px;
+    text-align: center;
+    border: 1px solid var(--border);
+    transition: transform 0.2s;
+  }
+  .stat-card:hover { transform: translateY(-3px); }
+  .stat-card .label { font-size: 11px; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-card .value { font-size: 22px; font-weight: bold; color: var(--accent); margin-top: 6px; }
+  .stat-card .sub { font-size: 11px; opacity: 0.6; margin-top: 3px; }
+  .pred-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    gap: 12px;
+  }
+  .pred-label { min-width: 130px; font-size: 13px; font-weight: bold; }
+  .pred-bar-bg {
+    flex: 1;
+    height: 22px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 11px;
+    overflow: hidden;
+    position: relative;
+  }
+  .pred-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green), var(--accent));
+    transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+    border-radius: 11px;
+    box-shadow: 0 0 12px rgba(74,222,128,0.4);
+  }
+  .pred-bar.big { background: linear-gradient(90deg, var(--blue), var(--purple)); }
+  .pred-bar.small { background: linear-gradient(90deg, var(--accent), #f97316); }
+  .pred-percent {
+    min-width: 60px;
+    text-align: right;
+    font-weight: bold;
+    color: var(--green);
+    font-family: 'Courier New', monospace;
+  }
+  .top-pick {
+    margin-top: 18px;
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(249,212,35,0.15), rgba(255,78,80,0.15), rgba(167,139,250,0.15));
+    border-radius: 14px;
+    border: 2px solid var(--accent);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .top-pick::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: conic-gradient(from 0deg, transparent, rgba(249,212,35,0.1), transparent);
+    animation: rotate 8s linear infinite;
+  }
+  @keyframes rotate { to { transform: rotate(360deg); } }
+  .top-pick > * { position: relative; z-index: 1; }
+  .top-pick .big {
+    font-size: 36px;
+    font-weight: bold;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 10px 0;
+    letter-spacing: 1px;
+  }
+  .note { font-size: 12px; opacity: 0.7; margin-top: 8px; font-style: italic; }
+  .chip {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: bold;
+    margin: 2px;
+  }
+  .chip.tai { background: var(--blue); color: #000; }
+  .chip.xiu { background: var(--accent); color: #000; }
+  .chip.bao { background: #ef4444; color: #fff; }
+  .chip.chan { background: var(--purple); color: #fff; }
+  .chip.le { background: #06b6d4; color: #000; }
+
+  /* Toast */
+  .toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .toast {
+    padding: 14px 20px;
+    border-radius: 10px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    animation: toastIn 0.3s ease;
+    min-width: 260px;
+    max-width: 380px;
+    font-size: 14px;
+  }
+  .toast.warn { border-left: 4px solid var(--accent); }
+  .toast.success { border-left: 4px solid var(--green); }
+  .toast.error { border-left: 4px solid #ef4444; }
+  .toast.info { border-left: 4px solid var(--blue); }
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateX(100%); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .tab {
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: bold;
+    background: transparent;
+    color: var(--text2);
+    border: none;
+    transition: all 0.2s;
+  }
+  .tab:hover { background: rgba(255,255,255,0.05); }
+  .tab.active {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #000;
+  }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; animation: fadeIn 0.3s; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* Chart container */
+  .chart-container {
+    position: relative;
+    height: 280px;
+    margin: 10px 0;
+  }
+
+  /* Sim results */
+  .sim-result {
+    background: rgba(0,0,0,0.2);
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+  }
+  .sim-result .good { color: var(--green); }
+  .sim-result .bad { color: #ef4444; }
+
+  /* Pattern badges */
+  .patterns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .pattern-badge {
+    padding: 8px 14px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.08);
+    font-size: 12px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .pattern-badge strong { color: var(--accent); }
+
+  /* Progress */
+  .progress-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--green));
+    transition: width 0.4s;
+  }
+
+  @media (max-width: 600px) {
+    h1 { font-size: 20px; }
+    input[type="number"] { width: 60px; padding: 9px; }
+    button { padding: 9px 14px; font-size: 13px; }
+    .pred-label { min-width: 90px; font-size: 12px; }
+    .top-pick .big { font-size: 26px; }
+  }
+</style>
 </head>
 <body>
-  <h1>Tools Tài Xỉu (GaNg 2007)</h1>
-  <p class="sub">Ghi phiên để đếm cầu và chạy mô hình toán. Mô hình không đoán được xúc xắc thật — mỗi lần đổ vẫn độc lập.</p>
+<div class="toast-container" id="toasts"></div>
 
-  <div class="card">
-    <label>Nhập 3 viên xúc xắc</label>
-    <div class="dice">
-      <select id="d1"></select>
-      <select id="d2"></select>
-      <select id="d3"></select>
+<div class="container">
+  <!-- HEADER -->
+  <div class="header">
+    <h1>🎲 Dice AI Pro Max</h1>
+    <div class="header-actions">
+      <button class="ghost" onclick="toggleTheme()" id="themeBtn">🌙 Dark</button>
+      <button class="ghost" onclick="exportCSV()">📥 CSV</button>
+      <button class="ghost" onclick="exportJSON()">💾 JSON</button>
+      <button class="ghost" onclick="document.getElementById('importFile').click()">📤 Import</button>
+      <input type="file" id="importFile" accept=".json,.csv" style="display:none" onchange="importFile(event)">
+      <button class="danger" onclick="clearAll()">🗑️</button>
     </div>
-    <div class="row">
-      <button class="primary" onclick="ghi()">Ghi phiên</button>
-      <button class="ghost" onclick="xoa1()">Xóa phiên cuối</button>
+  </div>
+
+  <!-- INPUT -->
+  <div class="section">
+    <h2>📥 Nhập kết quả 3 viên xúc xắc</h2>
+    <div class="input-group">
+      <input type="number" id="d1" min="1" max="6" placeholder="X1" autocomplete="off">
+      <input type="number" id="d2" min="1" max="6" placeholder="X2" autocomplete="off">
+      <input type="number" id="d3" min="1" max="6" placeholder="X3" autocomplete="off">
+      <button onclick="addDice()">➕ Thêm</button>
+      <button class="ghost" onclick="randomAdd()">🎲 Random</button>
+      <button class="ghost" onclick="simulate(10)">⚡ Test 10</button>
+      <button class="ghost" onclick="simulate(100)">🔥 Test 100</button>
     </div>
-    <div style="height:8px"></div>
-    <button class="danger" onclick="xoaHet()">Xóa hết</button>
+    <div class="note">⌨️ Enter để thêm nhanh · Ctrl+R random · Ctrl+D xóa 1 phiên cuối</div>
+    <div class="dice-list" id="diceList"></div>
   </div>
 
-  <div class="card">
-    <label>Phân tích toán / gợi ý mẫu</label>
-    <div id="guessBox">Cần ít nhất 1 phiên.</div>
-  </div>
-
-  <div class="card">
-    <div class="stats">
-      <div>Phiên<b id="n">0</b></div>
-      <div class="tai">Tài<b id="nt">0</b></div>
-      <div class="xiu">Xỉu<b id="nx">0</b></div>
+  <!-- TABS -->
+  <div class="section">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab(event, 'tabStats')">📊 Thống kê</button>
+      <button class="tab" onclick="switchTab(event, 'tabPredict')">🤖 AI Dự đoán</button>
+      <button class="tab" onclick="switchTab(event, 'tabCharts')">📈 Biểu đồ</button>
+      <button class="tab" onclick="switchTab(event, 'tabPatterns')">🔍 Cầu & Patterns</button>
+      <button class="tab" onclick="switchTab(event, 'tabBacktest')">🏆 Backtest</button>
     </div>
-    <p style="margin:10px 0 0;font-size:0.9rem">
-      Triple: <b id="ntr">0</b><br />
-      Cầu hiện tại: <b id="cau">—</b><br />
-      Cầu dài nhất: <b id="cauMax">—</b>
-    </p>
-  </div>
 
-  <div class="card">
-    <label>Tổng hay ra</label>
-    <div id="tongHay">Chưa có dữ liệu</div>
-  </div>
+    <!-- TAB 1: STATS -->
+    <div id="tabStats" class="tab-content active">
+      <div class="stats-grid" id="statsGrid"></div>
+    </div>
 
-  <div class="card">
-    <label>Dãy phiên</label>
-    <div id="ds">Chưa có dữ liệu</div>
-  </div>
+    <!-- TAB 2: PREDICT -->
+    <div id="tabPredict" class="tab-content">
+      <button onclick="predict()">🔮 Phân tích & Dự đoán</button>
+      <button class="ghost" onclick="predictLSTM()" id="lstmBtn">🧠 Chạy LSTM Neural Net</button>
+      <div id="predictionBox"></div>
+    </div>
 
-  <p class="warn">Xác suất lý thuyết mỗi phiên (loại bộ ba khỏi Tài/Xỉu): Xỉu 105/216 = 48.61%, Tài 105/216 = 48.61%, Triple 6/216 = 2.78%. Cầu dài không làm phiên sau “phải đảo”.</p>
+    <!-- TAB 3: CHARTS -->
+    <div id="tabCharts" class="tab-content">
+      <div class="chart-container"><canvas id="chartSums"></canvas></div>
+      <div class="chart-container"><canvas id="chartFaces"></canvas></div>
+      <div class="chart-container"><canvas id="chartTrend"></canvas></div>
+    </div>
+
+    <!-- TAB 4: PATTERNS -->
+    <div id="tabPatterns" class="tab-content">
+      <div id="patternsBox"></div>
+    </div>
+
+    <!-- TAB 5: BACKTEST -->
+    <div id="tabBacktest" class="tab-content">
+      <button onclick="runBacktest()">🏆 Chạy Backtest AI</button>
+      <div class="note">Kiểm tra độ chính xác AI nếu dự đoán trên 30 phiên gần nhất</div>
+      <div id="backtestBox"></div>
+    </div>
+  </div>
+</div>
 
 <script>
-const KEY = "xx3_phien_v2";
-const LY_THUYET = { TAI: 105/216, XIU: 105/216, TRIPLE: 6/216 };
-let L = JSON.parse(localStorage.getItem(KEY) || localStorage.getItem("xx3_phien") || "[]");
+/* ============================================================
+   1. STORAGE & STATE
+   ============================================================ */
+let history = JSON.parse(localStorage.getItem('diceHistoryPro') || '[]');
+let chartSums, chartFaces, chartTrend;
 
-function fillSel() {
-  ["d1","d2","d3"].forEach(id => {
-    const s = document.getElementById(id);
-    s.innerHTML = [1,2,3,4,5,6].map(n => `<option>${n}</option>`).join("");
-  });
-}
-function loai(x) {
-  const s = x[0]+x[1]+x[2];
-  if (x[0]===x[1] && x[1]===x[2]) return "TRIPLE";
-  return (s>=4 && s<=10) ? "XIU" : "TAI";
-}
-function ghi() {
-  const x = [+d1.value, +d2.value, +d3.value];
-  L.push({x, s: x[0]+x[1]+x[2], loai: loai(x), t: Date.now()});
-  save(); render();
-}
-function xoa1() {
-  if (!L.length) return;
-  L.pop(); save(); render();
-}
-function xoaHet() {
-  if (!confirm("Xóa toàn bộ dữ liệu?")) return;
-  L = []; save(); render();
-}
-function save(){ localStorage.setItem(KEY, JSON.stringify(L)); }
-
-function streakNow() {
-  if (!L.length) return { loai: "—", n: 0 };
-  const day = L.map(i => i.loai);
-  let n=1, cur=day[day.length-1];
-  for (let i=day.length-2;i>=0;i--) {
-    if (day[i]===cur) n++; else break;
-  }
-  return { loai: cur, n };
-}
-function cauHienTai() {
-  const s = streakNow();
-  return s.n ? (s.loai + " x" + s.n) : "—";
-}
-function cauDaiNhat() {
-  if (!L.length) return "—";
-  const day = L.map(i => i.loai);
-  let mx=1, mxv=day[0], v=day[0], c=1;
-  for (let i=1;i<day.length;i++) {
-    if (day[i]===v) c++;
-    else { if (c>mx){mx=c;mxv=v;} v=day[i]; c=1; }
-  }
-  if (c>mx){mx=c;mxv=v;}
-  return mxv + " x" + mx;
+function saveHistory() {
+  localStorage.setItem('diceHistoryPro', JSON.stringify(history));
+  // Backup
+  localStorage.setItem('diceHistoryPro_backup_' + new Date().toDateString(), JSON.stringify(history));
 }
 
-function markov() {
-  const m = {
-    TAI:{TAI:0,XIU:0,TRIPLE:0},
-    XIU:{TAI:0,XIU:0,TRIPLE:0},
-    TRIPLE:{TAI:0,XIU:0,TRIPLE:0}
-  };
-  for (let i=1;i<L.length;i++) m[L[i-1].loai][L[i].loai]++;
-  return m;
+/* ============================================================
+   2. TOAST NOTIFICATIONS
+   ============================================================ */
+function toast(msg, type = 'info', duration = 3000) {
+  const container = document.getElementById('toasts');
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.innerHTML = msg;
+  container.appendChild(el);
+  setTimeout(() => {
+    el.style.transition = 'all 0.3s';
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(100%)';
+    setTimeout(() => el.remove(), 300);
+  }, duration);
 }
 
-function phanTich() {
-  const box = document.getElementById("guessBox");
-  if (!L.length) {
-    box.innerHTML = "Cần ít nhất 1 phiên.";
+/* ============================================================
+   3. THEME TOGGLE
+   ============================================================ */
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme');
+  const next = current === 'light' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', next);
+  document.getElementById('themeBtn').textContent = next === 'light' ? '☀️ Light' : '🌙 Dark';
+  localStorage.setItem('diceTheme', next);
+  // Refresh charts
+  setTimeout(() => { renderCharts(); }, 100);
+}
+// Load theme
+const savedTheme = localStorage.getItem('diceTheme') || 'dark';
+if (savedTheme === 'light') {
+  document.documentElement.setAttribute('data-theme', 'light');
+  document.getElementById('themeBtn').textContent = '☀️ Light';
+}
+
+/* ============================================================
+   4. ADD DICE
+   ============================================================ */
+function addDice() {
+  const v1 = parseInt(document.getElementById('d1').value);
+  const v2 = parseInt(document.getElementById('d2').value);
+  const v3 = parseInt(document.getElementById('d3').value);
+
+  if ([v1,v2,v3].some(v => isNaN(v) || v < 1 || v > 6)) {
+    toast('⚠️ Vui lòng nhập 3 số từ 1 đến 6!', 'error');
     return;
   }
-  const n = L.length;
-  const cnt = { TAI:0, XIU:0, TRIPLE:0 };
-  L.forEach(i => cnt[i.loai]++);
 
-  // Laplace smoothing + co về lý thuyết (shrinkage)
-  // w tăng theo số phiên, tối đa 0.35 — không để mẫu nhỏ lấn át xác suất thật
-  const w = Math.min(0.35, n / (n + 30));
-  const empiric = {
-    TAI: (cnt.TAI + 1) / (n + 3),
-    XIU: (cnt.XIU + 1) / (n + 3),
-    TRIPLE: (cnt.TRIPLE + 1) / (n + 3)
-  };
-  const mix = {};
-  ["TAI","XIU","TRIPLE"].forEach(k => {
-    mix[k] = (1-w)*LY_THUYET[k] + w*empiric[k];
+  pushDice([v1, v2, v3]);
+  document.getElementById('d1').value = '';
+  document.getElementById('d2').value = '';
+  document.getElementById('d3').value = '';
+  document.getElementById('d1').focus();
+}
+
+function pushDice(dice) {
+  const sum = dice.reduce((a,b) => a+b, 0);
+  const isTriple = (dice[0] === dice[1] && dice[1] === dice[2]);
+  const isBig = sum >= 11 && sum <= 18;
+  const parity = sum % 2 === 0 ? 'Chẵn' : 'Lẻ';
+
+  history.push({
+    dice,
+    sum,
+    isBig,
+    isTriple,
+    parity,
+    time: new Date().toLocaleTimeString('vi-VN'),
+    ts: Date.now()
   });
 
-  // Markov 1 bước từ cửa vừa ra (làm mượt)
-  const last = L[n-1].loai;
-  const mk = markov()[last];
-  const tot = mk.TAI + mk.XIU + mk.TRIPLE;
-  const mark = {};
-  ["TAI","XIU","TRIPLE"].forEach(k => {
-    mark[k] = tot ? (mk[k]+1)/(tot+3) : LY_THUYET[k];
-  });
-  const w2 = tot >= 8 ? 0.25 : 0.08;
-  const final = {};
-  ["TAI","XIU","TRIPLE"].forEach(k => {
-    final[k] = (1-w2)*mix[k] + w2*mark[k];
-  });
-  const sum = final.TAI+final.XIU+final.TRIPLE;
-  ["TAI","XIU","TRIPLE"].forEach(k => final[k]/=sum);
+  saveHistory();
+  refreshAll();
 
-  const order = ["XIU","TAI","TRIPLE"].sort((a,b)=>final[b]-final[a]);
-  const top = order[0];
-  const gap = final[order[0]] - final[order[1]];
-  const st = streakNow();
+  // Smart alerts
+  const len = history.length;
+  if (len >= 3) {
+    const last3 = history.slice(-3);
+    if (last3.every(h => h.isBig)) toast('🔵 3 phiên TÀI liên tiếp — có thể sắp đảo!', 'warn');
+    if (last3.every(h => !h.isBig)) toast('🟡 3 phiên XỈU liên tiếp — có thể sắp đảo!', 'warn');
+    if (last3.every(h => h.parity === 'Chẵn')) toast('⚪ 3 phiên CHẴN — chú ý!', 'warn');
+    if (last3.every(h => h.parity === 'Lẻ')) toast('⚫ 3 phiên LẺ — chú ý!', 'warn');
+  }
+  if (isTriple) toast(`🎯 BÃO! Tổng ${sum} (3 số ${dice[0]})`, 'success', 5000);
+}
 
-  let doTin = "rất thấp";
-  if (n >= 80 && gap > 0.04) doTin = "thấp";
-  else if (n >= 30) doTin = "rất thấp (mẫu còn nhỏ)";
-  else doTin = "không đủ (mẫu quá ít)";
+function randomAdd() {
+  pushDice([
+    Math.floor(Math.random()*6)+1,
+    Math.floor(Math.random()*6)+1,
+    Math.floor(Math.random()*6)+1
+  ]);
+}
 
-  const pct = k => (final[k]*100).toFixed(1) + "%";
-  const cls = {TAI:"tai", XIU:"xiu", TRIPLE:"tri"}[top];
+function simulate(n) {
+  for (let i = 0; i < n; i++) {
+    pushDice([
+      Math.floor(Math.random()*6)+1,
+      Math.floor(Math.random()*6)+1,
+      Math.floor(Math.random()*6)+1
+    ]);
+  }
+  toast(`✅ Đã thêm ${n} phiên ngẫu nhiên`, 'success');
+}
 
-  box.innerHTML = `
-    <div class="tiny">Mô hình: 65–92% xác suất lý thuyết + tần suất mẫu + chuyển cửa (Markov 1 bước). Không phải AI nhìn được xúc xắc.</div>
-    <div class="guess ${cls}">Gợi ý mẫu: ${top}</div>
-    <div class="kv xiu">Xỉu ${pct("XIU")}</div>
-    <div class="bar"><span class="xiu" style="width:${final.XIU*100}%;background:#4dabf7"></span></div>
-    <div class="kv tai">Tài ${pct("TAI")}</div>
-    <div class="bar"><span class="tai" style="width:${final.TAI*100}%;background:#ff6b6b"></span></div>
-    <div class="kv tri">Triple ${pct("TRIPLE")}</div>
-    <div class="bar"><span class="tri" style="width:${final.TRIPLE*100}%;background:#fcc419"></span></div>
-    <div class="tiny">
-      Cửa vừa ra: <b>${last}</b> · Cầu: <b>${st.loai} x${st.n}</b><br>
-      Độ tin cậy: <b>${doTin}</b> · Số phiên: ${n}<br>
-      Lý thuyết luôn ~ Tài 48.6% / Xỉu 48.6% / Triple 2.8%.<br>
-      ${tot ? `Sau ${last}, trong mẫu của bạn: Tài ${mk.TAI}, Xỉu ${mk.XIU}, Triple ${mk.TRIPLE}.` : "Chưa đủ cặp liên tiếp để đếm chuyển cửa."}
-    </div>
+function clearAll() {
+  if (confirm('Xóa toàn bộ lịch sử? (Không thể hoàn tác)')) {
+    history = [];
+    saveHistory();
+    refreshAll();
+    document.getElementById('predictionBox').innerHTML = '';
+    document.getElementById('backtestBox').innerHTML = '';
+    document.getElementById('patternsBox').innerHTML = '';
+    toast('🗑️ Đã xóa toàn bộ lịch sử', 'info');
+  }
+}
+
+/* ============================================================
+   5. REFRESH ALL
+   ============================================================ */
+function refreshAll() {
+  renderHistory();
+  renderStats();
+  renderPatterns();
+  renderCharts();
+}
+
+/* ============================================================
+   6. RENDER HISTORY
+   ============================================================ */
+function renderHistory() {
+  const list = document.getElementById('diceList');
+  if (history.length === 0) {
+    list.innerHTML = '<div class="note">Chưa có dữ liệu. Hãy thêm phiên đầu tiên!</div>';
+    return;
+  }
+  list.innerHTML = history.slice().reverse().map((h, i) => {
+    const idx = history.length - i;
+    let cls = 'xiu';
+    if (h.isTriple) cls = 'bao';
+    else if (h.isBig) cls = 'tai';
+    const chip = h.isTriple ? '<span class="chip bao">BÃO</span>'
+              : h.isBig ? '<span class="chip tai">TÀI</span>'
+              : '<span class="chip xiu">XỈU</span>';
+    const pchip = h.parity === 'Chẵn' ? '<span class="chip chan">C</span>' : '<span class="chip le">L</span>';
+    return `<div class="dice-item ${cls}">
+      <span style="opacity:0.6;font-size:11px">#${idx} · ${h.time}</span>
+      <span style="font-size:16px">🎲 ${h.dice.join(' · ')}</span>
+      <span class="result">${h.sum} ${chip} ${pchip}</span>
+    </div>`;
+  }).join('');
+}
+
+/* ============================================================
+   7. RENDER STATS
+   ============================================================ */
+function renderStats() {
+  const grid = document.getElementById('statsGrid');
+  if (history.length === 0) { grid.innerHTML = '<div class="note">Chưa có dữ liệu để thống kê.</div>'; return; }
+
+  const total = history.length;
+  const big = history.filter(h => h.isBig).length;
+  const small = total - big;
+  const triple = history.filter(h => h.isTriple).length;
+  const even = history.filter(h => h.parity === 'Chẵn').length;
+  const odd = total - even;
+  const avgSum = (history.reduce((a,h) => a + h.sum, 0) / total).toFixed(2);
+
+  // Streak hiện tại
+  let streak = 1;
+  const lastType = history[history.length-1].isBig;
+  for (let i = history.length - 2; i >= 0; i--) {
+    if (history[i].isBig === lastType) streak++;
+    else break;
+  }
+
+  grid.innerHTML = `
+    <div class="stat-card"><div class="label">Tổng phiên</div><div class="value">${total}</div></div>
+    <div class="stat-card"><div class="label">🔵 Tài (11-18)</div><div class="value">${big}</div><div class="sub">${((big/total)*100).toFixed(1)}%</div></div>
+    <div class="stat-card"><div class="label">🟡 Xỉu (3-10)</div><div class="value">${small}</div><div class="sub">${((small/total)*100).toFixed(1)}%</div></div>
+    <div class="stat-card"><div class="label">🎯 Bão</div><div class="value">${triple}</div><div class="sub">${((triple/total)*100).toFixed(1)}%</div></div>
+    <div class="stat-card"><div class="label">⚪ Chẵn / Lẻ</div><div class="value">${even} / ${odd}</div><div class="sub">${((even/total)*100).toFixed(1)}% / ${((odd/total)*100).toFixed(1)}%</div></div>
+    <div class="stat-card"><div class="label">📊 Tổng trung bình</div><div class="value">${avgSum}</div></div>
+    <div class="stat-card"><div class="label">🔥 Chuỗi hiện tại</div><div class="value">${streak}</div><div class="sub">${lastType ? 'TÀI' : 'XỈU'}</div></div>
+    <div class="stat-card"><div class="label">🎲 Mặt nóng nhất</div><div class="value">${hottestFace()}</div><div class="sub">xuất hiện nhiều nhất</div></div>
   `;
 }
 
-function render() {
-  const n=L.length;
-  const nt=L.filter(i=>i.loai==="TAI").length;
-  const nx=L.filter(i=>i.loai==="XIU").length;
-  const ntr=L.filter(i=>i.loai==="TRIPLE").length;
-  document.getElementById("n").textContent=n;
-  document.getElementById("nt").textContent=n? (nt+" ("+(100*nt/n).toFixed(1)+"%)") : 0;
-  document.getElementById("nx").textContent=n? (nx+" ("+(100*nx/n).toFixed(1)+"%)") : 0;
-  document.getElementById("ntr").textContent=n? (ntr+" ("+(100*ntr/n).toFixed(1)+"%)") : 0;
-  document.getElementById("cau").textContent=cauHienTai();
-  document.getElementById("cauMax").textContent=cauDaiNhat();
-  phanTich();
+function hottestFace() {
+  const cnt = {1:0,2:0,3:0,4:0,5:0,6:0};
+  history.forEach(h => h.dice.forEach(d => cnt[d]++));
+  let best = 1, max = 0;
+  for (let i = 1; i <= 6; i++) if (cnt[i] > max) { max = cnt[i]; best = i; }
+  return `⚀⚁⚂⚃⚄⚅`.charAt(best - 1) + ' ' + best;
+}
 
-  if (!n) {
-    tongHay.textContent="Chưa có dữ liệu";
-    ds.textContent="Chưa có dữ liệu";
+/* ============================================================
+   8. PATTERN RECOGNITION
+   ============================================================ */
+function renderPatterns() {
+  const box = document.getElementById('patternsBox');
+  if (history.length < 4) {
+    box.innerHTML = '<div class="note">Cần ít nhất 4 phiên để nhận diện cầu.</div>';
     return;
   }
-  const cnt={};
-  L.forEach(i => cnt[i.s]=(cnt[i.s]||0)+1);
-  tongHay.innerHTML = Object.entries(cnt)
-    .sort((a,b)=>b[1]-a[1] || a[0]-b[0])
-    .map(([t,c])=>`Tổng ${t}: ${c} phiên`)
-    .join("<br>");
 
-  const rows = [...L].reverse().map((i,idx) => {
-    const stt = n-idx;
-    return `<tr>
-      <td>${stt}</td>
-      <td>${i.x.join("-")}</td>
-      <td>${i.s}</td>
-      <td><span class="pill ${i.loai}">${i.loai}</span></td>
-    </tr>`;
-  }).join("");
-  ds.innerHTML = `<table><thead><tr><th>#</th><th>Xúc xắc</th><th>Tổng</th><th>Cửa</th></tr></thead><tbody>${rows}</tbody></table>`;
-}
-fillSel();
-render();
-</script>
-</body>
-</html>
+  const patterns = [];
+  const types = history.map(h => h.isBig ? 'B' : 'S'); // B=Tài, S=Xỉu
+
+  // 1-1 pattern (Tài-Xỉu-Tài-Xỉu...)
+  let alt = 1;
+  for (let i = types.length - 1; i >= 1; i--) {
+    if (types[i] !== types[i-1]) alt++;
+    else break;
+  }
+  if (alt >= 4) patterns.push({ icon: '🔄', name: 'Cầu 1-1', desc: `${alt} phiên đảo liên tục`, strength: 'strong' });
+
+  // Bệt (bệt Tài hoặc bệt Xỉu)
+  let streak = 1;
+  for (let i = types.length - 1; i >= 1; i--) {
+    if (types[i] === types[i-1]) streak++;
+    else break;
+  }
+  if (streak >= 3) patterns.push({ icon: '🔥', name: `Bệt ${types[types.length-1] === 'B' ? 'TÀI' : 'XỈU'}`, desc: `${streak} phiên liên tiếp`, strength: 'strong' });
+
+  // Cầu 2-2
+  let twoTwo = 0;
+  for (let i = types.length - 4; i >= 0; i -= 2) {
+    if (types[i] === types[i+1] && types[i+2] === types[i+3] && types[i] !== types[i+2]) twoTwo++;
+    else break;
+  }
+  if (twoTwo >= 2) patterns.push({ icon: '📐', name: 'Cầu 2-2', desc: `${twoTwo*2} phiên theo nhịp 2-2`, strength: 'medium' });
+
+  // Cầu 3-3
+  if (types.length >= 6) {
+    const a = types.slice(-6);
+    if (a[0]===a[1] && a[1]===a[2] && a[3]===a[4] && a[4]===a[5] && a[0]!==a[3]) {
+      patterns.push({ icon: '📏', name: 'Cầu 3-3', desc: 'Nhịp 3-3 vừa xuất hiện', strength: 'medium' });
+    }
+  }
+
+  // Chẵn/Lẻ streak
+  let parStreak = 1;
+  for (let i = history.length - 1; i >= 1; i--) {
+    if (history[i].parity === history[i-1].parity) parStreak++;
+    else break;
+  }
+  if (parStreak >= 4) patterns.push({ icon: '⚖️', name: `Bệt ${history[history
