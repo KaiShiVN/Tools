@@ -38,34 +38,6 @@
   input, textarea, select { font-family: inherit; }
   a { color: inherit; }
 
-  /* ===== LOCK SCREEN ===== */
-  .lock-screen {
-    position: fixed;
-    inset: 0;
-    background: linear-gradient(135deg, #000, #1a1a2e);
-    z-index: 999999;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    text-align: center;
-    padding: 20px;
-  }
-  .lock-screen.show { display: flex; }
-  .lock-screen .lock-content { max-width: 500px; }
-  .lock-screen .lock-icon { font-size: 64px; margin-bottom: 20px; }
-  .lock-screen h1 { font-size: 24px; margin-bottom: 10px; color: #ef4444; }
-  .lock-screen p { font-size: 14px; opacity: 0.8; line-height: 1.6; }
-  .lock-screen .btn-unlock {
-    margin-top: 20px;
-    padding: 12px 24px;
-    background: linear-gradient(135deg, #25F4EE, #FE2C55);
-    color: #fff;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 700;
-  }
-
   /* ===== AUTH ===== */
   .auth-screen {
     min-height: 100vh;
@@ -929,18 +901,6 @@
 </head>
 <body>
 
-<a href="#main" class="skip-link">Nội dung chính</a>
-
-<!-- ===== LOCK SCREEN ===== -->
-<div class="lock-screen" id="lockScreen">
-  <div class="lock-content">
-    <div class="lock-icon">🔒</div>
-    <h1>Phát hiện truy cập trái phép</h1>
-    <p>Vì lý do bảo mật, ứng dụng đã tạm khóa. Vui lòng đóng DevTools và thử lại.</p>
-    <button class="btn-unlock" id="btnUnlock">Đã đóng, mở lại</button>
-  </div>
-</div>
-
 <!-- ===== AUTH ===== -->
 <div class="auth-screen" id="authScreen">
   <div class="auth-card">
@@ -1092,8 +1052,8 @@
       <div id="historyList"></div>
 
       <div class="section-title"><span>⚙️ Cài đặt</span></div>
-      <button class="btn-secondary-full" id="btnChangePassword" type="button" style="width:100%; padding:12px; background:var(--bg); border-radius:10px; font-weight:700; margin-bottom:8px;">🔑 Đổi mật khẩu</button>
-      <button class="btn-secondary-full" id="btnExportMyData" type="button" style="width:100%; padding:12px; background:var(--bg); border-radius:10px; font-weight:700; margin-bottom:8px;">💾 Tải dữ liệu của tôi</button>
+      <button id="btnChangePassword" type="button" style="width:100%; padding:12px; background:var(--bg); border-radius:10px; font-weight:700; margin-bottom:8px;">🔑 Đổi mật khẩu</button>
+      <button id="btnExportMyData" type="button" style="width:100%; padding:12px; background:var(--bg); border-radius:10px; font-weight:700; margin-bottom:8px;">💾 Tải dữ liệu của tôi</button>
     </div>
 
     <div class="page" id="page-admin">
@@ -1136,9 +1096,9 @@
       <div id="admUserList"></div>
 
       <div class="section-title" style="margin-top:32px;"><span>💾 Bảo trì</span></div>
-      <button class="btn-secondary-full" id="btnExport" type="button" style="width:100%; padding:12px; background:var(--bg); border-radius:10px; font-weight:700; margin-bottom:8px;">💾 Sao lưu hệ thống</button>
-      <button class="btn-secondary-full" id="btnImport" type="button" style="width:100%; padding:12px; background:var(--bg); border-radius:10px; font-weight:700; margin-bottom:8px;">📂 Khôi phục backup</button>
-      <button class="btn-secondary-full" id="btnAuditLog" type="button" style="width:100%; padding:12px; background:var(--bg); border-radius:10px; font-weight:700; margin-bottom:8px;">📋 Xem audit log</button>
+      <button id="btnExport" type="button" style="width:100%; padding:12px; background:var(--bg); border-radius:10px; font-weight:700; margin-bottom:8px;">💾 Sao lưu hệ thống</button>
+      <button id="btnImport" type="button" style="width:100%; padding:12px; background:var(--bg); border-radius:10px; font-weight:700; margin-bottom:8px;">📂 Khôi phục backup</button>
+      <button id="btnAuditLog" type="button" style="width:100%; padding:12px; background:var(--bg); border-radius:10px; font-weight:700; margin-bottom:8px;">📋 Xem audit log</button>
       <input type="file" id="importFile" accept=".json" style="display:none;">
 
       <div class="section-title" style="margin-top:32px;"><span>⚠️ Vùng nguy hiểm</span></div>
@@ -1161,51 +1121,25 @@
 
 <script>
 /* ============================================================
-   TikTok Boost Pro v3.1 - Xu Edition
+   TikTok Boost Pro v3.2 - Admin admingang
+   Admin: admingang / Rmg16062007
    Tỷ giá: Follow = 100 xu | Like = 50 xu | Comment = 50 xu
    ============================================================ */
 (function() {
   'use strict';
 
   // ══════════════════════════════════════════════════════════
-  // 🔒 LAYER 1: ANTI-DEBUGGING
-  // ══════════════════════════════════════════════════════════
-  const security = {
-    devtoolsOpen: false,
-    detect() {
-      const threshold = 160;
-      const widthDiff = window.outerWidth - window.innerWidth;
-      const heightDiff = window.outerHeight - window.innerHeight;
-      return widthDiff > threshold || heightDiff > threshold;
-    },
-    startMonitor() {
-      setInterval(() => {
-        if (this.detect()) {
-          if (!this.devtoolsOpen) {
-            this.devtoolsOpen = true;
-            const lock = document.getElementById('lockScreen');
-            if (lock) lock.classList.add('show');
-          }
-        } else {
-          this.devtoolsOpen = false;
-        }
-      }, 1000);
-    },
-    unlock() {
-      this.devtoolsOpen = false;
-      const lock = document.getElementById('lockScreen');
-      if (lock) lock.classList.remove('show');
-    }
-  };
-
-  // ══════════════════════════════════════════════════════════
-  // 🔒 LAYER 2: CRYPTO
+  // CRYPTO
   // ══════════════════════════════════════════════════════════
   const crypto2 = {
     SECRET_1: 'TT_Boost_x9K2m_2024_prod_key_A',
     SECRET_2: 'TT_Boost_p7N4q_2024_prod_key_B',
     SECRET_3: 'TT_Boost_z3R8w_2024_prod_key_C',
-    DEFAULT_ADMIN_PASS: 'admin123',
+    
+    // 🔑 ADMIN CREDENTIALS MỚI
+    DEFAULT_ADMIN_USER: 'admingang',
+    DEFAULT_ADMIN_PASS: 'Rmg16062007',
+    
     PBKDF2_ITERATIONS: 100000,
     SALT: 'TTBoost_Salt_v3_2024',
 
@@ -1311,10 +1245,10 @@
   };
 
   // ══════════════════════════════════════════════════════════
-  // CONFIG — 💰 TỶ GIÁ XU MỚI
+  // CONFIG
   // ══════════════════════════════════════════════════════════
   const CONFIG = {
-    VERSION: 3.1,
+    VERSION: 3.2,
     PREFIX: 'ttb3_',
     userKey: 'u',
     sessionKey: 's',
@@ -1336,26 +1270,19 @@
     
     // 💰 TỶ GIÁ: Follow = 100 xu | Like = 50 xu | Comment = 50 xu
     rewards: { 
-      follow: 100,   // +100 xu khi follow
-      like: 50,      // +50 xu khi tim
-      comment: 50    // +50 xu khi comment
+      follow: 100,
+      like: 50,
+      comment: 50
     },
     
-    // Điểm khởi đầu
     welcomeBonus: 500,
     
-    // 💰 GÓI MUA — giá tương ứng tỷ giá trên
     packages: [
-      // Follow: 100 xu/người (mua lẻ), giảm giá khi mua nhiều
       { id: 'f10',  type: 'follow',  qty: 10,  price: 1000, name: '10 Follow TikTok',  desc: '100 xu/follow' },
       { id: 'f50',  type: 'follow',  qty: 50,  price: 4500, name: '50 Follow TikTok',  desc: '90 xu/follow • Tiết kiệm 10%', badge: 'HOT' },
       { id: 'f100', type: 'follow',  qty: 100, price: 8000, name: '100 Follow TikTok', desc: '80 xu/follow • Tiết kiệm 20%', badge: 'BEST' },
-      
-      // Like: 50 xu/tim
       { id: 'l20',  type: 'like',    qty: 20,  price: 1000, name: '20 Tim video',      desc: '50 xu/tim' },
       { id: 'l100', type: 'like',    qty: 100, price: 4500, name: '100 Tim video',     desc: '45 xu/tim • Tiết kiệm 10%', badge: 'HOT' },
-      
-      // Comment: 50 xu/comment
       { id: 'c10',  type: 'comment', qty: 10,  price: 500,  name: '10 Comment',        desc: '50 xu/comment' }
     ]
   };
@@ -1607,7 +1534,7 @@
       u.isAdmin === true && u.checksum === crypto2.checksum(u)
     );
     if (!hasAdmin) {
-      console.log('ℹ️ Chưa có admin. Đăng nhập admin/admin123 để kích hoạt.');
+      console.log('ℹ️ Chưa có admin. Đăng nhập ' + crypto2.DEFAULT_ADMIN_USER + ' để kích hoạt.');
     }
   }
 
@@ -1707,7 +1634,8 @@
 
     try {
       if (authMode === 'register') {
-        if (username === 'admin') {
+        // Không cho đăng ký trùng tên admin
+        if (username === crypto2.DEFAULT_ADMIN_USER) {
           showAuthError('Tên đăng nhập này không khả dụng!');
           setAuthLoading(false);
           isProcessing = false;
@@ -1752,16 +1680,18 @@
         showToast(`🎉 Đăng ký thành công! +${formatNumber(bonus)} xu`, 'success');
         
       } else {
-        // Admin đầu tiên
-        if (username === 'admin' && password === crypto2.DEFAULT_ADMIN_PASS) {
+        // LOGIN
+        
+        // 🔑 Admin đầu tiên
+        if (username === crypto2.DEFAULT_ADMIN_USER && password === crypto2.DEFAULT_ADMIN_PASS) {
           const hasAdmin = Object.values(users).some(u => 
             u.isAdmin === true && u.checksum === crypto2.checksum(u)
           );
           
-          if (!hasAdmin && !users['admin']) {
+          if (!hasAdmin && !users[crypto2.DEFAULT_ADMIN_USER]) {
             const passwordHash = await crypto2.hashPassword(password);
             const adminUser = {
-              username: 'admin',
+              username: crypto2.DEFAULT_ADMIN_USER,
               passwordHash,
               points: 999999,
               earned: 999999,
@@ -1779,15 +1709,15 @@
             };
             adminUser.checksum = crypto2.checksum(adminUser);
             
-            users['admin'] = adminUser;
+            users[crypto2.DEFAULT_ADMIN_USER] = adminUser;
             saveUsers();
             safeSet(CONFIG.initKey, true);
-            clearLoginAttempts('admin');
-            audit('admin_created', 'admin', 'First admin');
-            login('admin', true);
+            clearLoginAttempts(crypto2.DEFAULT_ADMIN_USER);
+            audit('admin_created', crypto2.DEFAULT_ADMIN_USER, 'First admin');
+            login(crypto2.DEFAULT_ADMIN_USER, true);
             
             setTimeout(() => {
-              showToast('👑 Admin đã kích hoạt! ĐỔI MẬT KHẨU NGAY!', 'warning');
+              showToast('👑 Admin đã kích hoạt!', 'success');
             }, 500);
             return;
           }
@@ -2979,15 +2909,6 @@
   // EVENTS
   // ══════════════════════════════════════════════════════════
   function bindEvents() {
-    $('#btnUnlock') && $('#btnUnlock').addEventListener('click', () => {
-      if (!security.detect()) {
-        security.unlock();
-        showToast('✅ Đã mở khóa', 'success');
-      } else {
-        showToast('⚠️ Vẫn còn DevTools!', 'warning');
-      }
-    });
-
     $('#authSubmit') && $('#authSubmit').addEventListener('click', handleAuth);
     $('#authUsername') && $('#authUsername').addEventListener('keypress', e => {
       if (e.key === 'Enter') $('#authPassword').focus();
@@ -3148,7 +3069,6 @@
     ensureAdmin();
     bindEvents();
 
-    security.startMonitor();
     setInterval(checkIdle, 30000);
 
     if (currentUser && users[currentUser] && !users[currentUser].banned) {
