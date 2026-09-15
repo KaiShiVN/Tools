@@ -2,17 +2,18 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CrossBoost - Tương tác chéo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>TikTok Boost Pro</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  
   :root {
-    --primary: #6366f1;
-    --primary-dark: #4f46e5;
+    --tt-cyan: #25F4EE;
+    --tt-pink: #FE2C55;
+    --primary: #FE2C55;
     --success: #10b981;
     --warning: #f59e0b;
     --danger: #ef4444;
+    --info: #3b82f6;
     --bg: #f8fafc;
     --card: #ffffff;
     --text: #0f172a;
@@ -20,60 +21,82 @@
     --border: #e2e8f0;
     --shadow: 0 1px 3px rgba(0,0,0,0.08);
     --shadow-lg: 0 10px 40px rgba(0,0,0,0.1);
+    --radius: 14px;
   }
-
   body {
     font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
     line-height: 1.5;
+    overflow-x: hidden;
+    user-select: none;
+    -webkit-user-select: none;
   }
-
+  body.allow-select, input, textarea { user-select: text; -webkit-user-select: text; }
   button { font-family: inherit; cursor: pointer; border: none; }
   input, textarea, select { font-family: inherit; }
+  a { color: inherit; }
 
-  /* ===== AUTH SCREEN ===== */
+  /* ===== LOCK SCREEN ===== */
+  .lock-screen {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, #000, #1a1a2e);
+    z-index: 999999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-align: center;
+    padding: 20px;
+  }
+  .lock-screen.show { display: flex; }
+  .lock-screen .lock-content { max-width: 500px; }
+  .lock-screen .lock-icon { font-size: 64px; margin-bottom: 20px; }
+  .lock-screen h1 { font-size: 24px; margin-bottom: 10px; color: #ef4444; }
+  .lock-screen p { font-size: 14px; opacity: 0.8; line-height: 1.6; }
+  .lock-screen .btn-unlock {
+    margin-top: 20px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #25F4EE, #FE2C55);
+    color: #fff;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  /* ===== AUTH ===== */
   .auth-screen {
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 20px;
-    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    background: linear-gradient(135deg, #000 0%, #1a1a2e 50%, #FE2C55 100%);
   }
   .auth-card {
     background: #fff;
     border-radius: 20px;
     padding: 36px 28px;
     width: 100%;
-    max-width: 400px;
+    max-width: 420px;
     box-shadow: var(--shadow-lg);
   }
-  .auth-logo { text-align: center; font-size: 40px; margin-bottom: 8px; }
+  .auth-logo { text-align: center; font-size: 44px; margin-bottom: 8px; }
   .auth-card h1 {
     text-align: center;
-    font-size: 24px;
+    font-size: 26px;
     font-weight: 800;
     margin-bottom: 6px;
-    background: linear-gradient(135deg, #6366f1, #a855f7);
+    background: linear-gradient(135deg, #25F4EE, #FE2C55);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  .auth-card .subtitle {
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 14px;
-    margin-bottom: 24px;
-  }
+  .auth-card .subtitle { text-align: center; color: var(--text-muted); font-size: 14px; margin-bottom: 24px; }
   .form-group { margin-bottom: 16px; }
-  .form-group label {
-    display: block;
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 6px;
-  }
+  .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
   .form-group input {
     width: 100%;
     padding: 12px 14px;
@@ -84,24 +107,38 @@
     transition: border-color 0.2s;
   }
   .form-group input:focus { border-color: var(--primary); }
+  .form-group .input-hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+  .form-group.error input { border-color: var(--danger); }
+  .form-group.error .input-hint { color: var(--danger); }
+
   .btn-primary {
     width: 100%;
     padding: 13px;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: linear-gradient(135deg, #25F4EE, #FE2C55);
     color: #fff;
     border-radius: 10px;
     font-size: 15px;
     font-weight: 700;
     transition: all 0.2s;
-    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 4px 14px rgba(254, 44, 85, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
   }
-  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(99,102,241,0.4); }
-  .auth-switch {
-    text-align: center;
-    margin-top: 20px;
-    font-size: 14px;
-    color: var(--text-muted);
+  .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(254,44,85,0.4); }
+  .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .btn-primary .spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
   }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .auth-switch { text-align: center; margin-top: 20px; font-size: 14px; color: var(--text-muted); }
   .auth-switch a { color: var(--primary); font-weight: 700; cursor: pointer; }
   .auth-error {
     background: #fef2f2;
@@ -114,6 +151,7 @@
     border-left: 3px solid var(--danger);
   }
   .auth-error.show { display: block; }
+  .auth-hint { text-align: center; margin-top: 20px; font-size: 11px; color: #94a3b8; }
 
   /* ===== APP ===== */
   .app { display: none; min-height: 100vh; }
@@ -130,33 +168,32 @@
     align-items: center;
     justify-content: space-between;
     box-shadow: var(--shadow);
+    gap: 8px;
+    flex-wrap: wrap;
   }
-  .topbar-logo {
-    font-size: 18px;
-    font-weight: 800;
-    background: linear-gradient(135deg, #6366f1, #a855f7);
+  .topbar-logo { font-size: 16px; font-weight: 800; display: flex; align-items: center; gap: 6px; }
+  .topbar-logo .tt {
+    background: linear-gradient(135deg, #25F4EE, #FE2C55);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  .topbar-user { display: flex; align-items: center; gap: 10px; }
+  .topbar-user { display: flex; align-items: center; gap: 8px; position: relative; }
   .points-chip {
     background: linear-gradient(135deg, #fbbf24, #f59e0b);
     color: #fff;
-    padding: 6px 12px;
+    padding: 8px 14px;
     border-radius: 100px;
     font-size: 13px;
     font-weight: 800;
     box-shadow: 0 3px 10px rgba(245, 158, 11, 0.3);
+    transition: transform 0.3s;
+    cursor: pointer;
   }
-  .admin-badge {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    color: #fff;
-    padding: 4px 10px;
-    border-radius: 100px;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.5px;
+  .points-chip.bump { animation: bump 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  @keyframes bump {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
   }
   .avatar {
     width: 36px;
@@ -168,6 +205,36 @@
     font-weight: 800;
     color: #fff;
     font-size: 14px;
+    cursor: pointer;
+    transition: transform 0.15s;
+    position: relative;
+  }
+  .avatar:hover { transform: scale(1.05); }
+  .notif-btn {
+    background: transparent;
+    padding: 6px;
+    border-radius: 50%;
+    font-size: 18px;
+    position: relative;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .notif-btn:hover { background: var(--bg); }
+  .notif-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: var(--danger);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 1px 5px;
+    border-radius: 100px;
+    min-width: 16px;
+    text-align: center;
   }
   .btn-logout {
     background: transparent;
@@ -188,99 +255,80 @@
     top: 60px;
     z-index: 99;
     overflow-x: auto;
+    scrollbar-width: none;
   }
+  .tabs::-webkit-scrollbar { display: none; }
   .tab {
     flex: 1;
-    min-width: 90px;
+    min-width: 100px;
     padding: 14px 8px;
     background: transparent;
     color: var(--text-muted);
     font-weight: 700;
-    font-size: 14px;
+    font-size: 13px;
     border-bottom: 3px solid transparent;
     transition: all 0.2s;
     white-space: nowrap;
+    position: relative;
   }
   .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
   .tab.admin-tab { color: var(--danger); }
   .tab.admin-tab.active { color: var(--danger); border-bottom-color: var(--danger); }
 
   /* ===== MAIN ===== */
-  .main { max-width: 900px; margin: 0 auto; padding: 16px; padding-bottom: 80px; }
+  .main { max-width: 720px; margin: 0 auto; padding: 16px; padding-bottom: 80px; }
   .page { display: none; }
-  .page.active { display: block; }
+  .page.active { display: block; animation: fadeIn 0.2s; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* ===== STATS CARDS (Admin Dashboard) ===== */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-  .stat-card {
-    background: #fff;
-    border-radius: 14px;
-    padding: 18px;
-    box-shadow: var(--shadow);
-    border-left: 4px solid var(--primary);
-  }
-  .stat-card.green { border-left-color: var(--success); }
-  .stat-card.orange { border-left-color: var(--warning); }
-  .stat-card.red { border-left-color: var(--danger); }
-  .stat-card .label {
-    font-size: 12px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 600;
-    margin-bottom: 6px;
-  }
-  .stat-card .value { font-size: 28px; font-weight: 800; line-height: 1; }
-  .stat-card .sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
-
-  /* ===== PROFILE CARD ===== */
-  .profile-card {
-    background: linear-gradient(135deg, #6366f1, #a855f7);
-    border-radius: 16px;
+  /* ===== BALANCE CARD ===== */
+  .balance-card {
+    background: linear-gradient(135deg, #000 0%, #1a1a2e 100%);
+    border-radius: var(--radius);
     padding: 24px;
     color: #fff;
     margin-bottom: 16px;
     box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: hidden;
   }
-  .profile-card .user-info {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 18px;
-  }
-  .profile-card .avatar-lg {
-    width: 60px;
-    height: 60px;
+  .balance-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 200px;
+    height: 200px;
+    background: linear-gradient(135deg, #25F4EE, #FE2C55);
     border-radius: 50%;
-    background: rgba(255,255,255,0.25);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
+    filter: blur(60px);
+    opacity: 0.4;
+  }
+  .balance-card .label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.7;
+    margin-bottom: 6px;
+    position: relative;
+  }
+  .balance-card .value {
+    font-size: 42px;
     font-weight: 800;
-    border: 3px solid rgba(255,255,255,0.4);
+    line-height: 1;
+    position: relative;
+    background: linear-gradient(135deg, #25F4EE, #FE2C55);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
-  .profile-card .name { font-size: 20px; font-weight: 800; }
-  .profile-card .rank { font-size: 13px; opacity: 0.9; }
-  .stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+  .balance-card .value small {
+    font-size: 16px;
+    -webkit-text-fill-color: #fff;
+    opacity: 0.7;
+    margin-left: 6px;
   }
-  .stat {
-    background: rgba(255,255,255,0.15);
-    border-radius: 12px;
-    padding: 12px;
-    text-align: center;
-    backdrop-filter: blur(10px);
-  }
-  .stat .num { font-size: 22px; font-weight: 800; }
-  .stat .lbl { font-size: 11px; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px; }
+  .balance-card .sub { font-size: 13px; opacity: 0.7; margin-top: 8px; position: relative; }
 
   /* ===== SECTION ===== */
   .section-title {
@@ -292,249 +340,333 @@
     justify-content: space-between;
     gap: 8px;
   }
-  .section-title > span:first-child {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+  .section-title > span:first-child { display: flex; align-items: center; gap: 8px; }
   .section-title > span:first-child::before {
     content: '';
     width: 4px;
     height: 16px;
-    background: linear-gradient(180deg, #6366f1, #a855f7);
+    background: linear-gradient(180deg, #25F4EE, #FE2C55);
     border-radius: 2px;
   }
-
-  /* ===== SEARCH BAR ===== */
-  .search-bar {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-  .search-bar input {
-    flex: 1;
-    padding: 10px 14px;
-    border: 2px solid var(--border);
-    border-radius: 10px;
-    font-size: 14px;
-    outline: none;
-  }
-  .search-bar input:focus { border-color: var(--primary); }
-  .search-bar select {
-    padding: 10px 14px;
-    border: 2px solid var(--border);
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 600;
+  .section-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; margin-top: -4px; }
+  .section-link {
+    font-size: 12px;
+    color: var(--primary);
+    font-weight: 700;
     cursor: pointer;
-    outline: none;
+    background: transparent;
   }
 
-  /* ===== USER ROW ===== */
-  .user-row {
+  /* ===== RATE TABLE ===== */
+  .rate-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .rate-item {
     background: #fff;
+    border-radius: 10px;
+    padding: 12px 8px;
+    text-align: center;
+    box-shadow: var(--shadow);
+  }
+  .rate-item .rate-icon { font-size: 20px; margin-bottom: 4px; }
+  .rate-item .rate-label { font-size: 11px; color: var(--text-muted); margin-bottom: 2px; }
+  .rate-item .rate-value { font-size: 14px; font-weight: 800; color: var(--success); }
+
+  /* ===== TASK CARD ===== */
+  .task-card {
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+    border-left: 4px solid var(--primary);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .task-card:hover { transform: translateX(2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+  .task-card.follow-task { border-left-color: var(--tt-cyan); }
+  .task-card.like-task { border-left-color: var(--tt-pink); }
+  .task-card.comment-task { border-left-color: var(--warning); }
+
+  .task-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .task-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    color: #fff;
+  }
+  .task-icon.follow { background: linear-gradient(135deg, #25F4EE, #00b8d4); }
+  .task-icon.like { background: linear-gradient(135deg, #FE2C55, #e11d48); }
+  .task-icon.comment { background: linear-gradient(135deg, #f59e0b, #ea580c); }
+
+  .task-info { flex: 1; min-width: 0; }
+  .task-name { font-weight: 700; font-size: 15px; margin-bottom: 2px; word-break: break-word; }
+  .task-meta { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .task-reward {
+    font-size: 14px;
+    font-weight: 800;
+    color: #92400e;
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    padding: 6px 12px;
+    border-radius: 100px;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+  }
+  .task-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn-task {
+    flex: 1;
+    min-width: 120px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    transition: all 0.15s;
+    text-align: center;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+  .btn-open { background: var(--bg); color: var(--text); border: 2px solid var(--border); }
+  .btn-open:hover { background: var(--border); }
+  .btn-complete { background: linear-gradient(135deg, #25F4EE, #FE2C55); color: #fff; }
+  .btn-complete:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(254,44,85,0.3); }
+  .btn-complete:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* ===== PROGRESS ===== */
+  .task-progress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .task-progress-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--bg);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+  .task-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #25F4EE, #FE2C55);
+    border-radius: 100px;
+    transition: width 0.5s;
+  }
+
+  /* ===== SHOP ===== */
+  .shop-card {
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: transform 0.15s;
+    position: relative;
+  }
+  .shop-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+  .shop-card .badge {
+    position: absolute;
+    top: -6px;
+    right: 12px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #fff;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+  }
+  .shop-card .badge.best {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  }
+  .shop-icon {
+    width: 56px;
+    height: 56px;
     border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    flex-shrink: 0;
+    color: #fff;
+  }
+  .shop-icon.follow { background: linear-gradient(135deg, #25F4EE, #00b8d4); }
+  .shop-icon.like { background: linear-gradient(135deg, #FE2C55, #e11d48); }
+  .shop-icon.comment { background: linear-gradient(135deg, #f59e0b, #ea580c); }
+  .shop-info { flex: 1; min-width: 0; }
+  .shop-name { font-weight: 700; font-size: 15px; margin-bottom: 2px; }
+  .shop-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+  .shop-price {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #fef3c7;
+    color: #92400e;
+    padding: 4px 10px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 800;
+  }
+  .shop-price.affordable { background: #d1fae5; color: #065f46; }
+  .btn-buy {
+    padding: 10px 18px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #25F4EE, #FE2C55);
+    color: #fff;
+    font-weight: 700;
+    font-size: 13px;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .btn-buy:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(254,44,85,0.3); }
+  .btn-buy:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+
+  /* ===== ORDER ===== */
+  .order-card {
+    background: #fff;
+    border-radius: var(--radius);
     padding: 14px;
     margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
     box-shadow: var(--shadow);
-    transition: transform 0.15s;
-    flex-wrap: wrap;
+    border-left: 4px solid var(--warning);
   }
-  .user-row:hover { transform: translateX(2px); }
-  .user-row.banned {
-    background: #fef2f2;
-    border-left: 4px solid var(--danger);
-    opacity: 0.85;
-  }
-  .user-row .avatar { width: 44px; height: 44px; font-size: 16px; flex-shrink: 0; }
-  .user-row .info { flex: 1; min-width: 150px; }
-  .user-row .uname {
-    font-weight: 700;
-    font-size: 14px;
+  .order-card.done { border-left-color: var(--success); background: #f0fdf4; }
+  .order-card.cancelled { border-left-color: var(--text-muted); opacity: 0.7; }
+  .order-header {
     display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    gap: 8px;
     flex-wrap: wrap;
   }
-  .user-row .uname .crown { color: #f59e0b; }
-  .user-row .uname .banned-tag {
-    background: var(--danger);
+  .order-type { font-weight: 700; font-size: 14px; }
+  .order-status {
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+  .order-status.pending { background: #fef3c7; color: #92400e; }
+  .order-status.done { background: #d1fae5; color: #065f46; }
+  .order-status.cancelled { background: var(--bg); color: var(--text-muted); }
+  .order-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; word-break: break-all; }
+  .order-target {
+    background: var(--bg);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary);
+    word-break: break-all;
+    margin-bottom: 8px;
+  }
+  .btn-cancel-order {
+    background: #fee2e2;
+    color: var(--danger);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-top: 8px;
+    transition: all 0.15s;
+  }
+  .btn-cancel-order:hover { background: #fecaca; }
+
+  /* ===== PROFILE ===== */
+  .profile-card {
+    background: linear-gradient(135deg, #000 0%, #1a1a2e 100%);
+    border-radius: var(--radius);
+    padding: 24px;
+    color: #fff;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-lg);
+  }
+  .profile-card .user-info { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  .profile-card .avatar-lg {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #25F4EE, #FE2C55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 800;
+    border: 3px solid rgba(255,255,255,0.4);
+    flex-shrink: 0;
+  }
+  .profile-card .name { font-size: 20px; font-weight: 800; word-break: break-word; }
+  .profile-card .tiktok-username { font-size: 13px; opacity: 0.8; margin-top: 2px; word-break: break-word; }
+  .profile-card .admin-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
     color: #fff;
     padding: 2px 8px;
     border-radius: 100px;
     font-size: 10px;
     font-weight: 800;
-    text-transform: uppercase;
+    margin-left: 6px;
   }
-  .user-row .meta {
-    font-size: 12px;
-    color: var(--text-muted);
-    display: flex;
-    gap: 10px;
-    margin-top: 2px;
-    flex-wrap: wrap;
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .stat {
+    background: rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+    backdrop-filter: blur(10px);
   }
-  .user-actions {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
-  .btn-follow {
-    padding: 8px 18px;
-    border-radius: 100px;
-    font-weight: 700;
-    font-size: 13px;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
-    color: #fff;
-    transition: all 0.2s;
-    white-space: nowrap;
-  }
-  .btn-follow:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(99,102,241,0.4); }
-  .btn-follow.following {
-    background: #fff;
-    color: var(--primary);
-    border: 2px solid var(--primary);
-  }
+  .stat .num { font-size: 22px; font-weight: 800; }
+  .stat .lbl { font-size: 11px; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px; }
 
-  /* ===== ADMIN ACTION BUTTONS ===== */
-  .btn-icon {
-    padding: 8px 10px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    background: var(--bg);
-    color: var(--text);
-    transition: all 0.15s;
-    white-space: nowrap;
-  }
-  .btn-icon:hover { background: var(--border); }
-  .btn-icon.primary { background: #eef2ff; color: var(--primary); }
-  .btn-icon.primary:hover { background: #e0e7ff; }
-  .btn-icon.warn { background: #fef3c7; color: #92400e; }
-  .btn-icon.warn:hover { background: #fde68a; }
-  .btn-icon.danger { background: #fee2e2; color: var(--danger); }
-  .btn-icon.danger:hover { background: #fecaca; }
-  .btn-icon.success { background: #d1fae5; color: #065f46; }
-  .btn-icon.success:hover { background: #a7f3d0; }
-
-  /* ===== COMPOSER ===== */
-  .composer {
-    background: #fff;
-    border-radius: 14px;
-    padding: 16px;
-    margin-bottom: 16px;
-    box-shadow: var(--shadow);
-  }
-  .composer textarea {
-    width: 100%;
-    min-height: 80px;
+  /* ===== INPUT GROUP ===== */
+  .input-group { display: flex; gap: 8px; margin-bottom: 12px; }
+  .input-group input {
+    flex: 1;
+    padding: 12px 14px;
     border: 2px solid var(--border);
     border-radius: 10px;
-    padding: 12px;
     font-size: 14px;
-    resize: vertical;
     outline: none;
-    transition: border-color 0.2s;
+    min-width: 0;
   }
-  .composer textarea:focus { border-color: var(--primary); }
-  .composer-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-  }
-  .boost-selector {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    color: var(--text-muted);
-  }
-  .boost-selector select {
-    padding: 6px 10px;
-    border-radius: 8px;
-    border: 2px solid var(--border);
-    font-size: 13px;
-    font-weight: 600;
-    outline: none;
-    cursor: pointer;
-  }
-  .btn-post {
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
-    color: #fff;
-    padding: 9px 20px;
-    border-radius: 100px;
-    font-weight: 700;
-    font-size: 13px;
-  }
-
-  /* ===== POST ===== */
-  .post {
-    background: #fff;
-    border-radius: 14px;
-    padding: 16px;
-    margin-bottom: 12px;
-    box-shadow: var(--shadow);
-    position: relative;
-    overflow: hidden;
-  }
-  .post.boosted { border: 2px solid #f59e0b; background: linear-gradient(135deg, #fffbeb, #ffffff); }
-  .post.boosted::before {
-    content: '🔥 BOOSTED';
-    position: absolute;
-    top: 0;
-    right: 0;
-    background: linear-gradient(135deg, #f59e0b, #ea580c);
-    color: #fff;
-    padding: 4px 12px;
-    font-size: 10px;
-    font-weight: 800;
-    border-bottom-left-radius: 12px;
-    letter-spacing: 0.5px;
-  }
-  .post-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
-  }
-  .post-header .avatar { width: 40px; height: 40px; font-size: 14px; }
-  .post-header .info { flex: 1; }
-  .post-header .uname { font-weight: 700; font-size: 14px; }
-  .post-header .time { font-size: 11px; color: var(--text-muted); }
-  .post-content { font-size: 14px; line-height: 1.6; margin-bottom: 10px; white-space: pre-wrap; word-wrap: break-word; }
-  .post-footer {
-    display: flex;
-    gap: 16px;
-    padding-top: 10px;
-    border-top: 1px solid var(--border);
-    flex-wrap: wrap;
-  }
-  .post-action {
-    background: transparent;
-    color: var(--text-muted);
-    font-size: 13px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    padding: 4px 8px;
-    border-radius: 6px;
-    transition: all 0.15s;
-  }
-  .post-action:hover { background: var(--bg); color: var(--primary); }
-  .post-action.liked { color: var(--danger); }
-  .post-action.admin-del { color: var(--danger); }
+  .input-group input:focus { border-color: var(--primary); }
 
   /* ===== EMPTY ===== */
   .empty { text-align: center; padding: 40px 20px; color: var(--text-muted); }
   .empty .emoji { font-size: 48px; margin-bottom: 10px; }
-  .empty p { font-size: 14px; }
+  .empty p { font-size: 14px; margin-bottom: 6px; }
+  .empty .hint { font-size: 12px; opacity: 0.7; }
+
+  /* ===== INFO BOX ===== */
+  .info-box {
+    background: #eff6ff;
+    border-left: 4px solid var(--info);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: #1e40af;
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+  .info-box.warning { background: #fffbeb; border-left-color: var(--warning); color: #92400e; }
+  .info-box.success { background: #f0fdf4; border-left-color: var(--success); color: #065f46; }
+  .info-box strong { font-weight: 800; }
 
   /* ===== MODAL ===== */
   .modal-overlay {
@@ -547,30 +679,29 @@
     justify-content: center;
     z-index: 9999;
     padding: 20px;
+    overflow-y: auto;
   }
   .modal-overlay.show { display: flex; }
   .modal {
     background: #fff;
     border-radius: 16px;
     padding: 24px;
-    max-width: 400px;
+    max-width: 420px;
     width: 100%;
     box-shadow: var(--shadow-lg);
     animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    max-height: 90vh;
+    overflow-y: auto;
   }
   @keyframes popIn {
     from { opacity: 0; transform: scale(0.9); }
     to { opacity: 1; transform: scale(1); }
   }
-  .modal h3 { font-size: 18px; margin-bottom: 8px; }
-  .modal p { font-size: 14px; color: var(--text-muted); margin-bottom: 16px; }
+  .modal h3 { font-size: 18px; margin-bottom: 8px; word-break: break-word; }
+  .modal p { font-size: 14px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.6; }
   .modal .form-group { margin-bottom: 14px; }
-  .modal-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    margin-top: 16px;
-  }
+  .modal .form-group input { width: 100%; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
   .btn {
     padding: 10px 20px;
     border-radius: 10px;
@@ -578,20 +709,81 @@
     font-size: 14px;
     transition: all 0.15s;
   }
-  .btn-secondary {
-    background: var(--bg);
-    color: var(--text);
-  }
+  .btn-secondary { background: var(--bg); color: var(--text); }
   .btn-secondary:hover { background: var(--border); }
-  .btn-danger {
-    background: var(--danger);
-    color: #fff;
-  }
+  .btn-danger { background: var(--danger); color: #fff; }
   .btn-danger:hover { background: #dc2626; }
-  .btn-confirm {
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  .btn-confirm { background: linear-gradient(135deg, #25F4EE, #FE2C55); color: #fff; }
+  .btn-confirm:hover { transform: translateY(-1px); }
+
+  /* ===== VERIFY CODE ===== */
+  .verify-code-box {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
     color: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    margin: 12px 0;
   }
+  .verify-code-box .code {
+    font-family: 'Courier New', monospace;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 4px;
+    background: linear-gradient(135deg, #25F4EE, #FE2C55);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 8px 0;
+    user-select: all;
+    cursor: pointer;
+  }
+  .verify-code-box .hint { font-size: 12px; opacity: 0.7; }
+
+  /* ===== NOTIFICATION ===== */
+  .notif-panel {
+    position: fixed;
+    top: 70px;
+    right: 16px;
+    width: 340px;
+    max-width: calc(100vw - 32px);
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: var(--shadow-lg);
+    z-index: 999;
+    max-height: 400px;
+    overflow-y: auto;
+    display: none;
+  }
+  .notif-panel.show { display: block; animation: slideDown 0.2s; }
+  .notif-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 800;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    background: #fff;
+    border-radius: 14px 14px 0 0;
+  }
+  .notif-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .notif-item:last-child { border-bottom: none; }
+  .notif-item.unread { background: #f0f9ff; }
+  .notif-item .notif-icon { font-size: 18px; flex-shrink: 0; }
+  .notif-item .notif-body { flex: 1; min-width: 0; }
+  .notif-item .notif-title { font-weight: 700; margin-bottom: 2px; }
+  .notif-item .notif-time { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+  .notif-empty { padding: 40px 16px; text-align: center; color: var(--text-muted); font-size: 13px; }
 
   /* ===== TOAST ===== */
   .toast-container {
@@ -623,6 +815,7 @@
   .toast.success { border-left-color: var(--success); color: #065f46; }
   .toast.warning { border-left-color: var(--warning); color: #92400e; }
   .toast.error { border-left-color: var(--danger); color: #991b1b; }
+  .toast.info { border-left-color: var(--info); color: #1e40af; }
   .toast.fade-out { animation: slideUp 0.3s forwards; }
   @keyframes slideDown {
     from { opacity: 0; transform: translateY(-20px); }
@@ -630,174 +823,329 @@
   }
   @keyframes slideUp { to { opacity: 0; transform: translateY(-20px); } }
 
+  /* ===== ADMIN ===== */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .stat-card {
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow);
+    border-left: 4px solid var(--primary);
+  }
+  .stat-card.cyan { border-left-color: var(--tt-cyan); }
+  .stat-card.pink { border-left-color: var(--tt-pink); }
+  .stat-card.orange { border-left-color: var(--warning); }
+  .stat-card .label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .stat-card .value { font-size: 24px; font-weight: 800; line-height: 1; }
+  .stat-card .sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+  .admin-user-row {
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 14px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: var(--shadow);
+    flex-wrap: wrap;
+  }
+  .admin-user-row.banned { background: #fef2f2; border-left: 4px solid var(--danger); }
+  .admin-user-row .avatar { width: 44px; height: 44px; font-size: 16px; cursor: default; }
+  .admin-user-row .info { flex: 1; min-width: 150px; }
+  .admin-user-row .uname { font-weight: 700; font-size: 14px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .admin-user-row .meta { font-size: 12px; color: var(--text-muted); display: flex; gap: 10px; margin-top: 2px; flex-wrap: wrap; }
+  .banned-tag {
+    background: var(--danger);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+  .btn-icon {
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    background: var(--bg);
+    color: var(--text);
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn-icon:hover { background: var(--border); }
+  .btn-icon.primary { background: #eef2ff; color: var(--primary); }
+  .btn-icon.warn { background: #fef3c7; color: #92400e; }
+  .btn-icon.danger { background: #fee2e2; color: var(--danger); }
+  .btn-icon.success { background: #d1fae5; color: #065f46; }
+
+  /* ===== HISTORY ===== */
+  .history-item {
+    background: #fff;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 8px;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .history-item .h-icon { font-size: 22px; flex-shrink: 0; }
+  .history-item .h-body { flex: 1; min-width: 0; }
+  .history-item .h-text { font-size: 13px; font-weight: 600; word-break: break-word; }
+  .history-item .h-time { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .history-item .h-amount { font-weight: 800; font-size: 14px; white-space: nowrap; }
+  .history-item .h-amount.plus { color: var(--success); }
+  .history-item .h-amount.minus { color: var(--danger); }
+
   /* ===== RESPONSIVE ===== */
-  @media (max-width: 600px) {
-    .user-row { padding: 12px; }
-    .user-actions { width: 100%; }
-    .btn-icon { flex: 1; text-align: center; }
+  @media (max-width: 480px) {
+    .topbar { padding: 10px 12px; }
+    .topbar-logo { font-size: 14px; }
+    .points-chip { padding: 6px 10px; font-size: 12px; }
+    .main { padding: 12px; }
+    .balance-card { padding: 20px; }
+    .balance-card .value { font-size: 34px; }
+    .notif-panel { top: 60px; right: 8px; left: 8px; width: auto; }
+    .auth-card { padding: 28px 20px; }
+    .rate-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .rate-item { padding: 10px 6px; }
+    .rate-item .rate-value { font-size: 12px; }
   }
 </style>
 </head>
 <body>
 
-<!-- ============ AUTH ============ -->
-<div class="auth-screen" id="authScreen">
-  <div class="auth-card">
-    <div class="auth-logo">🚀</div>
-    <h1>CrossBoost</h1>
-    <p class="subtitle">Theo dõi chéo - Tích điểm - Tăng tương tác</p>
+<a href="#main" class="skip-link">Nội dung chính</a>
 
-    <div class="auth-error" id="authError"></div>
-
-    <div class="form-group">
-      <label>Tên đăng nhập</label>
-      <input type="text" id="authUsername" placeholder="Ít nhất 3 ký tự" autocomplete="username">
-    </div>
-    <div class="form-group">
-      <label>Mật khẩu</label>
-      <input type="password" id="authPassword" placeholder="Ít nhất 4 ký tự" autocomplete="current-password">
-    </div>
-
-    <button class="btn-primary" id="authSubmit">Đăng nhập</button>
-
-    <div class="auth-switch">
-      <span id="switchText">Chưa có tài khoản?</span>
-      <a id="switchMode">Đăng ký ngay</a>
-    </div>
-    <p style="text-align:center; margin-top:16px; font-size:12px; color:#94a3b8;">
-      💡 Admin mặc định: <b>admin / admin123</b>
-    </p>
+<!-- ===== LOCK SCREEN ===== -->
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-content">
+    <div class="lock-icon">🔒</div>
+    <h1>Phát hiện truy cập trái phép</h1>
+    <p>Vì lý do bảo mật, ứng dụng đã tạm khóa. Vui lòng đóng DevTools và thử lại.</p>
+    <button class="btn-unlock" id="btnUnlock">Đã đóng, mở lại</button>
   </div>
 </div>
 
-<!-- ============ APP ============ -->
+<!-- ===== AUTH ===== -->
+<div class="auth-screen" id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo">🎵</div>
+    <h1>TikTok Boost Pro</h1>
+    <p class="subtitle">Kiếm xu • Đổi follow & like TikTok</p>
+
+    <div class="auth-error" id="authError" role="alert"></div>
+
+    <div class="form-group" id="usernameGroup">
+      <label for="authUsername">Tên đăng nhập</label>
+      <input type="text" id="authUsername" placeholder="Ít nhất 3 ký tự" autocomplete="username" maxlength="20">
+      <div class="input-hint" id="usernameHint">Chỉ chữ thường, số và dấu gạch dưới</div>
+    </div>
+    <div class="form-group" id="passwordGroup">
+      <label for="authPassword">Mật khẩu</label>
+      <input type="password" id="authPassword" placeholder="Ít nhất 6 ký tự" autocomplete="current-password" maxlength="50">
+      <div class="input-hint">Tối thiểu 6 ký tự</div>
+    </div>
+
+    <button class="btn-primary" id="authSubmit" type="button">
+      <span id="authBtnText">Đăng nhập</span>
+    </button>
+
+    <div class="auth-switch">
+      <span id="switchText">Chưa có tài khoản?</span>
+      <a id="switchMode" tabindex="0" role="button">Đăng ký ngay</a>
+    </div>
+
+    <p class="auth-hint">🔒 Bảo mật đa lớp • Không chia sẻ tài khoản</p>
+  </div>
+</div>
+
+<!-- ===== APP ===== -->
 <div class="app" id="app">
   <div class="topbar">
-    <div class="topbar-logo">🚀 CrossBoost</div>
+    <div class="topbar-logo">🎵 <span class="tt">TikTok Boost Pro</span></div>
     <div class="topbar-user">
-      <div class="points-chip" id="topPoints">0 điểm</div>
+      <div class="points-chip" id="topPoints" title="Xu của bạn">0 xu</div>
+      <button class="notif-btn" id="btnNotif" type="button">
+        🔔
+        <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
+      </button>
       <div class="avatar" id="topAvatar"></div>
-      <button class="btn-logout" id="btnLogout">Đăng xuất</button>
+      <button class="btn-logout" id="btnLogout" type="button">Đăng xuất</button>
     </div>
   </div>
 
-  <div class="tabs" id="tabs">
-    <button class="tab active" data-tab="feed">📰 Feed</button>
-    <button class="tab" data-tab="discover">🔍 Khám phá</button>
-    <button class="tab" data-tab="profile">👤 Cá nhân</button>
-    <!-- Admin tab sẽ được inject bằng JS nếu user là admin -->
+  <div class="notif-panel" id="notifPanel">
+    <div class="notif-header">
+      <span>🔔 Thông báo</span>
+      <button class="section-link" id="btnClearNotif" type="button">Xóa hết</button>
+    </div>
+    <div id="notifList"></div>
   </div>
 
-  <div class="main">
+  <div class="tabs" id="tabs" role="tablist">
+    <button class="tab active" data-tab="tasks" type="button">💰 Kiếm xu</button>
+    <button class="tab" data-tab="shop" type="button">🛒 Mua tương tác</button>
+    <button class="tab" data-tab="orders" type="button">📦 Đơn của tôi</button>
+    <button class="tab" data-tab="profile" type="button">👤 Cá nhân</button>
+  </div>
 
-    <!-- ===== FEED ===== -->
-    <div class="page active" id="page-feed">
-      <div class="composer">
-        <textarea id="postContent" placeholder="Bạn đang nghĩ gì? Chia sẻ để cộng đồng tương tác..."></textarea>
-        <div class="composer-actions">
-          <div class="boost-selector">
-            <span>🚀 Boost:</span>
-            <select id="boostLevel">
-              <option value="0">Không boost</option>
-              <option value="10">10 điểm - Ưu tiên nhẹ</option>
-              <option value="25">25 điểm - Ưu tiên cao</option>
-              <option value="50">50 điểm - Top feed</option>
-            </select>
-          </div>
-          <button class="btn-post" id="btnPost">Đăng bài</button>
+  <div class="main" id="main">
+
+    <div class="page active" id="page-tasks">
+      <div class="balance-card">
+        <div class="label">Số dư xu</div>
+        <div class="value" id="balanceValue">0<small>xu</small></div>
+        <div class="sub" id="balanceSub">Hoàn thành nhiệm vụ để kiếm xu</div>
+      </div>
+
+      <div class="info-box">
+        <strong>💡 Bảng giá kiếm xu:</strong>
+      </div>
+
+      <div class="rate-grid">
+        <div class="rate-item">
+          <div class="rate-icon">👥</div>
+          <div class="rate-label">1 Follow</div>
+          <div class="rate-value">+100 xu</div>
+        </div>
+        <div class="rate-item">
+          <div class="rate-icon">❤️</div>
+          <div class="rate-label">1 Tim</div>
+          <div class="rate-value">+50 xu</div>
+        </div>
+        <div class="rate-item">
+          <div class="rate-icon">💬</div>
+          <div class="rate-label">1 Comment</div>
+          <div class="rate-value">+50 xu</div>
         </div>
       </div>
-      <div class="section-title"><span>Bài viết mới nhất</span></div>
-      <div id="feedList"></div>
+
+      <div class="section-title">
+        <span>📋 Nhiệm vụ có sẵn</span>
+        <button class="section-link" id="btnRefreshTasks" type="button">🔄 Làm mới</button>
+      </div>
+      <div class="section-desc">Nhấn "Mở TikTok" → làm theo yêu cầu → quay lại nhập mã xác nhận</div>
+      <div id="taskList"></div>
     </div>
 
-    <!-- ===== DISCOVER ===== -->
-    <div class="page" id="page-discover">
-      <div class="section-title"><span>Gợi ý theo dõi</span></div>
-      <div id="userList"></div>
+    <div class="page" id="page-shop">
+      <div class="balance-card">
+        <div class="label">Số dư xu</div>
+        <div class="value" id="shopBalance">0<small>xu</small></div>
+        <div class="sub">Dùng xu mua tương tác cho TikTok của bạn</div>
+      </div>
+
+      <div class="info-box warning" id="shopWarning" style="display:none;">
+        <strong>⚠️ Chưa có TikTok:</strong> Vào tab <b>Cá nhân</b> để cập nhật username TikTok trước!
+      </div>
+
+      <div class="section-title"><span>🛒 Chọn gói tương tác</span></div>
+      <div class="section-desc">Giá đã bao gồm chiết khấu cho gói lớn</div>
+      <div id="shopList"></div>
     </div>
 
-    <!-- ===== PROFILE ===== -->
+    <div class="page" id="page-orders">
+      <div class="section-title"><span>📦 Đơn mua của bạn</span></div>
+      <div class="section-desc">Theo dõi tiến độ các đơn đã mua</div>
+      <div id="myOrders"></div>
+    </div>
+
     <div class="page" id="page-profile">
       <div class="profile-card">
         <div class="user-info">
           <div class="avatar-lg" id="profileAvatar"></div>
-          <div>
+          <div style="min-width:0;">
             <div class="name" id="profileName"></div>
-            <div class="rank" id="profileRank"></div>
+            <div class="tiktok-username" id="profileTikTok">@chưa-cập-nhật</div>
           </div>
         </div>
         <div class="stats">
-          <div class="stat"><div class="num" id="statPoints">0</div><div class="lbl">Điểm</div></div>
-          <div class="stat"><div class="num" id="statFollowers">0</div><div class="lbl">Followers</div></div>
-          <div class="stat"><div class="num" id="statFollowing">0</div><div class="lbl">Đang follow</div></div>
+          <div class="stat"><div class="num" id="statPoints">0</div><div class="lbl">Xu</div></div>
+          <div class="stat"><div class="num" id="statEarned">0</div><div class="lbl">Đã kiếm</div></div>
+          <div class="stat"><div class="num" id="statSpent">0</div><div class="lbl">Đã tiêu</div></div>
         </div>
       </div>
-      <div class="section-title"><span>Bài viết của bạn</span></div>
-      <div id="myPosts"></div>
-    </div>
 
-    <!-- ===== ADMIN ===== -->
-    <div class="page" id="page-admin">
-      <div class="section-title">
-        <span>🛡️ Dashboard Quản Trị</span>
+      <div class="section-title"><span>🎵 TikTok của bạn</span></div>
+      <div class="section-desc">Nhập username TikTok để nhận follow/like khi mua</div>
+      <div class="input-group">
+        <input type="text" id="tiktokUsername" placeholder="@username_tiktok" maxlength="24" autocomplete="off">
+        <button class="btn-buy" id="btnSaveTikTok" type="button">Lưu</button>
       </div>
 
-      <!-- Stats -->
+      <div class="section-title"><span>📊 Lịch sử hoạt động</span></div>
+      <div id="historyList"></div>
+
+      <div class="section-title"><span>⚙️ Cài đặt</span></div>
+      <button class="btn-secondary-full" id="btnChangePassword" type="button" style="width:100%; padding:12px; background:var(--bg); border-radius:10px; font-weight:700; margin-bottom:8px;">🔑 Đổi mật khẩu</button>
+      <button class="btn-secondary-full" id="btnExportMyData" type="button" style="width:100%; padding:12px; background:var(--bg); border-radius:10px; font-weight:700; margin-bottom:8px;">💾 Tải dữ liệu của tôi</button>
+    </div>
+
+    <div class="page" id="page-admin">
+      <div class="section-title"><span>🛡️ Dashboard Quản Trị</span></div>
+
       <div class="stats-grid">
         <div class="stat-card">
           <div class="label">Tổng Users</div>
           <div class="value" id="admTotalUsers">0</div>
           <div class="sub" id="admBannedSub">0 bị khóa</div>
         </div>
-        <div class="stat-card green">
-          <div class="label">Bài viết</div>
-          <div class="value" id="admTotalPosts">0</div>
-          <div class="sub" id="admBoostedSub">0 boosted</div>
+        <div class="stat-card cyan">
+          <div class="label">Nhiệm vụ chờ</div>
+          <div class="value" id="admPendingTasks">0</div>
+          <div class="sub">Cần user làm</div>
+        </div>
+        <div class="stat-card pink">
+          <div class="label">Đơn hoàn thành</div>
+          <div class="value" id="admCompletedOrders">0</div>
+          <div class="sub">Tổng đơn mua</div>
         </div>
         <div class="stat-card orange">
-          <div class="label">Tổng điểm</div>
+          <div class="label">Tổng xu</div>
           <div class="value" id="admTotalPoints">0</div>
-          <div class="sub">Toàn hệ thống</div>
-        </div>
-        <div class="stat-card red">
-          <div class="label">Lượt Follow</div>
-          <div class="value" id="admTotalFollows">0</div>
-          <div class="sub">Tương tác chéo</div>
+          <div class="sub">Đang lưu hành</div>
         </div>
       </div>
 
-      <!-- Top Users -->
-      <div class="section-title"><span>🏆 Top 5 Users nhiều điểm</span></div>
-      <div id="admTopUsers" style="margin-bottom: 20px;"></div>
-
-      <!-- User Management -->
-      <div class="section-title">
-        <span>👥 Quản lý Users</span>
-      </div>
-      <div class="search-bar">
-        <input type="text" id="admSearch" placeholder="🔍 Tìm username...">
-        <select id="admFilter">
+      <div class="section-title"><span>👥 Quản lý Users</span></div>
+      <div class="input-group" style="flex-wrap:wrap;">
+        <input type="text" id="admSearch" placeholder="🔍 Tìm username..." style="min-width:150px;">
+        <select id="admFilter" style="padding:12px 14px; border:2px solid var(--border); border-radius:10px; font-weight:600; outline:none;">
           <option value="all">Tất cả</option>
-          <option value="active">Đang hoạt động</option>
-          <option value="banned">Đã khóa</option>
+          <option value="active">Hoạt động</option>
+          <option value="banned">Bị khóa</option>
           <option value="admin">Admin</option>
+          <option value="rich">Nhiều xu (&gt;1000)</option>
         </select>
       </div>
       <div id="admUserList"></div>
 
-      <!-- Danger Zone -->
-      <div class="section-title" style="margin-top:32px;">
-        <span>⚠️ Vùng nguy hiểm</span>
-      </div>
+      <div class="section-title" style="margin-top:32px;"><span>💾 Bảo trì</span></div>
+      <button class="btn-secondary-full" id="btnExport" type="button" style="width:100%; padding:12px; background:var(--bg); border-radius:10px; font-weight:700; margin-bottom:8px;">💾 Sao lưu hệ thống</button>
+      <button class="btn-secondary-full" id="btnImport" type="button" style="width:100%; padding:12px; background:var(--bg); border-radius:10px; font-weight:700; margin-bottom:8px;">📂 Khôi phục backup</button>
+      <button class="btn-secondary-full" id="btnAuditLog" type="button" style="width:100%; padding:12px; background:var(--bg); border-radius:10px; font-weight:700; margin-bottom:8px;">📋 Xem audit log</button>
+      <input type="file" id="importFile" accept=".json" style="display:none;">
+
+      <div class="section-title" style="margin-top:32px;"><span>⚠️ Vùng nguy hiểm</span></div>
       <div style="background:#fff; border-radius:14px; padding:16px; box-shadow:var(--shadow); border-left:4px solid var(--danger);">
-        <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">
-          Các hành động dưới đây không thể hoàn tác. Hãy chắc chắn trước khi thực hiện.
-        </p>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn-icon warn" id="btnResetPoints">🔄 Reset toàn bộ điểm</button>
-          <button class="btn-icon warn" id="btnClearPosts">🗑️ Xóa tất cả bài viết</button>
-          <button class="btn-icon danger" id="btnResetAll">💣 Xóa toàn bộ hệ thống</button>
+          <button class="btn-icon warn" id="btnResetPoints" type="button">🔄 Reset xu</button>
+          <button class="btn-icon danger" id="btnResetAll" type="button">💣 Reset toàn bộ</button>
         </div>
       </div>
     </div>
@@ -805,85 +1153,240 @@
   </div>
 </div>
 
-<!-- ============ MODAL ============ -->
-<div class="modal-overlay" id="modalOverlay">
+<div class="modal-overlay" id="modalOverlay" role="dialog">
   <div class="modal" id="modalContent"></div>
 </div>
 
-<div class="toast-container" id="toastContainer"></div>
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
 <script>
+/* ============================================================
+   TikTok Boost Pro v3.1 - Xu Edition
+   Tỷ giá: Follow = 100 xu | Like = 50 xu | Comment = 50 xu
+   ============================================================ */
 (function() {
   'use strict';
 
-  // ============ CONFIG ============
+  // ══════════════════════════════════════════════════════════
+  // 🔒 LAYER 1: ANTI-DEBUGGING
+  // ══════════════════════════════════════════════════════════
+  const security = {
+    devtoolsOpen: false,
+    detect() {
+      const threshold = 160;
+      const widthDiff = window.outerWidth - window.innerWidth;
+      const heightDiff = window.outerHeight - window.innerHeight;
+      return widthDiff > threshold || heightDiff > threshold;
+    },
+    startMonitor() {
+      setInterval(() => {
+        if (this.detect()) {
+          if (!this.devtoolsOpen) {
+            this.devtoolsOpen = true;
+            const lock = document.getElementById('lockScreen');
+            if (lock) lock.classList.add('show');
+          }
+        } else {
+          this.devtoolsOpen = false;
+        }
+      }, 1000);
+    },
+    unlock() {
+      this.devtoolsOpen = false;
+      const lock = document.getElementById('lockScreen');
+      if (lock) lock.classList.remove('show');
+    }
+  };
+
+  // ══════════════════════════════════════════════════════════
+  // 🔒 LAYER 2: CRYPTO
+  // ══════════════════════════════════════════════════════════
+  const crypto2 = {
+    SECRET_1: 'TT_Boost_x9K2m_2024_prod_key_A',
+    SECRET_2: 'TT_Boost_p7N4q_2024_prod_key_B',
+    SECRET_3: 'TT_Boost_z3R8w_2024_prod_key_C',
+    DEFAULT_ADMIN_PASS: 'admin123',
+    PBKDF2_ITERATIONS: 100000,
+    SALT: 'TTBoost_Salt_v3_2024',
+
+    async sha256(str) {
+      if (window.crypto && window.crypto.subtle) {
+        const buf = new TextEncoder().encode(str);
+        const hashBuf = await window.crypto.subtle.digest('SHA-256', buf);
+        return Array.from(new Uint8Array(hashBuf))
+          .map(b => b.toString(16).padStart(2, '0')).join('');
+      }
+      return this.fallbackHash(str);
+    },
+
+    fallbackHash(str) {
+      let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+      for (let i = 0; i < str.length; i++) {
+        const ch = str.charCodeAt(i);
+        h1 = Math.imul(h1 ^ ch, 2654435761);
+        h2 = Math.imul(h2 ^ ch, 1597334677);
+      }
+      h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+      h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+      return (h2 >>> 0).toString(16).padStart(8, '0') + (h1 >>> 0).toString(16).padStart(8, '0');
+    },
+
+    async hashPassword(password, salt) {
+      salt = salt || this.SALT;
+      if (window.crypto && window.crypto.subtle) {
+        const enc = new TextEncoder();
+        const keyMaterial = await window.crypto.subtle.importKey(
+          'raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']
+        );
+        const bits = await window.crypto.subtle.deriveBits(
+          {
+            name: 'PBKDF2',
+            salt: enc.encode(salt),
+            iterations: this.PBKDF2_ITERATIONS,
+            hash: 'SHA-256'
+          },
+          keyMaterial,
+          256
+        );
+        return Array.from(new Uint8Array(bits))
+          .map(b => b.toString(16).padStart(2, '0')).join('');
+      }
+      let h = password + salt;
+      for (let i = 0; i < 1000; i++) h = this.fallbackHash(h + i);
+      return h;
+    },
+
+    syncHash(str) {
+      let h = 5381;
+      for (let i = 0; i < str.length; i++) {
+        h = ((h << 5) + h) + str.charCodeAt(i);
+        h |= 0;
+      }
+      return 'h' + Math.abs(h).toString(36);
+    },
+
+    checksum(user) {
+      const payload = [
+        user.username,
+        user.passwordHash,
+        user.createdAt,
+        user.isAdmin ? '1' : '0',
+        user.isGuest ? '1' : '0',
+        this.SECRET_1
+      ].join('|');
+      return this.syncHash(payload);
+    },
+
+    sessionToken(username, expiresAt) {
+      return this.syncHash(username + '|' + expiresAt + '|' + this.SECRET_2) + '.' + expiresAt;
+    },
+
+    verifySessionToken(username, token) {
+      if (!token || typeof token !== 'string') return false;
+      const parts = token.split('.');
+      if (parts.length !== 2) return false;
+      const exp = parseInt(parts[1], 10);
+      if (isNaN(exp) || exp < Date.now()) return false;
+      const expected = this.syncHash(username + '|' + exp + '|' + this.SECRET_2);
+      return expected === parts[0];
+    },
+
+    signAudit(entry) {
+      return this.syncHash(JSON.stringify(entry) + this.SECRET_3);
+    },
+
+    genId(prefix) {
+      const rand = Array.from(window.crypto.getRandomValues(new Uint8Array(8)))
+        .map(b => b.toString(16).padStart(2, '0')).join('');
+      return (prefix || 'id') + Date.now().toString(36) + rand;
+    },
+
+    genVerifyCode() {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      const bytes = window.crypto.getRandomValues(new Uint8Array(6));
+      let code = '';
+      for (let i = 0; i < 6; i++) code += chars[bytes[i] % chars.length];
+      return code;
+    }
+  };
+
+  // ══════════════════════════════════════════════════════════
+  // CONFIG — 💰 TỶ GIÁ XU MỚI
+  // ══════════════════════════════════════════════════════════
   const CONFIG = {
-    userKey: 'crossboost_users_v2',
-    sessionKey: 'crossboost_session_v2',
-    postKey: 'crossboost_posts_v2',
-    initKey: 'crossboost_initialized_v2',
-    pointsPerFollower: 5,
-    pointsPerFollow: 1,
+    VERSION: 3.1,
+    PREFIX: 'ttb3_',
+    userKey: 'u',
+    sessionKey: 's',
+    taskKey: 't',
+    orderKey: 'o',
+    notifKey: 'n',
+    auditKey: 'a',
+    initKey: 'i',
     minUsername: 3,
-    minPassword: 4,
-    ranks: [
-      { min: 0,   label: '🌱 Tân binh' },
-      { min: 30,  label: '⭐ Thành viên tích cực' },
-      { min: 80,  label: '🔥 Cao thủ' },
-      { min: 150, label: '👑 Huyền thoại' }
+    maxUsername: 20,
+    minPassword: 6,
+    maxPassword: 50,
+    taskCooldownMs: 30 * 1000,
+    dailyTaskLimit: 50,
+    verifyCodeTTL: 10 * 60 * 1000,
+    maxLoginAttempts: 5,
+    loginLockoutMs: 5 * 60 * 1000,
+    sessionIdleMs: 30 * 60 * 1000,
+    
+    // 💰 TỶ GIÁ: Follow = 100 xu | Like = 50 xu | Comment = 50 xu
+    rewards: { 
+      follow: 100,   // +100 xu khi follow
+      like: 50,      // +50 xu khi tim
+      comment: 50    // +50 xu khi comment
+    },
+    
+    // Điểm khởi đầu
+    welcomeBonus: 500,
+    
+    // 💰 GÓI MUA — giá tương ứng tỷ giá trên
+    packages: [
+      // Follow: 100 xu/người (mua lẻ), giảm giá khi mua nhiều
+      { id: 'f10',  type: 'follow',  qty: 10,  price: 1000, name: '10 Follow TikTok',  desc: '100 xu/follow' },
+      { id: 'f50',  type: 'follow',  qty: 50,  price: 4500, name: '50 Follow TikTok',  desc: '90 xu/follow • Tiết kiệm 10%', badge: 'HOT' },
+      { id: 'f100', type: 'follow',  qty: 100, price: 8000, name: '100 Follow TikTok', desc: '80 xu/follow • Tiết kiệm 20%', badge: 'BEST' },
+      
+      // Like: 50 xu/tim
+      { id: 'l20',  type: 'like',    qty: 20,  price: 1000, name: '20 Tim video',      desc: '50 xu/tim' },
+      { id: 'l100', type: 'like',    qty: 100, price: 4500, name: '100 Tim video',     desc: '45 xu/tim • Tiết kiệm 10%', badge: 'HOT' },
+      
+      // Comment: 50 xu/comment
+      { id: 'c10',  type: 'comment', qty: 10,  price: 500,  name: '10 Comment',        desc: '50 xu/comment' }
     ]
   };
 
-  // ============ STATE ============
+  // ══════════════════════════════════════════════════════════
+  // STATE
+  // ══════════════════════════════════════════════════════════
   let currentUser = null;
   let users = {};
-  let posts = [];
+  let tasks = [];
+  let orders = [];
+  let notifications = [];
+  let auditLog = [];
   let authMode = 'login';
+  let admFilterValue = 'all';
+  let admSearchValue = '';
+  let isProcessing = false;
+  let lastActivity = Date.now();
+  let loginAttempts = {};
 
-  // ============ STORAGE ============
-  function loadAll() {
-    try {
-      users = JSON.parse(localStorage.getItem(CONFIG.userKey) || '{}');
-      posts = JSON.parse(localStorage.getItem(CONFIG.postKey) || '[]');
-      const session = localStorage.getItem(CONFIG.sessionKey);
-      if (session && users[session]) currentUser = session;
-    } catch(e) { console.error(e); }
-  }
+  // ══════════════════════════════════════════════════════════
+  // UTILS
+  // ══════════════════════════════════════════════════════════
+  const $ = s => document.querySelector(s);
+  const $$ = s => document.querySelectorAll(s);
 
-  function saveUsers() { localStorage.setItem(CONFIG.userKey, JSON.stringify(users)); }
-  function savePosts() { localStorage.setItem(CONFIG.postKey, JSON.stringify(posts)); }
-  function saveSession(u) {
-    if (u) localStorage.setItem(CONFIG.sessionKey, u);
-    else localStorage.removeItem(CONFIG.sessionKey);
-  }
-
-  // Tạo admin mặc định lần đầu  function ensureAdmin() {
-    if (!localStorage.getItem(CONFIG.initKey)) {
-      if (!users['admin']) {
-        users['admin'] = {
-          username: 'admin',
-          password: hash('admin123'),
-          points: 999,
-          followers: [],
-          following: [],
-          isAdmin: true,
-          banned: false,
-          createdAt: Date.now()
-        };
-        saveUsers();
-      }
-      localStorage.setItem(CONFIG.initKey, '1');
-    }
-  }
-
-  // ============ UTILS ============
-  function hash(str) {
-    let h = 0;
-    for (let i = 0; i < str.length; i++) {
-      h = ((h << 5) - h) + str.charCodeAt(i);
-      h |= 0;
-    }
-    return 'h' + Math.abs(h).toString(36);
+  function escapeHtml(s) {
+    if (s == null) return '';
+    const div = document.createElement('div');
+    div.textContent = String(s);
+    return div.innerHTML;
   }
 
   function colorFromName(name) {
@@ -893,163 +1396,552 @@
     return colors[Math.abs(h) % colors.length];
   }
 
-  function getRank(points) {
-    let r = CONFIG.ranks[0];
-    for (const rank of CONFIG.ranks) if (points >= rank.min) r = rank;
-    return r.label;
+  function initials(name) {
+    if (!name) return '??';
+    const parts = name.split(/[\s._-]+/).filter(Boolean);
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.slice(0, 2).toUpperCase();
   }
-
-  function initials(name) { return name.slice(0, 2).toUpperCase(); }
 
   function timeAgo(ts) {
     const diff = Date.now() - ts;
+    if (diff < 0) return 'vừa xong';
     const m = Math.floor(diff / 60000);
     if (m < 1) return 'vừa xong';
-    if (m < 60) return `${m} phút trước`;
+    if (m < 60) return m + ' phút trước';
     const h = Math.floor(m / 60);
-    if (h < 24) return `${h} giờ trước`;
+    if (h < 24) return h + ' giờ trước';
     const d = Math.floor(h / 24);
-    return `${d} ngày trước`;
+    if (d < 30) return d + ' ngày trước';
+    return new Date(ts).toLocaleDateString('vi-VN');
   }
 
-  function escapeHtml(s) {
-    const div = document.createElement('div');
-    div.textContent = s;
-    return div.innerHTML;
+  function todayKey() {
+    const d = new Date();
+    return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
   }
 
-  function $(sel) { return document.querySelector(sel); }
-  function $$(sel) { return document.querySelectorAll(sel); }
+  function normalizeTikTok(u) {
+    if (!u) return '';
+    return String(u).trim().replace(/^@+/, '').toLowerCase();
+  }
 
-  function showToast(msg, type = '') {
+  function isValidTikTok(u) { return /^[a-zA-Z0-9._]{2,24}$/.test(u); }
+  function isValidUsername(u) { return /^[a-z0-9_]{3,20}$/.test(u); }
+
+  function formatNumber(n) {
+    return n.toLocaleString('vi-VN');
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // STORAGE
+  // ══════════════════════════════════════════════════════════
+  function safeGet(key, fallback) {
+    try {
+      const raw = localStorage.getItem(CONFIG.PREFIX + key);
+      if (!raw) return fallback;
+      return JSON.parse(raw);
+    } catch (e) { return fallback; }
+  }
+
+  function safeSet(key, value) {
+    try {
+      localStorage.setItem(CONFIG.PREFIX + key, JSON.stringify(value));
+      return true;
+    } catch (e) {
+      if (e.name === 'QuotaExceededError') showToast('⚠️ Bộ nhớ đầy', 'error');
+      return false;
+    }
+  }
+
+  function safeRemove(key) {
+    try { localStorage.removeItem(CONFIG.PREFIX + key); return true; }
+    catch (e) { return false; }
+  }
+
+  function loadAll() {
+    try {
+      users = safeGet(CONFIG.userKey, {});
+      tasks = safeGet(CONFIG.taskKey, []);
+      orders = safeGet(CONFIG.orderKey, []);
+      notifications = safeGet(CONFIG.notifKey, []);
+      auditLog = safeGet(CONFIG.auditKey, []);
+      loginAttempts = safeGet('login_attempts', {});
+      
+      const session = safeGet(CONFIG.sessionKey, null);
+      if (session && session.username && session.expiresAt > Date.now()) {
+        if (crypto2.verifySessionToken(session.username, session.token)) {
+          if (users[session.username] && !users[session.username].banned) {
+            currentUser = session.username;
+            lastActivity = Date.now();
+          } else {
+            safeRemove(CONFIG.sessionKey);
+          }
+        } else {
+          safeRemove(CONFIG.sessionKey);
+        }
+      }
+    } catch (e) {
+      users = {}; tasks = []; orders = []; notifications = []; auditLog = [];
+    }
+  }
+
+  function saveUsers() { return safeSet(CONFIG.userKey, users); }
+  function saveTasks() { return safeSet(CONFIG.taskKey, tasks); }
+  function saveOrders() { return safeSet(CONFIG.orderKey, orders); }
+  function saveNotifs() { return safeSet(CONFIG.notifKey, notifications); }
+  function saveAudit() { 
+    if (auditLog.length > 500) auditLog = auditLog.slice(-500);
+    return safeSet(CONFIG.auditKey, auditLog); 
+  }
+
+  function saveSession(username, remember) {
+    try {
+      if (username && remember) {
+        const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
+        const token = crypto2.sessionToken(username, expiresAt);
+        safeSet(CONFIG.sessionKey, { username, token, expiresAt });
+      } else {
+        safeRemove(CONFIG.sessionKey);
+      }
+    } catch (e) {}
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // AUDIT LOG
+  // ══════════════════════════════════════════════════════════
+  function audit(action, target, details) {
+    const entry = {
+      id: crypto2.genId('a'),
+      time: Date.now(),
+      actor: currentUser || 'system',
+      action: action,
+      target: target || '',
+      details: details || ''
+    };
+    entry.sig = crypto2.signAudit(entry);
+    auditLog.push(entry);
+    saveAudit();
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // NOTIFICATIONS
+  // ══════════════════════════════════════════════════════════
+  function pushNotif(user, type, title, body) {
+    if (!user) return;
+    const notif = {
+      id: crypto2.genId('n'),
+      user, type, title,
+      body: body || '',
+      read: false,
+      time: Date.now()
+    };
+    notifications.unshift(notif);
+    const userNotifs = notifications.filter(n => n.user === user);
+    if (userNotifs.length > 100) {
+      const keep = new Set(userNotifs.slice(0, 100).map(n => n.id));
+      notifications = notifications.filter(n => n.user !== user || keep.has(n.id));
+    }
+    saveNotifs();
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // TOAST
+  // ══════════════════════════════════════════════════════════
+  function showToast(msg, type) {
+    type = type || '';
     const container = $('#toastContainer');
+    if (!container) return;
     const toast = document.createElement('div');
     toast.className = 'toast ' + type;
     toast.textContent = msg;
     container.appendChild(toast);
     setTimeout(() => {
       toast.classList.add('fade-out');
-      setTimeout(() => toast.remove(), 300);
-    }, 2400);
+      setTimeout(() => { if (toast.parentNode) toast.remove(); }, 300);
+    }, 2600);
   }
 
-  function isAdmin(u) {
-    return u && u.isAdmin === true;
+  function bumpPoints() {
+    const chip = $('#topPoints');
+    if (!chip) return;
+    chip.classList.remove('bump');
+    void chip.offsetWidth;
+    chip.classList.add('bump');
   }
 
-  // ============ MODAL ============
   function showModal(html) {
-    $('#modalContent').innerHTML = html;
-    $('#modalOverlay').classList.add('show');
+    const overlay = $('#modalOverlay');
+    const content = $('#modalContent');
+    if (!overlay || !content) return;
+    content.innerHTML = html;
+    overlay.classList.add('show');
   }
-  function hideModal() {
-    $('#modalOverlay').classList.remove('show');
-  }
-  $('#modalOverlay').addEventListener('click', e => {
-    if (e.target.id === 'modalOverlay') hideModal();
-  });
 
-  // ============ AUTH ============
+  function hideModal() {
+    const overlay = $('#modalOverlay');
+    if (overlay) overlay.classList.remove('show');
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // ADMIN VERIFY
+  // ══════════════════════════════════════════════════════════
+  function isAdmin(u) { return u && u.isAdmin === true; }
+
+  function requireAdmin() {
+    if (!currentUser) return false;
+    const u = users[currentUser];
+    if (!u) return false;
+    if (!u.isAdmin) return false;
+    if (u.banned) return false;
+    if (u.isGuest) return false;
+    if (!u.checksum || u.checksum !== crypto2.checksum(u)) {
+      audit('checksum_fail', u.username, 'Tamper detected');
+      return false;
+    }
+    return true;
+  }
+
+  function ensureAdmin() {
+    const hasAdmin = Object.values(users).some(u => 
+      u.isAdmin === true && u.checksum === crypto2.checksum(u)
+    );
+    if (!hasAdmin) {
+      console.log('ℹ️ Chưa có admin. Đăng nhập admin/admin123 để kích hoạt.');
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // RATE LIMIT
+  // ══════════════════════════════════════════════════════════
+  function checkLoginRateLimit(username) {
+    const attempts = loginAttempts[username] || { count: 0, lockedUntil: 0 };
+    if (attempts.lockedUntil > Date.now()) {
+      const mins = Math.ceil((attempts.lockedUntil - Date.now()) / 60000);
+      return { blocked: true, msg: `Tài khoản khóa ${mins} phút` };
+    }
+    return { blocked: false };
+  }
+
+  function recordLoginFailure(username) {
+    const a = loginAttempts[username] || { count: 0, lockedUntil: 0 };
+    a.count++;
+    if (a.count >= CONFIG.maxLoginAttempts) {
+      a.lockedUntil = Date.now() + CONFIG.loginLockoutMs;
+      a.count = 0;
+      audit('login_lockout', username, 'Quá nhiều lần sai');
+    }
+    loginAttempts[username] = a;
+    safeSet('login_attempts', loginAttempts);
+  }
+
+  function clearLoginAttempts(username) {
+    delete loginAttempts[username];
+    safeSet('login_attempts', loginAttempts);
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // AUTH
+  // ══════════════════════════════════════════════════════════
   function showAuthError(msg) {
     const el = $('#authError');
     el.textContent = msg;
     el.classList.add('show');
-    setTimeout(() => el.classList.remove('show'), 3000);
+    setTimeout(() => el.classList.remove('show'), 4000);
   }
 
-  function handleAuth() {
-    const username = $('#authUsername').value.trim().toLowerCase();
-    const password = $('#authPassword').value;
+  function setAuthLoading(loading) {
+    const btn = $('#authSubmit');
+    const text = $('#authBtnText');
+    if (!btn || !text) return;
+    btn.disabled = loading;
+    if (loading) {
+      text.innerHTML = '<span class="spinner"></span> Đang xử lý...';
+    } else {
+      text.textContent = authMode === 'login' ? 'Đăng nhập' : 'Đăng ký';
+    }
+  }
+
+  async function handleAuth() {
+    if (isProcessing) return;
+
+    const usernameEl = $('#authUsername');
+    const passwordEl = $('#authPassword');
+    const usernameGroup = $('#usernameGroup');
+    const passwordGroup = $('#passwordGroup');
+    const username = usernameEl.value.trim().toLowerCase();
+    const password = passwordEl.value;
+
+    usernameGroup.classList.remove('error', 'success');
+    passwordGroup.classList.remove('error', 'success');
 
     if (username.length < CONFIG.minUsername) {
+      usernameGroup.classList.add('error');
+      usernameEl.focus();
       showAuthError(`Tên đăng nhập phải có ít nhất ${CONFIG.minUsername} ký tự`);
       return;
     }
+    if (!isValidUsername(username)) {
+      usernameGroup.classList.add('error');
+      usernameEl.focus();
+      showAuthError('Tên đăng nhập chỉ được chứa a-z, 0-9 và dấu _');
+      return;
+    }
     if (password.length < CONFIG.minPassword) {
+      passwordGroup.classList.add('error');
+      passwordEl.focus();
       showAuthError(`Mật khẩu phải có ít nhất ${CONFIG.minPassword} ký tự`);
       return;
     }
 
-    if (authMode === 'register') {
-      if (users[username]) {
-        showAuthError('Tên đăng nhập đã tồn tại!');
+    if (authMode === 'login') {
+      const rl = checkLoginRateLimit(username);
+      if (rl.blocked) {
+        showAuthError(rl.msg);
         return;
       }
-      users[username] = {
-        username,
-        password: hash(password),
-        points: 10,
-        followers: [],
-        following: [],
-        isAdmin: false,
-        banned: false,
-        createdAt: Date.now()
-      };
-      saveUsers();
-      login(username);
-      showToast('🎉 Đăng ký thành công! Bạn nhận 10 điểm khởi đầu', 'success');
-    } else {
-      const user = users[username];
-      if (!user || user.password !== hash(password)) {
-        showAuthError('Sai tên đăng nhập hoặc mật khẩu!');
-        return;
+    }
+
+    isProcessing = true;
+    setAuthLoading(true);
+
+    try {
+      if (authMode === 'register') {
+        if (username === 'admin') {
+          showAuthError('Tên đăng nhập này không khả dụng!');
+          setAuthLoading(false);
+          isProcessing = false;
+          return;
+        }
+        
+        if (users[username]) {
+          usernameGroup.classList.add('error');
+          showAuthError('Tên đăng nhập đã tồn tại!');
+          setAuthLoading(false);
+          isProcessing = false;
+          return;
+        }
+
+        const passwordHash = await crypto2.hashPassword(password);
+        const bonus = CONFIG.welcomeBonus;
+        
+        const newUser = {
+          username,
+          passwordHash,
+          points: bonus,
+          earned: bonus,
+          spent: 0,
+          tiktokUsername: '',
+          history: [{ type: 'earn', action: 'welcome', points: bonus, time: Date.now() }],
+          completedTaskIds: [],
+          dailyTasks: {},
+          lastTaskAt: 0,
+          isAdmin: false,
+          banned: false,
+          isGuest: false,
+          createdAt: Date.now(),
+          lastLoginAt: Date.now()
+        };
+        newUser.checksum = crypto2.checksum(newUser);
+        
+        users[username] = newUser;
+        saveUsers();
+        audit('register', username, 'New user');
+        pushNotif(username, 'success', '🎉 Chào mừng!', `Bạn nhận ${formatNumber(bonus)} xu khởi đầu.`);
+        login(username, true);
+        showToast(`🎉 Đăng ký thành công! +${formatNumber(bonus)} xu`, 'success');
+        
+      } else {
+        // Admin đầu tiên
+        if (username === 'admin' && password === crypto2.DEFAULT_ADMIN_PASS) {
+          const hasAdmin = Object.values(users).some(u => 
+            u.isAdmin === true && u.checksum === crypto2.checksum(u)
+          );
+          
+          if (!hasAdmin && !users['admin']) {
+            const passwordHash = await crypto2.hashPassword(password);
+            const adminUser = {
+              username: 'admin',
+              passwordHash,
+              points: 999999,
+              earned: 999999,
+              spent: 0,
+              tiktokUsername: '',
+              history: [],
+              completedTaskIds: [],
+              dailyTasks: {},
+              lastTaskAt: 0,
+              isAdmin: true,
+              banned: false,
+              isGuest: false,
+              createdAt: Date.now(),
+              lastLoginAt: Date.now()
+            };
+            adminUser.checksum = crypto2.checksum(adminUser);
+            
+            users['admin'] = adminUser;
+            saveUsers();
+            safeSet(CONFIG.initKey, true);
+            clearLoginAttempts('admin');
+            audit('admin_created', 'admin', 'First admin');
+            login('admin', true);
+            
+            setTimeout(() => {
+              showToast('👑 Admin đã kích hoạt! ĐỔI MẬT KHẨU NGAY!', 'warning');
+            }, 500);
+            return;
+          }
+        }
+        
+        const user = users[username];
+        if (!user) {
+          recordLoginFailure(username);
+          showAuthError('Sai tên đăng nhập hoặc mật khẩu!');
+          setAuthLoading(false);
+          isProcessing = false;
+          return;
+        }
+        
+        const passwordHash = await crypto2.hashPassword(password);
+        if (user.passwordHash !== passwordHash) {
+          recordLoginFailure(username);
+          const attempts = loginAttempts[username] || { count: 0 };
+          const left = CONFIG.maxLoginAttempts - attempts.count;
+          if (left > 0 && left <= 2) {
+            showAuthError(`Sai mật khẩu! Còn ${left} lần thử`);
+          } else {
+            showAuthError('Sai tên đăng nhập hoặc mật khẩu!');
+          }
+          audit('login_fail', username, 'Wrong password');
+          setAuthLoading(false);
+          isProcessing = false;
+          return;
+        }
+        
+        if (user.banned) {
+          showAuthError('Tài khoản đã bị khóa!');
+          setAuthLoading(false);
+          isProcessing = false;
+          return;
+        }
+        
+        if (user.isAdmin && user.checksum !== crypto2.checksum(user)) {
+          showAuthError('Phát hiện sửa đổi trái phép.');
+          audit('checksum_fail_login', username, '');
+          setAuthLoading(false);
+          isProcessing = false;
+          return;
+        }
+        
+        clearLoginAttempts(username);
+        user.lastLoginAt = Date.now();
+        saveUsers();
+        audit('login', username, '');
+        login(username, true);
+        showToast(`👋 Chào mừng, ${username}!`, 'success');
       }
-      if (user.banned) {
-        showAuthError('Tài khoản của bạn đã bị khóa. Liên hệ admin!');
-        return;
-      }
-      login(username);
-      showToast(`👋 Chào mừng, ${username}!`, 'success');
+    } catch (e) {
+      console.error('Auth error:', e);
+      showAuthError('Có lỗi xảy ra, thử lại sau');
+      setAuthLoading(false);
+      isProcessing = false;
     }
   }
 
-  function login(username) {
+  function login(username, remember) {
     currentUser = username;
-    saveSession(username);
+    lastActivity = Date.now();
+    saveSession(username, remember);
+    isProcessing = false;
+    setAuthLoading(false);
     renderApp();
   }
 
   function logout() {
+    audit('logout', currentUser, '');
     currentUser = null;
-    saveSession(null);
+    saveSession(null, false);
     $('#app').classList.remove('show');
     $('#authScreen').style.display = 'flex';
     $('#authPassword').value = '';
+    $('#authUsername').value = '';
+    $('#notifPanel').classList.remove('show');
+    hideModal();
+    authMode = 'login';
+    const btnText = $('#authBtnText');
+    if (btnText) btnText.textContent = 'Đăng nhập';
+    $('#switchText').textContent = 'Chưa có tài khoản?';
+    $('#switchMode').textContent = 'Đăng ký ngay';
   }
 
-  // ============ RENDER APP ============
-  function renderApp() {
-    $('#authScreen').style.display = 'none';
-    $('#app').classList.add('show');
+  function checkIdle() {
+    if (!currentUser) return;
+    const idle = Date.now() - lastActivity;
+    if (idle > CONFIG.sessionIdleMs) {
+      showToast('⏰ Phiên hết hạn do không hoạt động', 'warning');
+      audit('session_timeout', currentUser, 'Idle');
+      setTimeout(logout, 1500);
+    }
+  }
 
-    // Inject/remove admin tab
+  ['click', 'keypress', 'mousemove', 'touchstart', 'scroll'].forEach(evt => {
+    document.addEventListener(evt, () => { lastActivity = Date.now(); }, { passive: true });
+  });
+
+  // ══════════════════════════════════════════════════════════
+  // RENDER APP
+  // ══════════════════════════════════════════════════════════
+  function renderApp() {
+    const authScreen = $('#authScreen');
+    const app = $('#app');
+    if (!authScreen || !app) return;
+
+    if (!currentUser || !users[currentUser]) {
+      authScreen.style.display = 'flex';
+      app.classList.remove('show');
+      return;
+    }
+
+    authScreen.style.display = 'none';
+    app.classList.add('show');
+
     const tabsContainer = $('#tabs');
-    const existingAdminTab = tabsContainer.querySelector('.admin-tab');
-    if (isAdmin(users[currentUser])) {
-      if (!existingAdminTab) {
+    const existing = tabsContainer.querySelector('.admin-tab');
+    if (requireAdmin()) {
+      if (!existing) {
         const tab = document.createElement('button');
         tab.className = 'tab admin-tab';
         tab.dataset.tab = 'admin';
+        tab.type = 'button';
         tab.textContent = '🛡️ Admin';
         tab.addEventListener('click', () => switchTab('admin'));
         tabsContainer.appendChild(tab);
       }
-    } else if (existingAdminTab) {
-      existingAdminTab.remove();
+    } else if (existing) {
+      existing.remove();
+      if ($('#page-admin') && $('#page-admin').classList.contains('active')) switchTab('tasks');
     }
 
     renderTopbar();
-    renderFeed();
-    renderUsers();
+    renderTasks();
+    renderShop();
+    renderOrders();
     renderProfile();
-    if (isAdmin(users[currentUser])) renderAdmin();
+    renderNotifs();
+    if (requireAdmin()) renderAdmin();
   }
 
   function switchTab(tabName) {
+    if (tabName === 'admin' && !requireAdmin()) {
+      showToast('⛔ Không có quyền', 'error');
+      return;
+    }
     $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
     $$('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + tabName));
-    if (tabName === 'feed') renderFeed();
-    if (tabName === 'discover') renderUsers();
+    
+    if (tabName === 'tasks') renderTasks();
+    if (tabName === 'shop') renderShop();
+    if (tabName === 'orders') renderOrders();
     if (tabName === 'profile') renderProfile();
     if (tabName === 'admin') renderAdmin();
   }
@@ -1057,344 +1949,739 @@
   function renderTopbar() {
     const u = users[currentUser];
     if (!u) return;
-    $('#topPoints').textContent = `${u.points} điểm`;
-    const av = $('#topAvatar');
-    av.textContent = initials(u.username);
-    av.style.background = colorFromName(u.username);
+    const topPoints = $('#topPoints');
+    const topAvatar = $('#topAvatar');
+    if (topPoints) topPoints.textContent = formatNumber(u.points) + ' xu';
+    if (topAvatar) {
+      topAvatar.textContent = initials(u.username);
+      topAvatar.style.background = colorFromName(u.username);
+    }
+    renderNotifs();
   }
 
-  // ============ FEED ============
-  function renderFeed() {
-    const list = $('#feedList');
-    const sorted = [...posts].sort((a, b) => {
-      if (b.boost !== a.boost) return b.boost - a.boost;
-      return b.createdAt - a.createdAt;
+  // ══════════════════════════════════════════════════════════
+  // TASKS
+  // ══════════════════════════════════════════════════════════
+  function renderTasks() {
+    const u = users[currentUser];
+    if (!u) return;
+
+    const balanceValue = $('#balanceValue');
+    const balanceSub = $('#balanceSub');
+    if (balanceValue) balanceValue.innerHTML = formatNumber(u.points) + '<small>xu</small>';
+    if (balanceSub) balanceSub.textContent = 'Đã kiếm: ' + formatNumber(u.earned) + ' • Đã tiêu: ' + formatNumber(u.spent);
+
+    const list = $('#taskList');
+    if (!list) return;
+
+    const now = Date.now();
+    const today = todayKey();
+    const dailyCount = (u.dailyTasks && u.dailyTasks[today]) || 0;
+    const cooldownLeft = Math.max(0, CONFIG.taskCooldownMs - (now - (u.lastTaskAt || 0)));
+
+    const available = tasks.filter(t => {
+      if (t.completed) return false;
+      if (t.targetUser === currentUser) return false;
+      if (t.workers.indexOf(currentUser) !== -1) return false;
+      if (t.slotsLeft <= 0) return false;
+      return true;
+    }).sort((a, b) => b.slotsLeft - a.slotsLeft || a.createdAt - b.createdAt);
+
+    if (available.length === 0) {
+      list.innerHTML = '<div class="empty"><div class="emoji">⏳</div><p>Chưa có nhiệm vụ nào</p><p class="hint">Khi có người mua, nhiệm vụ sẽ xuất hiện!</p></div>';
+      return;
+    }
+
+    if (dailyCount >= CONFIG.dailyTaskLimit) {
+      list.innerHTML = '<div class="info-box warning"><strong>⏰ Đã đạt giới hạn:</strong> ' + CONFIG.dailyTaskLimit + ' nhiệm vụ/ngày. Quay lại mai!</div>';
+      return;
+    }
+
+    list.innerHTML = available.slice(0, 20).map(task => {
+      const taskUser = users[task.targetUser];
+      if (!taskUser) return '';
+      const reward = CONFIG.rewards[task.type] || 0;
+      
+      let icon = '👥', iconClass = 'follow', actionText = 'Follow';
+      if (task.type === 'like') { icon = '❤️'; iconClass = 'like'; actionText = 'Tim'; }
+      else if (task.type === 'comment') { icon = '💬'; iconClass = 'comment'; actionText = 'Comment'; }
+
+      const progress = ((task.totalSlots - task.slotsLeft) / task.totalSlots) * 100;
+      const tiktokHandle = taskUser.tiktokUsername ? '@' + escapeHtml(taskUser.tiktokUsername) : 'chưa cập nhật';
+
+      return '<div class="task-card ' + task.type + '-task">' +
+        '<div class="task-header">' +
+          '<div class="task-icon ' + iconClass + '">' + icon + '</div>' +
+          '<div class="task-info">' +
+            '<div class="task-name">' + actionText + ' TikTok của @' + escapeHtml(task.targetUser) + '</div>' +
+            '<div class="task-meta"><span>🎵 ' + tiktokHandle + '</span></div>' +
+          '</div>' +
+          '<div class="task-reward">+' + formatNumber(reward) + ' xu</div>' +
+        '</div>' +
+        '<div class="task-progress">' +
+          '<span>' + (task.totalSlots - task.slotsLeft) + '/' + task.totalSlots + '</span>' +
+          '<div class="task-progress-bar"><div class="task-progress-fill" style="width:' + progress + '%"></div></div>' +
+          '<span>' + task.slotsLeft + ' chỗ</span>' +
+        '</div>' +
+        '<div class="task-actions">' +
+          '<a class="btn-task btn-open" href="' + getTikTokUrl(task, taskUser) + '" target="_blank" rel="noopener noreferrer" data-open="' + task.id + '">🔗 Mở TikTok</a>' +
+          '<button class="btn-task btn-complete" data-complete="' + task.id + '" type="button" disabled>' +
+            (cooldownLeft > 0 ? '⏱ Chờ ' + Math.ceil(cooldownLeft / 1000) + 's' : '✓ Đã ' + actionText.toLowerCase()) +
+          '</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    list.querySelectorAll('[data-open]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const completeBtn = list.querySelector('[data-complete="' + btn.dataset.open + '"]');
+        if (completeBtn) {
+          completeBtn.disabled = false;
+          completeBtn.textContent = '✓ Đã hoàn thành';
+        }
+      });
     });
 
-    if (sorted.length === 0) {
-      list.innerHTML = `<div class="empty"><div class="emoji">📭</div><p>Chưa có bài viết nào</p></div>`;
-      return;
-    }
-    list.innerHTML = sorted.map(p => renderPost(p)).join('');
-    bindPostActions(list);
-  }
-
-  function renderMyPosts() {
-    const list = $('#myPosts');
-    const mine = posts.filter(p => p.author === currentUser).sort((a, b) => b.createdAt - a.createdAt);
-    if (mine.length === 0) {
-      list.innerHTML = `<div class="empty"><div class="emoji">✍️</div><p>Bạn chưa có bài viết nào</p></div>`;
-      return;
-    }
-    list.innerHTML = mine.map(p => renderPost(p)).join('');
-    bindPostActions(list);
-  }
-
-  function renderPost(post) {
-    const author = users[post.author];
-    if (!author) return '';
-    const liked = post.likes.includes(currentUser);
-    const admin = isAdmin(users[currentUser]);
-    const isOwner = post.author === currentUser;
-
-    return `
-      <div class="post ${post.boost > 0 ? 'boosted' : ''}" data-post-id="${post.id}">
-        <div class="post-header">
-          <div class="avatar" style="background:${colorFromName(post.author)}">${initials(post.author)}</div>
-          <div class="info">
-            <div class="uname">@${escapeHtml(post.author)} ${author.isAdmin ? '👑' : ''} ${author.banned ? '🚫' : ''}</div>
-            <div class="time">${timeAgo(post.createdAt)}</div>
-          </div>
-        </div>
-        <div class="post-content">${escapeHtml(post.content)}</div>
-        <div class="post-footer">
-          <button class="post-action ${liked ? 'liked' : ''}" data-action="like" data-post="${post.id}">
-            ${liked ? '❤️' : '🤍'} ${post.likes.length} Thích
-          </button>
-          <button class="post-action" data-action="boost" data-post="${post.id}">
-            🚀 Boost (25đ)
-          </button>
-          ${(admin || isOwner) ? `<button class="post-action admin-del" data-action="delete" data-post="${post.id}">🗑️ Xóa</button>` : ''}
-        </div>
-      </div>
-    `;
-  }
-
-  function bindPostActions(container) {
-    container.querySelectorAll('[data-action]').forEach(btn => {
+    list.querySelectorAll('[data-complete]').forEach(btn => {
       btn.addEventListener('click', () => {
-        const action = btn.dataset.action;
-        const postId = btn.dataset.post;
-        if (action === 'like') handleLike(postId);
-        else if (action === 'boost') handleBoostPost(postId);
-        else if (action === 'delete') handleDeletePost(postId);
+        if (btn.disabled) return;
+        openVerifyModal(btn.dataset.complete);
+      });
+    });
+
+    if (cooldownLeft > 0) setTimeout(renderTasks, cooldownLeft + 100);
+  }
+
+  function getTikTokUrl(task, taskUser) {
+    const handle = normalizeTikTok(taskUser.tiktokUsername);
+    if (!handle) return 'https://www.tiktok.com/';
+    if (task.type === 'follow') return 'https://www.tiktok.com/@' + encodeURIComponent(handle);
+    if ((task.type === 'like' || task.type === 'comment') && task.videoUrl) {
+      try {
+        const url = new URL(task.videoUrl);
+        if (url.hostname.includes('tiktok.com')) return url.href;
+      } catch(e) {}
+    }
+    return 'https://www.tiktok.com/@' + encodeURIComponent(handle);
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // VERIFY MODAL
+  // ══════════════════════════════════════════════════════════
+  function openVerifyModal(taskId) {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) { showToast('Nhiệm vụ không tồn tại', 'error'); return; }
+    const me = users[currentUser];
+    if (!me) return;
+
+    const cooldownLeft = Math.max(0, CONFIG.taskCooldownMs - (Date.now() - (me.lastTaskAt || 0)));
+    if (cooldownLeft > 0) {
+      showToast(`⏱ Chờ ${Math.ceil(cooldownLeft / 1000)}s`, 'warning');
+      return;
+    }
+
+    const today = todayKey();
+    const dailyCount = (me.dailyTasks && me.dailyTasks[today]) || 0;
+    if (dailyCount >= CONFIG.dailyTaskLimit) {
+      showToast('⏰ Đạt giới hạn hôm nay', 'warning');
+      return;
+    }
+
+    if (task.completed || task.slotsLeft <= 0) {
+      showToast('Hết chỗ', 'error');
+      renderTasks();
+      return;
+    }
+    if (task.workers.indexOf(currentUser) !== -1) {
+      showToast('Đã làm rồi', 'warning');
+      return;
+    }
+
+    if (!task.verifyCode) {
+      task.verifyCode = crypto2.genVerifyCode();
+      task.verifyCodeAt = Date.now();
+      saveTasks();
+    }
+
+    const reward = CONFIG.rewards[task.type] || 0;
+
+    showModal(
+      '<h3>🔐 Xác nhận</h3>' +
+      '<p>Copy mã và dán vào bình luận TikTok.</p>' +
+      '<div class="verify-code-box">' +
+        '<div style="font-size:12px; opacity:0.7;">Mã xác nhận</div>' +
+        '<div class="code" id="verifyCodeDisplay">' + task.verifyCode + '</div>' +
+        '<div class="hint">👆 Nhấn để copy • Hết hạn 10 phút</div>' +
+      '</div>' +
+      '<div class="form-group">' +
+        '<label>Nhập lại mã:</label>' +
+        '<input type="text" id="verifyInput" placeholder="Mã 6 ký tự" maxlength="6" autocomplete="off" style="text-transform:uppercase; letter-spacing:4px; text-align:center; font-weight:800; font-size:18px;">' +
+      '</div>' +
+      '<p style="font-size:12px;">Thưởng: <b style="color:#10b981;">+' + formatNumber(reward) + ' xu</b></p>' +
+      '<div class="modal-actions">' +
+        '<button class="btn btn-secondary" id="cancelVerify" type="button">Hủy</button>' +
+        '<button class="btn btn-confirm" id="confirmVerify" type="button" disabled>Xác nhận</button>' +
+      '</div>'
+    );
+
+    const codeDisplay = $('#verifyCodeDisplay');
+    codeDisplay.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(task.verifyCode);
+        showToast('📋 Đã copy!', 'success');
+      } catch (e) {
+        const range = document.createRange();
+        range.selectNode(codeDisplay);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+        try { document.execCommand('copy'); showToast('📋 Đã copy!', 'success'); }
+        catch(err) { showToast('Không copy được', 'warning'); }
+      }
+    });
+
+    const verifyInput = $('#verifyInput');
+    const confirmBtn = $('#confirmVerify');
+
+    verifyInput.addEventListener('input', () => {
+      confirmBtn.disabled = verifyInput.value.trim().toUpperCase().length !== 6;
+    });
+    verifyInput.addEventListener('keypress', e => {
+      if (e.key === 'Enter' && !confirmBtn.disabled) confirmBtn.click();
+    });
+    setTimeout(() => verifyInput.focus(), 100);
+
+    $('#cancelVerify').addEventListener('click', hideModal);
+    confirmBtn.addEventListener('click', () => {
+      const input = verifyInput.value.trim().toUpperCase();
+      if (input !== task.verifyCode) {
+        showToast('❌ Sai mã', 'error');
+        verifyInput.value = '';
+        verifyInput.focus();
+        confirmBtn.disabled = true;
+        return;
+      }
+      if (Date.now() - task.verifyCodeAt > CONFIG.verifyCodeTTL) {
+        showToast('⏰ Hết hạn mã', 'warning');
+        task.verifyCode = null;
+        saveTasks();
+        hideModal();
+        renderTasks();
+        return;
+      }
+      hideModal();
+      completeTask(task.id);
+    });
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // COMPLETE TASK
+  // ══════════════════════════════════════════════════════════
+  function completeTask(taskId) {
+    if (isProcessing) return;
+    isProcessing = true;
+
+    try {
+      const task = tasks.find(t => t.id === taskId);
+      const me = users[currentUser];
+      if (!task || !me) { isProcessing = false; return; }
+
+      if (task.completed || task.slotsLeft <= 0 || task.workers.indexOf(currentUser) !== -1) {
+        showToast('Không thể hoàn thành', 'error');
+        isProcessing = false;
+        return;
+      }
+
+      const reward = CONFIG.rewards[task.type] || 0;
+      const now = Date.now();
+      const today = todayKey();
+
+      me.points += reward;
+      me.earned += reward;
+      me.lastTaskAt = now;
+      if (!me.dailyTasks) me.dailyTasks = {};
+      me.dailyTasks[today] = (me.dailyTasks[today] || 0) + 1;
+      
+      if (!me.history) me.history = [];
+      me.history.unshift({ type: 'earn', action: task.type, targetUser: task.targetUser, points: reward, time: now });
+      me.history = me.history.slice(0, 50);
+      me.checksum = crypto2.checksum(me);
+
+      task.workers.push(currentUser);
+      task.slotsLeft--;
+      
+      const order = orders.find(o => o.id === task.orderId);
+      if (order) {
+        order.completedSlots = (order.completedSlots || 0) + 1;
+        pushNotif(order.buyer, 'info', '📈 Đơn có tương tác mới', order.completedSlots + '/' + order.qty);
+        if (order.completedSlots >= order.qty) {
+          order.status = 'done';
+          order.completedAt = now;
+          pushNotif(order.buyer, 'success', '🎉 Đơn hoàn thành!', order.qty + ' ' + order.type);
+        }
+        saveOrders();
+      }
+
+      if (task.slotsLeft <= 0) task.completed = true;
+
+      saveUsers();
+      saveTasks();
+      audit('task_complete', task.targetUser, task.type + ' +' + reward + 'xu');
+
+      bumpPoints();
+      showToast(`✅ +${formatNumber(reward)} xu! 🎉`, 'success');
+      
+      renderTopbar();
+      renderTasks();
+      renderProfile();
+      renderNotifs();
+      if (requireAdmin()) renderAdmin();
+    } catch (e) {
+      console.error('Complete task error:', e);
+      showToast('Có lỗi', 'error');
+    } finally {
+      isProcessing = false;
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // SHOP
+  // ══════════════════════════════════════════════════════════
+  function renderShop() {
+    const u = users[currentUser];
+    if (!u) return;
+
+    const shopBalance = $('#shopBalance');
+    if (shopBalance) shopBalance.innerHTML = formatNumber(u.points) + '<small>xu</small>';
+    const warning = $('#shopWarning');
+    if (warning) warning.style.display = u.tiktokUsername ? 'none' : 'block';
+
+    const list = $('#shopList');
+    if (!list) return;
+
+    list.innerHTML = CONFIG.packages.map(pkg => {
+      let icon = '👥', iconClass = 'follow';
+      if (pkg.type === 'like') { icon = '❤️'; iconClass = 'like'; }
+      else if (pkg.type === 'comment') { icon = '💬'; iconClass = 'comment'; }
+
+      const canAfford = u.points >= pkg.price;
+      const badgeHtml = pkg.badge ? '<span class="badge ' + (pkg.badge === 'BEST' ? 'best' : '') + '">' + pkg.badge + '</span>' : '';
+      
+      return '<div class="shop-card">' +
+        badgeHtml +
+        '<div class="shop-icon ' + iconClass + '">' + icon + '</div>' +
+        '<div class="shop-info">' +
+          '<div class="shop-name">' + escapeHtml(pkg.name) + '</div>' +
+          '<div class="shop-desc">' + escapeHtml(pkg.desc) + '</div>' +
+          '<div class="shop-price ' + (canAfford ? 'affordable' : '') + '">💰 ' + formatNumber(pkg.price) + ' xu</div>' +
+        '</div>' +
+        '<button class="btn-buy" data-pkg="' + pkg.id + '" type="button" ' + (canAfford ? '' : 'disabled') + '>Mua</button>' +
+      '</div>';
+    }).join('');
+
+    list.querySelectorAll('[data-pkg]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const pkg = CONFIG.packages.find(p => p.id === btn.dataset.pkg);
+        if (pkg) buyPackage(pkg);
       });
     });
   }
 
-  // ============ USERS ============
-  function renderUsers() {
-    const list = $('#userList');
+  function buyPackage(pkg) {
     const me = users[currentUser];
-    const otherUsers = Object.values(users).filter(u => u.username !== currentUser && !u.banned);
-
-    if (otherUsers.length === 0) {
-      list.innerHTML = `<div class="empty"><div class="emoji">👥</div><p>Chưa có người dùng khác</p></div>`;
+    if (!me) return;
+    if (!me.tiktokUsername) {
+      showToast('⚠️ Cập nhật TikTok trước!', 'error');
+      switchTab('profile');
+      return;
+    }
+    if (me.points < pkg.price) {
+      showToast(`Không đủ xu! Cần ${formatNumber(pkg.price)}`, 'error');
       return;
     }
 
-    list.innerHTML = otherUsers.map(u => {
-      const isFollowing = me.following.includes(u.username);
-      return `
-        <div class="user-row">
-          <div class="avatar" style="background:${colorFromName(u.username)}">${initials(u.username)}</div>
-          <div class="info">
-            <div class="uname">@${escapeHtml(u.username)} ${u.isAdmin ? '<span class="crown">👑</span>' : ''}</div>
-            <div class="meta">
-              <span>🏆 ${u.points} điểm</span>
-              <span>👥 ${u.followers.length} followers</span>
-            </div>
-          </div>
-          <button class="btn-follow ${isFollowing ? 'following' : ''}" data-user="${u.username}">
-            ${isFollowing ? '✓ Đang follow' : '+ Follow'}
-          </button>
-        </div>
-      `;
+    if (pkg.type === 'like' || pkg.type === 'comment') {
+      showModal(
+        '<h3>📹 Link video TikTok</h3>' +
+        '<div class="form-group">' +
+          '<label>Link video</label>' +
+          '<input type="text" id="videoUrlInput" placeholder="https://www.tiktok.com/@user/video/...">' +
+        '</div>' +
+        '<div class="modal-actions">' +
+          '<button class="btn btn-secondary" id="cancelBuy" type="button">Hủy</button>' +
+          '<button class="btn btn-confirm" id="confirmBuy" type="button">Mua ( -' + formatNumber(pkg.price) + ' xu )</button>' +
+        '</div>'
+      );
+      $('#cancelBuy').addEventListener('click', hideModal);
+      $('#confirmBuy').addEventListener('click', () => {
+        const url = $('#videoUrlInput').value.trim();
+        if (!url) { showToast('Nhập link', 'warning'); return; }
+        try {
+          const u = new URL(url);
+          if (!u.hostname.includes('tiktok.com')) throw new Error();
+        } catch (e) { showToast('Link không hợp lệ', 'error'); return; }
+        hideModal();
+        doBuy(pkg, url);
+      });
+      setTimeout(() => { const el = $('#videoUrlInput'); if (el) el.focus(); }, 100);
+    } else {
+      showModal(
+        '<h3>🛒 Xác nhận mua</h3>' +
+        '<p>Mua <b>' + escapeHtml(pkg.name) + '</b> với <b style="color:#f59e0b;">' + formatNumber(pkg.price) + ' xu</b>?</p>' +
+        '<div class="info-box success">🎵 @' + escapeHtml(me.tiktokUsername) + '</div>' +
+        '<div class="modal-actions">' +
+          '<button class="btn btn-secondary" id="cancelBuy" type="button">Hủy</button>' +
+          '<button class="btn btn-confirm" id="confirmBuy" type="button">Xác nhận</button>' +
+        '</div>'
+      );
+      $('#cancelBuy').addEventListener('click', hideModal);
+      $('#confirmBuy').addEventListener('click', () => { hideModal(); doBuy(pkg, null); });
+    }
+  }
+
+  function doBuy(pkg, videoUrl) {
+    if (isProcessing) return;
+    isProcessing = true;
+    try {
+      const me = users[currentUser];
+      if (!me || me.points < pkg.price) {
+        showToast('Không đủ xu!', 'error');
+        isProcessing = false;
+        return;
+      }
+      const now = Date.now();
+      me.points -= pkg.price;
+      me.spent += pkg.price;
+      if (!me.history) me.history = [];
+      me.history.unshift({ type: 'spend', action: 'buy_' + pkg.type, qty: pkg.qty, points: pkg.price, time: now });
+      me.history = me.history.slice(0, 50);
+      me.checksum = crypto2.checksum(me);
+
+      const order = {
+        id: crypto2.genId('o'),
+        buyer: currentUser,
+        type: pkg.type,
+        qty: pkg.qty,
+        price: pkg.price,
+        videoUrl,
+        status: 'pending',
+        completedSlots: 0,
+        createdAt: now
+      };
+      orders.unshift(order);
+
+      const task = {
+        id: crypto2.genId('t'),
+        orderId: order.id,
+        type: pkg.type,
+        targetUser: currentUser,
+        videoUrl,
+        totalSlots: pkg.qty,
+        slotsLeft: pkg.qty,
+        workers: [],
+        completed: false,
+        verifyCode: null,
+        createdAt: now
+      };
+      tasks.unshift(task);
+
+      saveUsers(); saveOrders(); saveTasks();
+      audit('buy', pkg.type + ' x' + pkg.qty, '-' + pkg.price + 'xu');
+
+      pushNotif(currentUser, 'success', '🛒 Đã mua!', pkg.qty + ' ' + pkg.type + ' đang chờ');
+      bumpPoints();
+      showToast(`🎉 Đã mua! ${pkg.qty} ${pkg.type}`, 'success');
+      
+      renderShop(); renderTopbar(); renderOrders(); renderTasks(); renderProfile(); renderNotifs();
+      switchTab('orders');
+    } catch (e) {
+      console.error(e);
+      showToast('Có lỗi', 'error');
+    } finally {
+      isProcessing = false;
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // ORDERS
+  // ══════════════════════════════════════════════════════════
+  function renderOrders() {
+    const list = $('#myOrders');
+    if (!list) return;
+    const mine = orders.filter(o => o.buyer === currentUser);
+
+    if (mine.length === 0) {
+      list.innerHTML = '<div class="empty"><div class="emoji">📦</div><p>Chưa có đơn</p><p class="hint">Vào "Mua tương tác" để tạo đơn!</p></div>';
+      return;
+    }
+
+    list.innerHTML = mine.map(o => {
+      let icon = '👥', name = 'Follow';
+      if (o.type === 'like') { icon = '❤️'; name = 'Tim'; }
+      else if (o.type === 'comment') { icon = '💬'; name = 'Comment'; }
+
+      const completed = o.completedSlots || 0;
+      const progress = (completed / o.qty) * 100;
+      const isDone = o.status === 'done';
+      const isCancelled = o.status === 'cancelled';
+      const canCancel = !isDone && !isCancelled && completed === 0;
+      const targetTikTok = users[o.buyer] ? users[o.buyer].tiktokUsername : 'N/A';
+
+      return '<div class="order-card ' + (isDone ? 'done' : '') + ' ' + (isCancelled ? 'cancelled' : '') + '">' +
+        '<div class="order-header">' +
+          '<div class="order-type">' + icon + ' ' + o.qty + ' ' + name + '</div>' +
+          '<div class="order-status ' + (isDone ? 'done' : isCancelled ? 'cancelled' : 'pending') + '">' +
+            (isDone ? '✓ Hoàn thành' : isCancelled ? '✗ Đã hủy' : '⏳ Chờ') +
+          '</div>' +
+        '</div>' +
+        '<div class="order-meta">💰 ' + formatNumber(o.price) + ' xu • ' + timeAgo(o.createdAt) + '</div>' +
+        '<div class="order-target">🎵 @' + escapeHtml(targetTikTok || 'N/A') + '</div>' +
+        '<div class="task-progress">' +
+          '<span>' + completed + '/' + o.qty + '</span>' +
+          '<div class="task-progress-bar"><div class="task-progress-fill" style="width:' + progress + '%"></div></div>' +
+          '<span>' + Math.round(progress) + '%</span>' +
+        '</div>' +
+        (canCancel ? '<button class="btn-cancel-order" data-cancel-order="' + o.id + '" type="button">✗ Hủy & hoàn xu</button>' : '') +
+      '</div>';
     }).join('');
 
-    list.querySelectorAll('.btn-follow').forEach(btn => {
-      btn.addEventListener('click', () => handleFollow(btn.dataset.user));
+    list.querySelectorAll('[data-cancel-order]').forEach(btn => {
+      btn.addEventListener('click', () => cancelOrder(btn.dataset.cancelOrder));
     });
   }
 
+  function cancelOrder(orderId) {
+    const order = orders.find(o => o.id === orderId);
+    if (!order || order.buyer !== currentUser) return;
+    if (order.completedSlots > 0) {
+      showToast('Không thể hủy', 'error');
+      return;
+    }
+
+    showModal(
+      '<h3>✗ Hủy đơn?</h3>' +
+      '<p>Hoàn lại <b>' + formatNumber(order.price) + ' xu</b>?</p>' +
+      '<div class="modal-actions">' +
+        '<button class="btn btn-secondary" id="cancelModal" type="button">Không</button>' +
+        '<button class="btn btn-danger" id="confirmCancel" type="button">Hủy đơn</button>' +
+      '</div>'
+    );
+    $('#cancelModal').addEventListener('click', hideModal);
+    $('#confirmCancel').addEventListener('click', () => {
+      const me = users[currentUser];
+      order.status = 'cancelled';
+      me.points += order.price;
+      me.spent = Math.max(0, me.spent - order.price);
+      me.checksum = crypto2.checksum(me);
+      tasks = tasks.filter(t => t.orderId !== orderId);
+      saveUsers(); saveOrders(); saveTasks();
+      audit('order_cancel', orderId, '+' + order.price + 'xu');
+      hideModal();
+      bumpPoints();
+      showToast('✅ Hoàn ' + formatNumber(order.price) + ' xu', 'success');
+      renderOrders(); renderShop(); renderTasks(); renderTopbar();
+    });
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // PROFILE
+  // ══════════════════════════════════════════════════════════
   function renderProfile() {
     const u = users[currentUser];
     if (!u) return;
-    $('#profileAvatar').textContent = initials(u.username);
-    $('#profileName').textContent = '@' + u.username;
-    $('#profileRank').textContent = getRank(u.points) + (u.isAdmin ? ' • Admin 👑' : '');
-    $('#statPoints').textContent = u.points;
-    $('#statFollowers').textContent = u.followers.length;
-    $('#statFollowing').textContent = u.following.length;
-    renderMyPosts();
-    renderTopbar();
-  }
 
-  // ============ ACTIONS ============
-  function handleFollow(targetUsername) {
-    const me = users[currentUser];
-    const target = users[targetUsername];
-    if (!me || !target) return;
-    if (target.banned) { showToast('User này đã bị khóa', 'error'); return; }
+    const profileAvatar = $('#profileAvatar');
+    const profileName = $('#profileName');
+    const profileTikTok = $('#profileTikTok');
+    const statPoints = $('#statPoints');
+    const statEarned = $('#statEarned');
+    const statSpent = $('#statSpent');
+    const tiktokInput = $('#tiktokUsername');
 
-    const isFollowing = me.following.includes(targetUsername);
-
-    if (isFollowing) {
-      me.following = me.following.filter(u => u !== targetUsername);
-      target.followers = target.followers.filter(u => u !== currentUser);
-      target.points = Math.max(0, target.points - CONFIG.pointsPerFollower);
-      showToast(`Đã hủy follow @${targetUsername}`, 'warning');
-    } else {
-      me.following.push(targetUsername);
-      target.followers.push(currentUser);
-      me.points += CONFIG.pointsPerFollow;
-      target.points += CONFIG.pointsPerFollower;
-      showToast(`+${CONFIG.pointsPerFollow} điểm | @${targetUsername} +${CONFIG.pointsPerFollower} điểm`, 'success');
+    if (profileAvatar) profileAvatar.textContent = initials(u.username);
+    if (profileName) {
+      profileName.innerHTML = '@' + escapeHtml(u.username) + (u.isAdmin ? ' <span class="admin-badge">👑 ADMIN</span>' : '');
     }
+    if (profileTikTok) profileTikTok.textContent = u.tiktokUsername ? '@' + u.tiktokUsername : '@chưa-cập-nhật';
+    if (statPoints) statPoints.textContent = formatNumber(u.points);
+    if (statEarned) statEarned.textContent = formatNumber(u.earned);
+    if (statSpent) statSpent.textContent = formatNumber(u.spent);
+    if (tiktokInput) tiktokInput.value = u.tiktokUsername || '';
 
-    saveUsers();
-    renderUsers();
-    renderProfile();
+    renderHistory();
   }
 
-  function handlePost() {
-    const content = $('#postContent').value.trim();
-    const boostLevel = parseInt($('#boostLevel').value, 10) || 0;
-    const me = users[currentUser];
+  function renderHistory() {
+    const u = users[currentUser];
+    if (!u) return;
+    const hList = $('#historyList');
+    if (!hList) return;
 
-    if (content.length < 1) { showToast('Vui lòng nhập nội dung!', 'warning'); return; }
-    if (content.length > 500) { showToast('Nội dung tối đa 500 ký tự!', 'warning'); return; }
-    if (boostLevel > 0 && me.points < boostLevel) {
-      showToast(`Cần ${boostLevel} điểm để boost (bạn có ${me.points})`, 'error');
+    const history = u.history || [];
+    if (history.length === 0) {
+      hList.innerHTML = '<div class="empty"><div class="emoji">📊</div><p>Chưa có hoạt động</p></div>';
       return;
     }
 
-    if (boostLevel > 0) {
-      me.points -= boostLevel;
-      showToast(`Đã dùng ${boostLevel} điểm để boost 🔥`, 'success');
+    hList.innerHTML = history.slice(0, 20).map(h => {
+      let icon = '💰', text = '', sign = '+', cls = 'plus';
+      if (h.type === 'earn') {
+        icon = h.action === 'follow' ? '👥' : h.action === 'like' ? '❤️' : h.action === 'comment' ? '💬' : '🎁';
+        text = h.action === 'welcome' ? 'Xu chào mừng' : 'Đã ' + (h.action === 'like' ? 'tim' : h.action) + ' @' + escapeHtml(h.targetUser || '');
+        cls = 'plus';
+      } else if (h.type === 'spend') {
+        icon = '🛒';
+        const actName = h.action.replace('buy_', '');
+        text = 'Mua ' + h.qty + ' ' + (actName === 'like' ? 'tim' : actName);
+        sign = '-';
+        cls = 'minus';
+      }
+      return '<div class="history-item">' +
+        '<div class="h-icon">' + icon + '</div>' +
+        '<div class="h-body"><div class="h-text">' + text + '</div><div class="h-time">' + timeAgo(h.time) + '</div></div>' +
+        '<div class="h-amount ' + cls + '">' + sign + formatNumber(h.points) + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function saveTikTokUsername() {
+    const el = $('#tiktokUsername');
+    if (!el) return;
+    const val = normalizeTikTok(el.value);
+    if (!val) { showToast('Nhập username', 'warning'); return; }
+    if (!isValidTikTok(val)) { showToast('Username không hợp lệ', 'error'); return; }
+    
+    const u = users[currentUser];
+    u.tiktokUsername = val;
+    u.checksum = crypto2.checksum(u);
+    saveUsers();
+    el.value = val;
+    audit('set_tiktok', val, '');
+    showToast('✅ Đã lưu: @' + val, 'success');
+    renderProfile();
+    renderShop();
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // NOTIFICATIONS
+  // ══════════════════════════════════════════════════════════
+  function renderNotifs() {
+    if (!currentUser) return;
+    const myNotifs = notifications.filter(n => n.user === currentUser);
+    const unread = myNotifs.filter(n => !n.read).length;
+    
+    const badge = $('#notifBadge');
+    if (badge) {
+      if (unread > 0) {
+        badge.textContent = unread > 99 ? '99+' : unread;
+        badge.style.display = 'block';
+      } else badge.style.display = 'none';
     }
 
-    posts.unshift({
-      id: 'p' + Date.now() + Math.random().toString(36).slice(2, 6),
-      author: currentUser,
-      content,
-      boost: boostLevel,
-      likes: [],
-      createdAt: Date.now()
-    });
-
-    saveUsers();
-    savePosts();
-    $('#postContent').value = '';
-    $('#boostLevel').value = '0';
-    renderFeed();
-    renderProfile();
-    showToast('✅ Đăng bài thành công!', 'success');
-  }
-
-  function handleLike(postId) {
-    const post = posts.find(p => p.id === postId);
-    if (!post) return;
-    const idx = post.likes.indexOf(currentUser);
-    if (idx === -1) {
-      post.likes.push(currentUser);
-      const author = users[post.author];
-      if (author && post.author !== currentUser) author.points += 1;
-    } else {
-      post.likes.splice(idx, 1);
-    }
-    saveUsers();
-    savePosts();
-    renderFeed();
-    renderProfile();
-  }
-
-  function handleBoostPost(postId) {
-    const post = posts.find(p => p.id === postId);
-    if (!post) return;
-    const me = users[currentUser];
-    const BOOST_COST = 25;
-    if (me.points < BOOST_COST) { showToast(`Cần ${BOOST_COST} điểm (bạn có ${me.points})`, 'error'); return; }
-
-    me.points -= BOOST_COST;
-    post.boost += BOOST_COST;
-    saveUsers();
-    savePosts();
-    showToast(`🚀 Đã boost! Còn ${me.points} điểm`, 'success');
-    renderFeed();
-    renderProfile();
-  }
-
-  function handleDeletePost(postId) {
-    const post = posts.find(p => p.id === postId);
-    if (!post) return;
-    if (post.author !== currentUser && !isAdmin(users[currentUser])) {
-      showToast('Bạn không có quyền xóa bài này', 'error');
+    const list = $('#notifList');
+    if (!list) return;
+    if (myNotifs.length === 0) {
+      list.innerHTML = '<div class="notif-empty">🔕 Chưa có thông báo</div>';
       return;
     }
-    showModal(`
-      <h3>🗑️ Xóa bài viết?</h3>
-      <p>Hành động này không thể hoàn tác.</p>
-      <div class="modal-actions">
-        <button class="btn btn-secondary" onclick="document.getElementById('modalOverlay').classList.remove('show')">Hủy</button>
-        <button class="btn btn-danger" id="confirmDeletePost">Xóa</button>
-      </div>
-    `);
-    $('#confirmDeletePost').addEventListener('click', () => {
-      posts = posts.filter(p => p.id !== postId);
-      savePosts();
-      hideModal();
-      renderFeed();
-      renderProfile();
-      if (isAdmin(users[currentUser])) renderAdmin();
-      showToast('Đã xóa bài viết', 'success');
-    });
+    const icons = { success: '✅', info: 'ℹ️', warning: '⚠️', error: '❌' };
+    list.innerHTML = myNotifs.slice(0, 30).map(n => 
+      '<div class="notif-item ' + (n.read ? '' : 'unread') + '">' +
+        '<div class="notif-icon">' + (icons[n.type] || '🔔') + '</div>' +
+        '<div class="notif-body">' +
+          '<div class="notif-title">' + escapeHtml(n.title) + '</div>' +
+          (n.body ? '<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">' + escapeHtml(n.body) + '</div>' : '') +
+          '<div class="notif-time">' + timeAgo(n.time) + '</div>' +
+        '</div>' +
+      '</div>'
+    ).join('');
   }
 
-  // ============ ADMIN PANEL ============
-  let admFilterValue = 'all';
-  let admSearchValue = '';
+  function toggleNotifPanel() {
+    const panel = $('#notifPanel');
+    if (!panel) return;
+    if (panel.classList.contains('show')) {
+      panel.classList.remove('show');
+    } else {
+      panel.classList.add('show');
+      let changed = false;
+      notifications.forEach(n => {
+        if (n.user === currentUser && !n.read) { n.read = true; changed = true; }
+      });
+      if (changed) { saveNotifs(); renderNotifs(); }
+    }
+  }
 
+  function clearAllNotifs() {
+    notifications = notifications.filter(n => n.user !== currentUser);
+    saveNotifs();
+    renderNotifs();
+    showToast('Đã xóa', 'success');
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // ADMIN
+  // ══════════════════════════════════════════════════════════
   function renderAdmin() {
-    if (!isAdmin(users[currentUser])) return;
-
+    if (!requireAdmin()) return;
     const allUsers = Object.values(users);
     const banned = allUsers.filter(u => u.banned).length;
+    const pendingTasks = tasks.filter(t => !t.completed).length;
+    const completedOrders = orders.filter(o => o.status === 'done').length;
     const totalPoints = allUsers.reduce((s, u) => s + u.points, 0);
-    const totalFollows = allUsers.reduce((s, u) => s + u.following.length, 0);
-    const boosted = posts.filter(p => p.boost > 0).length;
 
     $('#admTotalUsers').textContent = allUsers.length;
-    $('#admBannedSub').textContent = `${banned} bị khóa`;
-    $('#admTotalPosts').textContent = posts.length;
-    $('#admBoostedSub').textContent = `${boosted} boosted`;
-    $('#admTotalPoints').textContent = totalPoints.toLocaleString();
-    $('#admTotalFollows').textContent = totalFollows;
-
-    // Top users
-    const top = [...allUsers].sort((a, b) => b.points - a.points).slice(0, 5);
-    $('#admTopUsers').innerHTML = top.map((u, i) => `
-      <div class="user-row">
-        <div class="avatar" style="background:${colorFromName(u.username)}">${initials(u.username)}</div>
-        <div class="info">
-          <div class="uname">#${i+1} @${escapeHtml(u.username)} ${u.isAdmin ? '<span class="crown">👑</span>' : ''}</div>
-          <div class="meta">
-            <span>🏆 ${u.points} điểm</span>
-            <span>👥 ${u.followers.length} followers</span>
-            <span>➡️ ${u.following.length} following</span>
-          </div>
-        </div>
-      </div>
-    `).join('');
+    $('#admBannedSub').textContent = banned + ' bị khóa';
+    $('#admPendingTasks').textContent = pendingTasks;
+    $('#admCompletedOrders').textContent = completedOrders;
+    $('#admTotalPoints').textContent = formatNumber(totalPoints);
 
     renderAdminUsers();
   }
 
   function renderAdminUsers() {
+    if (!requireAdmin()) return;
     let list = Object.values(users);
-
-    // Filter
     if (admFilterValue === 'active') list = list.filter(u => !u.banned);
     else if (admFilterValue === 'banned') list = list.filter(u => u.banned);
     else if (admFilterValue === 'admin') list = list.filter(u => u.isAdmin);
-
-    // Search
+    else if (admFilterValue === 'rich') list = list.filter(u => u.points > 1000);
     if (admSearchValue) {
       const q = admSearchValue.toLowerCase();
       list = list.filter(u => u.username.toLowerCase().includes(q));
     }
-
-    // Sort
     list.sort((a, b) => b.points - a.points);
 
     const container = $('#admUserList');
+    if (!container) return;
     if (list.length === 0) {
-      container.innerHTML = `<div class="empty"><div class="emoji">🔍</div><p>Không tìm thấy user nào</p></div>`;
+      container.innerHTML = '<div class="empty"><div class="emoji">🔍</div><p>Không tìm thấy</p></div>';
       return;
     }
 
     container.innerHTML = list.map(u => {
       const isMe = u.username === currentUser;
-      return `
-        <div class="user-row ${u.banned ? 'banned' : ''}">
-          <div class="avatar" style="background:${colorFromName(u.username)}">${initials(u.username)}</div>
-          <div class="info">
-            <div class="uname">
-              @${escapeHtml(u.username)}
-              ${u.isAdmin ? '<span class="crown">👑</span>' : ''}
-              ${u.banned ? '<span class="banned-tag">Bị khóa</span>' : ''}
-            </div>
-            <div class="meta">
-              <span>🏆 ${u.points} điểm</span>
-              <span>👥 ${u.followers.length}</span>
-              <span>➡️ ${u.following.length}</span>
-              <span>📅 ${new Date(u.createdAt).toLocaleDateString('vi-VN')}</span>
-            </div>
-          </div>
-          <div class="user-actions">
-            <button class="btn-icon primary" data-adm="points" data-user="${u.username}" title="Chỉnh điểm">💰</button>
-            ${!isMe ? `
-              <button class="btn-icon ${u.banned ? 'success' : 'warn'}" data-adm="ban" data-user="${u.username}" title="${u.banned ? 'Mở khóa' : 'Khóa'}">
-                ${u.banned ? '🔓' : '🔒'}
-              </button>
-              <button class="btn-icon ${u.isAdmin ? 'warn' : 'primary'}" data-adm="toggleadmin" data-user="${u.username}" title="${u.isAdmin ? 'Hạ quyền' : 'Cấp quyền admin'}">
-                ${u.isAdmin ? '👤' : '👑'}
-              </button>
-              <button class="btn-icon danger" data-adm="delete" data-user="${u.username}" title="Xóa user">🗑️</button>
-            ` : '<span style="font-size:12px;color:#94a3b8;padding:8px;">(Bạn)</span>'}
-          </div>
-        </div>
-      `;
+      return '<div class="admin-user-row ' + (u.banned ? 'banned' : '') + '">' +
+        '<div class="avatar" style="background:' + colorFromName(u.username) + '">' + initials(u.username) + '</div>' +
+        '<div class="info">' +
+          '<div class="uname">@' + escapeHtml(u.username) +
+            (u.isAdmin ? ' 👑' : '') +
+            (u.banned ? ' <span class="banned-tag">Khóa</span>' : '') +
+          '</div>' +
+          '<div class="meta">' +
+            '<span>💰 ' + formatNumber(u.points) + ' xu</span>' +
+            '<span>🎵 @' + escapeHtml(u.tiktokUsername || 'N/A') + '</span>' +
+            '<span>📅 ' + timeAgo(u.createdAt) + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div style="display:flex; gap:6px; flex-wrap:wrap;">' +
+          '<button class="btn-icon primary" data-adm="points" data-user="' + u.username + '" type="button">💰</button>' +
+          (!isMe ?
+            '<button class="btn-icon ' + (u.banned ? 'success' : 'warn') + '" data-adm="ban" data-user="' + u.username + '" type="button">' + (u.banned ? '🔓' : '🔒') + '</button>' +
+            '<button class="btn-icon ' + (u.isAdmin ? 'warn' : 'primary') + '" data-adm="toggleadmin" data-user="' + u.username + '" type="button">' + (u.isAdmin ? '👤' : '👑') + '</button>' +
+            '<button class="btn-icon danger" data-adm="delete" data-user="' + u.username + '" type="button">🗑️</button>'
+          : '<span style="font-size:12px;color:#94a3b8;padding:8px;">(Bạn)</span>') +
+        '</div>' +
+      '</div>';
     }).join('');
 
     container.querySelectorAll('[data-adm]').forEach(btn => {
@@ -1410,226 +2697,477 @@
   }
 
   function admEditPoints(username) {
+    if (!requireAdmin()) return;
     const u = users[username];
     if (!u) return;
-    showModal(`
-      <h3>💰 Chỉnh điểm cho @${escapeHtml(username)}</h3>
-      <p>Điểm hiện tại: <b>${u.points}</b></p>
-      <div class="form-group">
-        <label>Số điểm muốn thêm (có thể nhập số âm để trừ)</label>
-        <input type="number" id="admPointsInput" value="10" style="width:100%; padding:10px 14px; border:2px solid #e2e8f0; border-radius:10px; font-size:15px; outline:none;">
-      </div>
-      <div class="modal-actions">
-        <button class="btn btn-secondary" onclick="document.getElementById('modalOverlay').classList.remove('show')">Hủy</button>
-        <button class="btn btn-confirm" id="confirmPoints">Áp dụng</button>
-      </div>
-    `);
+    showModal(
+      '<h3>💰 Chỉnh xu @' + escapeHtml(username) + '</h3>' +
+      '<p>Hiện tại: <b>' + formatNumber(u.points) + ' xu</b></p>' +
+      '<div class="form-group"><label>Số xu thêm (âm để trừ)</label><input type="number" id="admPointsInput" value="1000"></div>' +
+      '<div class="modal-actions">' +
+        '<button class="btn btn-secondary" id="cancelModal" type="button">Hủy</button>' +
+        '<button class="btn btn-confirm" id="confirmPoints" type="button">Áp dụng</button>' +
+      '</div>'
+    );
+    $('#cancelModal').addEventListener('click', hideModal);
     $('#confirmPoints').addEventListener('click', () => {
+      if (!requireAdmin()) return;
       const val = parseInt($('#admPointsInput').value, 10);
       if (isNaN(val)) { showToast('Số không hợp lệ', 'error'); return; }
       u.points = Math.max(0, u.points + val);
+      u.checksum = crypto2.checksum(u);
       saveUsers();
+      audit('admin_edit_points', username, (val >= 0 ? '+' : '') + val);
       hideModal();
+      pushNotif(username, 'info', '💰 Xu đã cập nhật', (val >= 0 ? '+' : '') + formatNumber(val) + ' xu từ admin');
       renderAdmin();
       renderTopbar();
-      showToast(`${val >= 0 ? '+' : ''}${val} điểm cho @${username}`, 'success');
+      showToast((val >= 0 ? '+' : '') + formatNumber(val) + ' xu', 'success');
     });
   }
 
   function admToggleBan(username) {
+    if (!requireAdmin()) return;
     const u = users[username];
     if (!u) return;
-    const willBan = !u.banned;
-
-    if (willBan) {
-      showModal(`
-        <h3>🔒 Khóa user @${escapeHtml(username)}?</h3>
-        <p>User sẽ không thể đăng nhập. Hành động có thể hoàn tác.</p>
-        <div class="modal-actions">
-          <button class="btn btn-secondary" onclick="document.getElementById('modalOverlay').classList.remove('show')">Hủy</button>
-          <button class="btn btn-danger" id="confirmBan">Khóa ngay</button>
-        </div>
-      `);
+    if (u.banned) {
+      u.banned = false;
+      u.checksum = crypto2.checksum(u);
+      saveUsers();
+      audit('admin_unban', username, '');
+      pushNotif(username, 'success', '🔓 Đã mở khóa', '');
+      renderAdmin();
+      showToast('Đã mở khóa', 'success');
+    } else {
+      showModal(
+        '<h3>🔒 Khóa @' + escapeHtml(username) + '?</h3>' +
+        '<div class="modal-actions">' +
+          '<button class="btn btn-secondary" id="cancelModal" type="button">Hủy</button>' +
+          '<button class="btn btn-danger" id="confirmBan" type="button">Khóa</button>' +
+        '</div>'
+      );
+      $('#cancelModal').addEventListener('click', hideModal);
       $('#confirmBan').addEventListener('click', () => {
+        if (!requireAdmin()) return;
         u.banned = true;
+        u.checksum = crypto2.checksum(u);
         saveUsers();
+        audit('admin_ban', username, '');
         hideModal();
         renderAdmin();
-        showToast(`Đã khóa @${username}`, 'warning');
+        showToast('Đã khóa', 'warning');
       });
-    } else {
-      u.banned = false;
-      saveUsers();
-      renderAdmin();
-      showToast(`Đã mở khóa @${username}`, 'success');
     }
   }
 
   function admToggleAdmin(username) {
+    if (!requireAdmin()) return;
     const u = users[username];
     if (!u) return;
     u.isAdmin = !u.isAdmin;
+    u.checksum = crypto2.checksum(u);
     saveUsers();
+    audit('admin_toggle', username, u.isAdmin ? 'grant' : 'revoke');
+    pushNotif(username, 'info', u.isAdmin ? '👑 Được cấp Admin' : 'Mất quyền Admin', '');
     renderAdmin();
-    showToast(u.isAdmin ? `👑 Đã cấp quyền admin cho @${username}` : `Đã hạ quyền admin của @${username}`, 'success');
+    showToast(u.isAdmin ? '👑 Đã cấp' : 'Đã hạ', 'success');
   }
 
   function admDeleteUser(username) {
+    if (!requireAdmin()) return;
     const u = users[username];
     if (!u) return;
-    showModal(`
-      <h3>⚠️ Xóa vĩnh viễn @${escapeHtml(username)}?</h3>
-      <p style="color:#ef4444; font-weight:600;">Toàn bộ bài viết, follow của user này sẽ bị xóa. Không thể hoàn tác!</p>
-      <div class="modal-actions">
-        <button class="btn btn-secondary" onclick="document.getElementById('modalOverlay').classList.remove('show')">Hủy</button>
-        <button class="btn btn-danger" id="confirmDeleteUser">Xóa vĩnh viễn</button>
-      </div>
-    `);
+    showModal(
+      '<h3>⚠️ Xóa @' + escapeHtml(username) + '?</h3>' +
+      '<p style="color:#ef4444;">Toàn bộ dữ liệu sẽ bị xóa!</p>' +
+      '<div class="modal-actions">' +
+        '<button class="btn btn-secondary" id="cancelModal" type="button">Hủy</button>' +
+        '<button class="btn btn-danger" id="confirmDeleteUser" type="button">Xóa</button>' +
+      '</div>'
+    );
+    $('#cancelModal').addEventListener('click', hideModal);
     $('#confirmDeleteUser').addEventListener('click', () => {
-      // Xóa bài viết của user
-      posts = posts.filter(p => p.author !== username);
-      savePosts();
-
-      // Xóa user khỏi danh sách following của người khác
-      Object.values(users).forEach(other => {
-        other.following = other.following.filter(u => u !== username);
-        other.followers = other.followers.filter(u => u !== username);
-      });
-
-      // Xóa user
+      if (!requireAdmin()) return;
+      tasks = tasks.filter(t => t.targetUser !== username && t.workers.indexOf(username) === -1);
+      orders = orders.filter(o => o.buyer !== username);
+      notifications = notifications.filter(n => n.user !== username);
       delete users[username];
-      saveUsers();
+      saveUsers(); saveTasks(); saveOrders(); saveNotifs();
+      audit('admin_delete_user', username, '');
       hideModal();
       renderAdmin();
-      renderUsers();
-      renderFeed();
-      showToast(`Đã xóa @${username}`, 'success');
+      renderTasks();
+      showToast('Đã xóa', 'success');
     });
   }
 
-  // ============ DANGER ZONE ============
-  function admResetPoints() {
-    showModal(`
-      <h3>🔄 Reset toàn bộ điểm?</h3>
-      <p>Tất cả user sẽ về 0 điểm. Hành động không thể hoàn tác.</p>
-      <div class="modal-actions">
-        <button class="btn btn-secondary" onclick="document.getElementById('modalOverlay').classList.remove('show')">Hủy</button>
-        <button class="btn btn-danger" id="confirmResetPoints">Reset</button>
-      </div>
-    `);
-    $('#confirmResetPoints').addEventListener('click', () => {
-      Object.values(users).forEach(u => u.points = 0);
-      saveUsers();
-      hideModal();
-      renderAdmin();
-      showToast('Đã reset toàn bộ điểm', 'success');
-    });
+  // ══════════════════════════════════════════════════════════
+  // EXPORT / IMPORT / AUDIT
+  // ══════════════════════════════════════════════════════════
+  function exportData() {
+    if (!requireAdmin()) return;
+    try {
+      const data = {
+        version: CONFIG.VERSION,
+        exportedAt: Date.now(),
+        users, tasks, orders, notifications, auditLog
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'ttb_backup_' + new Date().toISOString().slice(0, 10) + '.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      audit('admin_export', '', '');
+      showToast('💾 Đã xuất', 'success');
+    } catch (e) {
+      showToast('Không xuất được', 'error');
+    }
   }
 
-  function admClearPosts() {
-    showModal(`
-      <h3>🗑️ Xóa tất cả bài viết?</h3>
-      <p>Toàn bộ bài viết sẽ bị xóa vĩnh viễn.</p>
-      <div class="modal-actions">
-        <button class="btn btn-secondary" onclick="document.getElementById('modalOverlay').classList.remove('show')">Hủy</button>
-        <button class="btn btn-danger" id="confirmClearPosts">Xóa hết</button>
-      </div>
-    `);
-    $('#confirmClearPosts').addEventListener('click', () => {
-      posts = [];
-      savePosts();
-      hideModal();
-      renderAdmin();
-      renderFeed();
-      showToast('Đã xóa tất cả bài viết', 'success');
-    });
+  function exportMyData() {
+    const me = users[currentUser];
+    if (!me) return;
+    try {
+      const data = {
+        version: CONFIG.VERSION,
+        exportedAt: Date.now(),
+        myData: {
+          username: me.username,
+          points: me.points,
+          earned: me.earned,
+          spent: me.spent,
+          tiktokUsername: me.tiktokUsername,
+          history: me.history,
+          createdAt: me.createdAt
+        },
+        myOrders: orders.filter(o => o.buyer === currentUser)
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'mydata_' + currentUser + '_' + new Date().toISOString().slice(0, 10) + '.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      showToast('💾 Đã tải', 'success');
+    } catch (e) {
+      showToast('Không xuất được', 'error');
+    }
   }
 
-  function admResetAll() {
-    showModal(`
-      <h3 style="color:#ef4444;">💣 XÓA TOÀN BỘ HỆ THỐNG?</h3>
-      <p style="color:#ef4444; font-weight:600;">Tất cả user, bài viết, điểm sẽ bị xóa. Hệ thống sẽ reset về trạng thái ban đầu (chỉ còn admin).</p>
-      <p style="font-size:13px;">Nhập <b>XOA HET</b> để xác nhận:</p>
-      <input type="text" id="confirmText" placeholder="Nhập: XOA HET" style="width:100%; padding:10px 14px; border:2px solid #e2e8f0; border-radius:10px; font-size:15px; outline:none;">
-      <div class="modal-actions">
-        <button class="btn btn-secondary" onclick="document.getElementById('modalOverlay').classList.remove('show')">Hủy</button>
-        <button class="btn btn-danger" id="confirmResetAll">XÓA TẤT CẢ</button>
-      </div>
-    `);
-    $('#confirmResetAll').addEventListener('click', () => {
-      if ($('#confirmText').value.trim().toUpperCase() !== 'XOA HET') {
-        showToast('Vui lòng nhập đúng "XOA HET"', 'error');
+  function importData() {
+    if (!requireAdmin()) return;
+    const input = $('#importFile');
+    if (!input) return;
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          const data = JSON.parse(ev.target.result);
+          if (!data.users || typeof data.users !== 'object') throw new Error();
+          showModal(
+            '<h3>📂 Khôi phục?</h3>' +
+            '<p>Dữ liệu sẽ bị <b>GHI ĐÈ</b>!</p>' +
+            '<div class="modal-actions">' +
+              '<button class="btn btn-secondary" id="cancelImport" type="button">Hủy</button>' +
+              '<button class="btn btn-danger" id="confirmImport" type="button">Ghi đè</button>' +
+            '</div>'
+          );
+          $('#cancelImport').addEventListener('click', hideModal);
+          $('#confirmImport').addEventListener('click', () => {
+            if (!requireAdmin()) return;
+            users = data.users || {};
+            tasks = data.tasks || [];
+            orders = data.orders || [];
+            notifications = data.notifications || [];
+            auditLog = data.auditLog || [];
+            saveUsers(); saveTasks(); saveOrders(); saveNotifs(); saveAudit();
+            audit('admin_import', '', '');
+            hideModal();
+            showToast('✅ Đã khôi phục', 'success');
+            if (currentUser && !users[currentUser]) logout();
+            else renderApp();
+          });
+        } catch (err) {
+          showToast('File không hợp lệ', 'error');
+        }
+        input.value = '';
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  }
+
+  function showAuditLog() {
+    if (!requireAdmin()) return;
+    const recent = auditLog.slice(-50).reverse();
+    if (recent.length === 0) {
+      showModal('<h3>📋 Audit Log</h3><p>Chưa có log.</p><div class="modal-actions"><button class="btn btn-secondary" id="cancelModal" type="button">Đóng</button></div>');
+      $('#cancelModal').addEventListener('click', hideModal);
+      return;
+    }
+    showModal(
+      '<h3>📋 Audit Log (50 gần nhất)</h3>' +
+      '<div style="max-height:400px; overflow-y:auto; font-size:12px; background:#f8fafc; border-radius:8px; padding:10px; text-align:left;">' +
+      recent.map(a => 
+        '<div style="padding:6px 0; border-bottom:1px solid #e2e8f0;">' +
+          '<b>' + escapeHtml(a.actor) + '</b> → ' + escapeHtml(a.action) +
+          (a.target ? ' → <b>' + escapeHtml(a.target) + '</b>' : '') +
+          (a.details ? '<br><span style="color:#64748b;">' + escapeHtml(a.details) + '</span>' : '') +
+          '<br><span style="color:#94a3b8; font-size:10px;">' + new Date(a.time).toLocaleString('vi-VN') + '</span>' +
+        '</div>'
+      ).join('') +
+      '</div>' +
+      '<div class="modal-actions"><button class="btn btn-secondary" id="cancelModal" type="button">Đóng</button></div>'
+    );
+    $('#cancelModal').addEventListener('click', hideModal);
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // CHANGE PASSWORD
+  // ══════════════════════════════════════════════════════════
+  async function changePassword() {
+    showModal(
+      '<h3>🔑 Đổi mật khẩu</h3>' +
+      '<div class="form-group"><label>Mật khẩu hiện tại</label><input type="password" id="oldPass" maxlength="50"></div>' +
+      '<div class="form-group"><label>Mật khẩu mới</label><input type="password" id="newPass" placeholder="Ít nhất ' + CONFIG.minPassword + ' ký tự" maxlength="50"></div>' +
+      '<div class="form-group"><label>Nhập lại</label><input type="password" id="confirmPass" maxlength="50"></div>' +
+      '<div class="modal-actions">' +
+        '<button class="btn btn-secondary" id="cancelModal" type="button">Hủy</button>' +
+        '<button class="btn btn-confirm" id="confirmChange" type="button">Đổi</button>' +
+      '</div>'
+    );
+    $('#cancelModal').addEventListener('click', hideModal);
+    $('#confirmChange').addEventListener('click', async () => {
+      const oldP = $('#oldPass').value;
+      const newP = $('#newPass').value;
+      const confP = $('#confirmPass').value;
+      const u = users[currentUser];
+
+      const oldHash = await crypto2.hashPassword(oldP);
+      if (u.passwordHash !== oldHash) {
+        showToast('Mật khẩu sai', 'error');
         return;
       }
-      localStorage.removeItem(CONFIG.userKey);
-      localStorage.removeItem(CONFIG.postKey);
-      localStorage.removeItem(CONFIG.sessionKey);
-      localStorage.removeItem(CONFIG.initKey);
-      location.reload();
+      if (newP.length < CONFIG.minPassword) {
+        showToast('Mật khẩu mới quá ngắn', 'error');
+        return;
+      }
+      if (newP !== confP) {
+        showToast('Không khớp', 'error');
+        return;
+      }
+      
+      u.passwordHash = await crypto2.hashPassword(newP);
+      u.checksum = crypto2.checksum(u);
+      saveUsers();
+      audit('password_change', currentUser, '');
+      hideModal();
+      showToast('✅ Đã đổi mật khẩu', 'success');
     });
   }
 
-  // ============ EVENTS ============
+  // ══════════════════════════════════════════════════════════
+  // EVENTS
+  // ══════════════════════════════════════════════════════════
   function bindEvents() {
-    $('#authSubmit').addEventListener('click', handleAuth);
-    $('#authUsername').addEventListener('keypress', e => { if (e.key === 'Enter') $('#authPassword').focus(); });
-    $('#authPassword').addEventListener('keypress', e => { if (e.key === 'Enter') handleAuth(); });
+    $('#btnUnlock') && $('#btnUnlock').addEventListener('click', () => {
+      if (!security.detect()) {
+        security.unlock();
+        showToast('✅ Đã mở khóa', 'success');
+      } else {
+        showToast('⚠️ Vẫn còn DevTools!', 'warning');
+      }
+    });
 
-    $('#switchMode').addEventListener('click', () => {
+    $('#authSubmit') && $('#authSubmit').addEventListener('click', handleAuth);
+    $('#authUsername') && $('#authUsername').addEventListener('keypress', e => {
+      if (e.key === 'Enter') $('#authPassword').focus();
+    });
+    $('#authPassword') && $('#authPassword').addEventListener('keypress', e => {
+      if (e.key === 'Enter') handleAuth();
+    });
+
+    $('#switchMode') && $('#switchMode').addEventListener('click', () => {
       authMode = authMode === 'login' ? 'register' : 'login';
-      $('#authSubmit').textContent = authMode === 'login' ? 'Đăng nhập' : 'Đăng ký';
+      setAuthLoading(false);
+      const btnText = $('#authBtnText');
+      if (btnText) btnText.textContent = authMode === 'login' ? 'Đăng nhập' : 'Đăng ký';
       $('#switchText').textContent = authMode === 'login' ? 'Chưa có tài khoản?' : 'Đã có tài khoản?';
       $('#switchMode').textContent = authMode === 'login' ? 'Đăng ký ngay' : 'Đăng nhập';
       $('#authError').classList.remove('show');
     });
 
-    $('#btnLogout').addEventListener('click', () => {
-      if (confirm('Đăng xuất khỏi tài khoản?')) logout();
+    $('#btnLogout') && $('#btnLogout').addEventListener('click', () => {
+      showModal(
+        '<h3>👋 Đăng xuất?</h3>' +
+        '<div class="modal-actions">' +
+          '<button class="btn btn-secondary" id="cancelLogout" type="button">Ở lại</button>' +
+          '<button class="btn btn-danger" id="confirmLogout" type="button">Đăng xuất</button>' +
+        '</div>'
+      );
+      $('#cancelLogout').addEventListener('click', hideModal);
+      $('#confirmLogout').addEventListener('click', () => { hideModal(); logout(); });
     });
 
-    // Tabs
     $$('.tab').forEach(tab => {
       tab.addEventListener('click', () => switchTab(tab.dataset.tab));
     });
 
-    // Post
-    $('#btnPost').addEventListener('click', handlePost);
-    $('#postContent').addEventListener('keypress', e => {
-      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) handlePost();
+    $('#btnNotif') && $('#btnNotif').addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleNotifPanel();
+    });
+    $('#btnClearNotif') && $('#btnClearNotif').addEventListener('click', (e) => {
+      e.stopPropagation();
+      clearAllNotifs();
     });
 
-    // Admin search/filter
-    $('#admSearch').addEventListener('input', e => {
+    document.addEventListener('click', (e) => {
+      const panel = $('#notifPanel');
+      const btn = $('#btnNotif');
+      if (!panel || !btn) return;
+      if (!panel.classList.contains('show')) return;
+      if (panel.contains(e.target) || btn.contains(e.target)) return;
+      panel.classList.remove('show');
+    });
+
+    $('#topAvatar') && $('#topAvatar').addEventListener('click', () => switchTab('profile'));
+    $('#topPoints') && $('#topPoints').addEventListener('click', () => switchTab('tasks'));
+
+    $('#btnRefreshTasks') && $('#btnRefreshTasks').addEventListener('click', () => {
+      renderTasks();
+      showToast('🔄 Đã làm mới', 'info');
+    });
+
+    $('#btnSaveTikTok') && $('#btnSaveTikTok').addEventListener('click', saveTikTokUsername);
+    $('#tiktokUsername') && $('#tiktokUsername').addEventListener('keypress', e => {
+      if (e.key === 'Enter') saveTikTokUsername();
+    });
+
+    $('#btnChangePassword') && $('#btnChangePassword').addEventListener('click', changePassword);
+    $('#btnExportMyData') && $('#btnExportMyData').addEventListener('click', exportMyData);
+
+    $('#admSearch') && $('#admSearch').addEventListener('input', e => {
       admSearchValue = e.target.value;
       renderAdminUsers();
     });
-    $('#admFilter').addEventListener('change', e => {
+    $('#admFilter') && $('#admFilter').addEventListener('change', e => {
       admFilterValue = e.target.value;
       renderAdminUsers();
     });
 
-    // Danger zone
-    $('#btnResetPoints').addEventListener('click', admResetPoints);
-    $('#btnClearPosts').addEventListener('click', admClearPosts);
-    $('#btnResetAll').addEventListener('click', admResetAll);
+    $('#btnExport') && $('#btnExport').addEventListener('click', exportData);
+    $('#btnImport') && $('#btnImport').addEventListener('click', importData);
+    $('#btnAuditLog') && $('#btnAuditLog').addEventListener('click', showAuditLog);
+
+    $('#btnResetPoints') && $('#btnResetPoints').addEventListener('click', () => {
+      if (!requireAdmin()) return;
+      showModal(
+        '<h3>🔄 Reset xu?</h3><p>Không thể hoàn tác!</p>' +
+        '<div class="modal-actions">' +
+          '<button class="btn btn-secondary" id="cancelModal" type="button">Hủy</button>' +
+          '<button class="btn btn-danger" id="confirmResetPoints" type="button">Reset</button>' +
+        '</div>'
+      );
+      $('#cancelModal').addEventListener('click', hideModal);
+      $('#confirmResetPoints').addEventListener('click', () => {
+        if (!requireAdmin()) return;
+        Object.values(users).forEach(u => { 
+          u.points = 0; 
+          u.checksum = crypto2.checksum(u); 
+        });
+        saveUsers();
+        audit('admin_reset_points', '', '');
+        hideModal();
+        renderAdmin();
+        renderTopbar();
+        showToast('Đã reset xu', 'success');
+      });
+    });
+
+    $('#btnResetAll') && $('#btnResetAll').addEventListener('click', () => {
+      if (!requireAdmin()) return;
+      showModal(
+        '<h3 style="color:#ef4444;">💣 RESET TOÀN BỘ?</h3>' +
+        '<p style="color:#ef4444;">Dữ liệu sẽ bị xóa vĩnh viễn!</p>' +
+        '<input type="text" id="confirmText" placeholder="Nhập XOA HET" style="width:100%; padding:12px; border:2px solid #e2e8f0; border-radius:10px; text-transform:uppercase;">' +
+        '<div class="modal-actions">' +
+          '<button class="btn btn-secondary" id="cancelModal" type="button">Hủy</button>' +
+          '<button class="btn btn-danger" id="confirmResetAll" type="button">XÓA</button>' +
+        '</div>'
+      );
+      $('#cancelModal').addEventListener('click', hideModal);
+      $('#confirmResetAll').addEventListener('click', () => {
+        if (!requireAdmin()) return;
+        if ($('#confirmText').value.trim().toUpperCase() !== 'XOA HET') {
+          showToast('Nhập đúng "XOA HET"', 'error');
+          return;
+        }
+        try {
+          Object.keys(localStorage).forEach(k => {
+            if (k.indexOf(CONFIG.PREFIX) === 0) localStorage.removeItem(k);
+          });
+          location.reload();
+        } catch(e) { location.reload(); }
+      });
+    });
+
+    $('#modalOverlay') && $('#modalOverlay').addEventListener('click', e => {
+      if (e.target.id === 'modalOverlay') hideModal();
+    });
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        hideModal();
+        const panel = $('#notifPanel');
+        if (panel) panel.classList.remove('show');
+      }
+    });
+
+    document.addEventListener('contextmenu', e => {
+      if (e.target.closest('.topbar') || e.target.closest('.auth-card')) {
+        e.preventDefault();
+      }
+    });
   }
 
-  // ============ INIT ============
+  // ══════════════════════════════════════════════════════════
+  // INIT
+  // ══════════════════════════════════════════════════════════
   function init() {
     loadAll();
     ensureAdmin();
-    loadAll(); // reload sau khi tạo admin
     bindEvents();
 
-    if (currentUser && users[currentUser]) {
+    security.startMonitor();
+    setInterval(checkIdle, 30000);
+
+    if (currentUser && users[currentUser] && !users[currentUser].banned) {
       renderApp();
     } else {
       currentUser = null;
-      saveSession(null);
+      saveSession(null, false);
     }
   }
 
-  init();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+  window.addEventListener('error', () => {});
+  window.addEventListener('unhandledrejection', () => {});
+
 })();
 </script>
 </body>
