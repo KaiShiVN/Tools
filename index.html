@@ -2,3196 +2,1024 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>TikTok Boost Pro</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  :root {
-    --tt-cyan: #25F4EE; --tt-pink: #FE2C55;
-    --primary: #FE2C55; --success: #10b981;
-    --warning: #f59e0b; --danger: #ef4444; --info: #3b82f6;
-    --bg: #f8fafc; --card: #ffffff;
-    --text: #0f172a; --text-muted: #64748b;
-    --border: #e2e8f0;
-    --shadow: 0 1px 3px rgba(0,0,0,0.08);
-    --shadow-lg: 0 10px 40px rgba(0,0,0,0.1);
-    --radius: 14px;
-  }
-  body {
-    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-    background: var(--bg); color: var(--text);
-    min-height: 100vh; line-height: 1.5; overflow-x: hidden;
-  }
-  button { font-family: inherit; cursor: pointer; border: none; }
-  input, textarea, select { font-family: inherit; }
-  a { color: inherit; }
-
-  /* ===== SYNC INDICATOR ===== */
-  .sync-bar {
-    position: fixed; bottom: 12px; right: 12px;
-    background: rgba(15, 23, 42, 0.92);
-    color: #fff; padding: 8px 14px;
-    border-radius: 100px; font-size: 11px; font-weight: 700;
-    z-index: 9000; display: flex; align-items: center; gap: 6px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    transition: opacity 0.3s;
-    max-width: calc(100vw - 24px);
-  }
-  .sync-bar .dot {
-    width: 7px; height: 7px; border-radius: 50%;
-    background: var(--success);
-  }
-  .sync-bar.saving .dot { background: var(--warning); animation: blink 0.6s infinite; }
-  .sync-bar.error .dot { background: var(--danger); }
-  .sync-bar.syncing .dot { background: var(--info); animation: blink 0.4s infinite; }
-  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
-
-  /* ===== AUTH ===== */
-  .auth-screen {
-    min-height: 100vh;
-    display: flex; align-items: center; justify-content: center;
-    padding: 20px;
-    background: linear-gradient(135deg, #000 0%, #1a1a2e 50%, #FE2C55 100%);
-  }
-  .auth-card {
-    background: #fff; border-radius: 20px;
-    padding: 36px 28px; width: 100%; max-width: 420px;
-    box-shadow: var(--shadow-lg);
-  }
-  .auth-logo { text-align: center; font-size: 44px; margin-bottom: 8px; }
-  .auth-card h1 {
-    text-align: center; font-size: 26px; font-weight: 800;
-    margin-bottom: 6px;
-    background: linear-gradient(135deg, #25F4EE, #FE2C55);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .auth-card .subtitle { text-align: center; color: var(--text-muted); font-size: 14px; margin-bottom: 24px; }
-  .form-group { margin-bottom: 16px; }
-  .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
-  .form-group input {
-    width: 100%; padding: 12px 14px;
-    border: 2px solid var(--border); border-radius: 10px;
-    font-size: 15px; outline: none;
-  }
-  .form-group input:focus { border-color: var(--primary); }
-  .form-group .input-hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
-  .form-group.error input { border-color: var(--danger); }
-
-  .btn-primary {
-    width: 100%; padding: 13px;
-    background: linear-gradient(135deg, #25F4EE, #FE2C55);
-    color: #fff; border-radius: 10px;
-    font-size: 15px; font-weight: 700;
-    box-shadow: 0 4px 14px rgba(254, 44, 85, 0.3);
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-  }
-  .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-  .btn-primary .spinner {
-    width: 16px; height: 16px;
-    border: 2px solid rgba(255,255,255,0.3);
-    border-top-color: #fff; border-radius: 50%;
-    animation: spin 0.6s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .auth-switch { text-align: center; margin-top: 20px; font-size: 14px; color: var(--text-muted); }
-  .auth-switch a { color: var(--primary); font-weight: 700; cursor: pointer; }
-  .auth-error {
-    background: #fef2f2; color: var(--danger);
-    padding: 10px 14px; border-radius: 8px;
-    font-size: 13px; margin-bottom: 16px;
-    display: none; border-left: 3px solid var(--danger);
-  }
-  .auth-error.show { display: block; }
-  .auth-hint { text-align: center; margin-top: 20px; font-size: 11px; color: #94a3b8; }
-
-  /* ===== APP ===== */
-  .app { display: none; min-height: 100vh; }
-  .app.show { display: block; }
-
-  .topbar {
-    background: #fff; border-bottom: 1px solid var(--border);
-    padding: 12px 16px; position: sticky; top: 0; z-index: 100;
-    display: flex; align-items: center; justify-content: space-between;
-    box-shadow: var(--shadow); gap: 8px; flex-wrap: wrap;
-  }
-  .topbar-logo { font-size: 16px; font-weight: 800; display: flex; align-items: center; gap: 6px; }
-  .topbar-logo .tt {
-    background: linear-gradient(135deg, #25F4EE, #FE2C55);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .topbar-user { display: flex; align-items: center; gap: 8px; }
-  .points-chip {
-    background: linear-gradient(135deg, #fbbf24, #f59e0b);
-    color: #fff; padding: 8px 14px; border-radius: 100px;
-    font-size: 13px; font-weight: 800; cursor: pointer;
-  }
-  .points-chip.bump { animation: bump 0.5s; }
-  @keyframes bump { 0%,100% { transform: scale(1); } 50% { transform: scale(1.2); } }
-  .avatar {
-    width: 36px; height: 36px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 800; color: #fff; font-size: 14px; cursor: pointer;
-  }
-  .notif-btn {
-    background: transparent; padding: 6px; border-radius: 50%;
-    font-size: 18px; position: relative;
-    width: 36px; height: 36px;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .notif-badge {
-    position: absolute; top: 2px; right: 2px;
-    background: var(--danger); color: #fff;
-    font-size: 9px; font-weight: 800;
-    padding: 1px 5px; border-radius: 100px;
-    min-width: 16px; text-align: center;
-  }
-  .btn-logout {
-    background: transparent; color: var(--text-muted);
-    padding: 6px 10px; border-radius: 6px;
-    font-size: 13px; font-weight: 600;
-  }
-
-  .tabs {
-    display: flex; background: #fff;
-    border-bottom: 1px solid var(--border);
-    position: sticky; top: 60px; z-index: 99;
-    overflow-x: auto; scrollbar-width: none;
-  }
-  .tabs::-webkit-scrollbar { display: none; }
-  .tab {
-    flex: 1; min-width: 100px; padding: 14px 8px;
-    background: transparent; color: var(--text-muted);
-    font-weight: 700; font-size: 13px;
-    border-bottom: 3px solid transparent;
-    white-space: nowrap;
-  }
-  .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
-  .tab.admin-tab { color: var(--danger); }
-  .tab.admin-tab.active { color: var(--danger); border-bottom-color: var(--danger); }
-
-  .main { max-width: 720px; margin: 0 auto; padding: 16px; padding-bottom: 80px; }
-  .page { display: none; }
-  .page.active { display: block; }
-
-  .balance-card {
-    background: linear-gradient(135deg, #000 0%, #1a1a2e 100%);
-    border-radius: var(--radius); padding: 24px; color: #fff;
-    margin-bottom: 16px; box-shadow: var(--shadow-lg);
-    position: relative; overflow: hidden;
-  }
-  .balance-card::before {
-    content: ''; position: absolute;
-    top: -50%; right: -20%; width: 200px; height: 200px;
-    background: linear-gradient(135deg, #25F4EE, #FE2C55);
-    border-radius: 50%; filter: blur(60px); opacity: 0.4;
-  }
-  .balance-card .label {
-    font-size: 12px; text-transform: uppercase;
-    letter-spacing: 1px; opacity: 0.7;
-    margin-bottom: 6px; position: relative;
-  }
-  .balance-card .value {
-    font-size: 42px; font-weight: 800; line-height: 1;
-    position: relative;
-    background: linear-gradient(135deg, #25F4EE, #FE2C55);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .balance-card .value small {
-    font-size: 16px; -webkit-text-fill-color: #fff;
-    opacity: 0.7; margin-left: 6px;
-  }
-  .balance-card .sub { font-size: 13px; opacity: 0.7; margin-top: 8px; position: relative; }
-
-  .section-title {
-    font-size: 15px; font-weight: 800;
-    margin: 20px 0 12px;
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 8px;
-  }
-  .section-title > span:first-child { display: flex; align-items: center; gap: 8px; }
-  .section-title > span:first-child::before {
-    content: ''; width: 4px; height: 16px;
-    background: linear-gradient(180deg, #25F4EE, #FE2C55);
-    border-radius: 2px;
-  }
-  .section-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; margin-top: -4px; }
-  .section-link {
-    font-size: 12px; color: var(--primary);
-    font-weight: 700; cursor: pointer; background: transparent;
-  }
-
-  .rate-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
-  .rate-item {
-    background: #fff; border-radius: 10px;
-    padding: 12px 8px; text-align: center;
-    box-shadow: var(--shadow);
-  }
-  .rate-item .rate-icon { font-size: 20px; margin-bottom: 4px; }
-  .rate-item .rate-label { font-size: 11px; color: var(--text-muted); margin-bottom: 2px; }
-  .rate-item .rate-value { font-size: 14px; font-weight: 800; color: var(--success); }
-
-  .task-card {
-    background: #fff; border-radius: var(--radius);
-    padding: 16px; margin-bottom: 12px;
-    box-shadow: var(--shadow); border-left: 4px solid var(--primary);
-  }
-  .task-card.follow-task { border-left-color: var(--tt-cyan); }
-  .task-card.like-task { border-left-color: var(--tt-pink); }
-  .task-card.comment-task { border-left-color: var(--warning); }
-
-  .task-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-  .task-icon {
-    width: 44px; height: 44px; border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 22px; flex-shrink: 0; color: #fff;
-  }
-  .task-icon.follow { background: linear-gradient(135deg, #25F4EE, #00b8d4); }
-  .task-icon.like { background: linear-gradient(135deg, #FE2C55, #e11d48); }
-  .task-icon.comment { background: linear-gradient(135deg, #f59e0b, #ea580c); }
-
-  .task-info { flex: 1; min-width: 0; }
-  .task-name { font-weight: 700; font-size: 15px; margin-bottom: 2px; word-break: break-word; }
-  .task-meta { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-  .task-reward {
-    font-size: 14px; font-weight: 800;
-    color: #92400e; background: linear-gradient(135deg, #fef3c7, #fde68a);
-    padding: 6px 12px; border-radius: 100px; white-space: nowrap;
-  }
-  .task-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-  .btn-task {
-    flex: 1; min-width: 120px; padding: 10px 14px;
-    border-radius: 10px; font-size: 13px; font-weight: 700;
-    text-align: center; text-decoration: none;
-    display: inline-flex; align-items: center; justify-content: center; gap: 4px;
-  }
-  .btn-open { background: var(--bg); color: var(--text); border: 2px solid var(--border); }
-  .btn-complete { background: linear-gradient(135deg, #25F4EE, #FE2C55); color: #fff; }
-  .btn-complete:disabled { opacity: 0.5; cursor: not-allowed; }
-
-  .task-progress {
-    display: flex; align-items: center; gap: 8px;
-    margin-bottom: 10px; font-size: 12px; color: var(--text-muted);
-  }
-  .task-progress-bar {
-    flex: 1; height: 6px; background: var(--bg);
-    border-radius: 100px; overflow: hidden;
-  }
-  .task-progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #25F4EE, #FE2C55);
-    border-radius: 100px;
-  }
-
-  .shop-card {
-    background: #fff; border-radius: var(--radius);
-    padding: 16px; margin-bottom: 12px;
-    box-shadow: var(--shadow);
-    display: flex; align-items: center; gap: 14px;
-    position: relative;
-  }
-  .shop-card .badge {
-    position: absolute; top: -6px; right: 12px;
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    color: #fff; padding: 3px 10px; border-radius: 100px;
-    font-size: 10px; font-weight: 800;
-  }
-  .shop-card .badge.best { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
-  .shop-icon {
-    width: 56px; height: 56px; border-radius: 14px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 26px; flex-shrink: 0; color: #fff;
-  }
-  .shop-icon.follow { background: linear-gradient(135deg, #25F4EE, #00b8d4); }
-  .shop-icon.like { background: linear-gradient(135deg, #FE2C55, #e11d48); }
-  .shop-icon.comment { background: linear-gradient(135deg, #f59e0b, #ea580c); }
-  .shop-info { flex: 1; min-width: 0; }
-  .shop-name { font-weight: 700; font-size: 15px; margin-bottom: 2px; }
-  .shop-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
-  .shop-price {
-    display: inline-flex; align-items: center; gap: 4px;
-    background: #fef3c7; color: #92400e;
-    padding: 4px 10px; border-radius: 100px;
-    font-size: 13px; font-weight: 800;
-  }
-  .shop-price.affordable { background: #d1fae5; color: #065f46; }
-  .btn-buy {
-    padding: 10px 18px; border-radius: 10px;
-    background: linear-gradient(135deg, #25F4EE, #FE2C55);
-    color: #fff; font-weight: 700; font-size: 13px;
-    white-space: nowrap;
-  }
-  .btn-buy:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
-
-  .order-card {
-    background: #fff; border-radius: var(--radius);
-    padding: 14px; margin-bottom: 10px;
-    box-shadow: var(--shadow);
-    border-left: 4px solid var(--warning);
-  }
-  .order-card.done { border-left-color: var(--success); background: #f0fdf4; }
-  .order-card.cancelled { border-left-color: var(--text-muted); opacity: 0.7; }
-  .order-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 8px; gap: 8px; flex-wrap: wrap;
-  }
-  .order-type { font-weight: 700; font-size: 14px; }
-  .order-status {
-    padding: 3px 10px; border-radius: 100px;
-    font-size: 11px; font-weight: 800; text-transform: uppercase;
-  }
-  .order-status.pending { background: #fef3c7; color: #92400e; }
-  .order-status.done { background: #d1fae5; color: #065f46; }
-  .order-status.cancelled { background: var(--bg); color: var(--text-muted); }
-  .order-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
-  .order-target {
-    background: var(--bg); padding: 8px 12px; border-radius: 8px;
-    font-size: 13px; font-weight: 600; color: var(--primary);
-    word-break: break-all; margin-bottom: 8px;
-  }
-  .btn-cancel-order {
-    background: #fee2e2; color: var(--danger);
-    padding: 8px 14px; border-radius: 8px;
-    font-size: 12px; font-weight: 700; margin-top: 8px;
-  }
-
-  .profile-card {
-    background: linear-gradient(135deg, #000 0%, #1a1a2e 100%);
-    border-radius: var(--radius); padding: 24px;
-    color: #fff; margin-bottom: 16px; box-shadow: var(--shadow-lg);
-  }
-  .profile-card .user-info { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
-  .profile-card .avatar-lg {
-    width: 60px; height: 60px; border-radius: 50%;
-    background: linear-gradient(135deg, #25F4EE, #FE2C55);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 24px; font-weight: 800;
-    border: 3px solid rgba(255,255,255,0.4); flex-shrink: 0;
-  }
-  .profile-card .name { font-size: 20px; font-weight: 800; word-break: break-word; }
-  .profile-card .tiktok-username { font-size: 13px; opacity: 0.8; margin-top: 2px; }
-  .profile-card .admin-badge {
-    display: inline-block;
-    background: linear-gradient(135deg, #fbbf24, #f59e0b);
-    color: #fff; padding: 2px 8px; border-radius: 100px;
-    font-size: 10px; font-weight: 800; margin-left: 6px;
-  }
-  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  .stat {
-    background: rgba(255,255,255,0.1); border-radius: 12px;
-    padding: 12px; text-align: center;
-  }
-  .stat .num { font-size: 22px; font-weight: 800; }
-  .stat .lbl { font-size: 11px; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px; }
-
-  .input-group { display: flex; gap: 8px; margin-bottom: 12px; }
-  .input-group input {
-    flex: 1; padding: 12px 14px;
-    border: 2px solid var(--border); border-radius: 10px;
-    font-size: 14px; outline: none; min-width: 0;
-  }
-  .input-group input:focus { border-color: var(--primary); }
-
-  .empty { text-align: center; padding: 40px 20px; color: var(--text-muted); }
-  .empty .emoji { font-size: 48px; margin-bottom: 10px; }
-  .empty p { font-size: 14px; margin-bottom: 6px; }
-  .empty .hint { font-size: 12px; opacity: 0.7; }
-
-  .info-box {
-    background: #eff6ff; border-left: 4px solid var(--info);
-    border-radius: 10px; padding: 12px 14px;
-    font-size: 13px; color: #1e40af;
-    margin-bottom: 16px; line-height: 1.6;
-  }
-  .info-box.warning { background: #fffbeb; border-left-color: var(--warning); color: #92400e; }
-  .info-box.success { background: #f0fdf4; border-left-color: var(--success); color: #065f46; }
-  .info-box.danger { background: #fef2f2; border-left-color: var(--danger); color: #991b1b; }
-  .info-box strong { font-weight: 800; }
-
-  .modal-overlay {
-    position: fixed; inset: 0;
-    background: rgba(15, 23, 42, 0.6);
-    backdrop-filter: blur(4px);
-    display: none; align-items: center; justify-content: center;
-    z-index: 9999; padding: 20px; overflow-y: auto;
-  }
-  .modal-overlay.show { display: flex; }
-  .modal {
-    background: #fff; border-radius: 16px;
-    padding: 24px; max-width: 440px; width: 100%;
-    box-shadow: var(--shadow-lg);
-    max-height: 90vh; overflow-y: auto;
-  }
-  .modal h3 { font-size: 18px; margin-bottom: 8px; }
-  .modal p { font-size: 14px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.6; }
-  .modal .form-group { margin-bottom: 14px; }
-  .modal .form-group input { width: 100%; }
-  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
-  .btn {
-    padding: 10px 20px; border-radius: 10px;
-    font-weight: 700; font-size: 14px;
-  }
-  .btn-secondary { background: var(--bg); color: var(--text); }
-  .btn-danger { background: var(--danger); color: #fff; }
-  .btn-confirm { background: linear-gradient(135deg, #25F4EE, #FE2C55); color: #fff; }
-
-  .verify-step {
-    background: var(--bg);
-    border-radius: 10px;
-    padding: 12px 14px;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    border-left: 3px solid var(--border);
-  }
-  .verify-step .step-num {
-    width: 24px; height: 24px;
-    background: linear-gradient(135deg, #25F4EE, #FE2C55);
-    color: #fff; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 800;
-    flex-shrink: 0;
-  }
-  .verify-step .step-body { flex: 1; font-size: 13px; line-height: 1.5; }
-  .verify-step.done { background: #f0fdf4; border-left-color: var(--success); }
-  .verify-step.done .step-num { background: var(--success); }
-  .verify-step.active { background: #eff6ff; border-left-color: var(--info); }
-  .verify-step.active .step-num { background: var(--info); }
-
-  .verify-code-box {
-    background: linear-gradient(135deg, #1e293b, #0f172a);
-    color: #fff; padding: 20px; border-radius: 12px;
-    text-align: center; margin: 12px 0;
-  }
-  .verify-code-box .code {
-    font-family: 'Courier New', monospace;
-    font-size: 28px; font-weight: 800; letter-spacing: 4px;
-    background: linear-gradient(135deg, #25F4EE, #FE2C55);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    background-clip: text; margin: 8px 0;
-    user-select: all; cursor: pointer;
-  }
-  .verify-code-box .hint { font-size: 12px; opacity: 0.7; }
-
-  .verify-countdown {
-    text-align: center; padding: 16px;
-    background: linear-gradient(135deg, #fef3c7, #fde68a);
-    border-radius: 12px; margin: 12px 0;
-  }
-  .verify-countdown .cd-label {
-    font-size: 12px; font-weight: 700;
-    color: #92400e; text-transform: uppercase; letter-spacing: 1px;
-  }
-  .verify-countdown .cd-timer {
-    font-size: 36px; font-weight: 800;
-    color: #92400e; line-height: 1; margin: 6px 0;
-    font-variant-numeric: tabular-nums;
-  }
-  .verify-countdown .cd-desc { font-size: 12px; color: #92400e; opacity: 0.8; }
-  .verify-countdown.done { background: linear-gradient(135deg, #d1fae5, #a7f3d0); }
-  .verify-countdown.done .cd-label,
-  .verify-countdown.done .cd-timer,
-  .verify-countdown.done .cd-desc { color: #065f46; }
-
-  .verify-input {
-    width: 100%; padding: 12px 14px;
-    border: 2px solid var(--border); border-radius: 10px;
-    font-size: 18px; text-transform: uppercase;
-    letter-spacing: 4px; text-align: center;
-    font-weight: 800; outline: none; margin: 8px 0;
-  }
-  .verify-input:focus { border-color: var(--primary); }
-
-  .notif-panel {
-    position: fixed; top: 70px; right: 16px;
-    width: 340px; max-width: calc(100vw - 32px);
-    background: #fff; border-radius: 14px;
-    box-shadow: var(--shadow-lg);
-    z-index: 999; max-height: 400px; overflow-y: auto;
-    display: none;
-  }
-  .notif-panel.show { display: block; }
-  .notif-header {
-    padding: 14px 16px; border-bottom: 1px solid var(--border);
-    font-weight: 800; font-size: 14px;
-    display: flex; justify-content: space-between; align-items: center;
-    position: sticky; top: 0; background: #fff;
-    border-radius: 14px 14px 0 0;
-  }
-  .notif-item {
-    padding: 12px 16px; border-bottom: 1px solid var(--border);
-    font-size: 13px; display: flex; gap: 10px; align-items: flex-start;
-  }
-  .notif-item.unread { background: #f0f9ff; }
-  .notif-item .notif-icon { font-size: 18px; flex-shrink: 0; }
-  .notif-item .notif-body { flex: 1; min-width: 0; }
-  .notif-item .notif-title { font-weight: 700; margin-bottom: 2px; }
-  .notif-item .notif-time { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
-  .notif-empty { padding: 40px 16px; text-align: center; color: var(--text-muted); font-size: 13px; }
-
-  .toast-container {
-    position: fixed; top: 20px; left: 50%;
-    transform: translateX(-50%);
-    z-index: 10000; display: flex; flex-direction: column;
-    gap: 10px; pointer-events: none;
-  }
-  .toast {
-    background: #fff; padding: 14px 20px; border-radius: 12px;
-    box-shadow: var(--shadow-lg);
-    font-size: 14px; font-weight: 600;
-    display: flex; align-items: center; gap: 10px;
-    pointer-events: auto; max-width: 90vw;
-    border-left: 4px solid var(--primary);
-    animation: slideDown 0.3s;
-  }
-  .toast.success { border-left-color: var(--success); color: #065f46; }
-  .toast.warning { border-left-color: var(--warning); color: #92400e; }
-  .toast.error { border-left-color: var(--danger); color: #991b1b; }
-  .toast.info { border-left-color: var(--info); color: #1e40af; }
-  @keyframes slideDown {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .stats-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 12px; margin-bottom: 20px;
-  }
-  .stat-card {
-    background: #fff; border-radius: var(--radius);
-    padding: 16px; box-shadow: var(--shadow);
-    border-left: 4px solid var(--primary);
-  }
-  .stat-card.cyan { border-left-color: var(--tt-cyan); }
-  .stat-card.pink { border-left-color: var(--tt-pink); }
-  .stat-card.orange { border-left-color: var(--warning); }
-  .stat-card .label {
-    font-size: 11px; color: var(--text-muted);
-    text-transform: uppercase; letter-spacing: 0.5px;
-    font-weight: 600; margin-bottom: 6px;
-  }
-  .stat-card .value { font-size: 24px; font-weight: 800; line-height: 1; }
-  .stat-card .sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
-
-  .admin-user-row {
-    background: #fff; border-radius: var(--radius);
-    padding: 14px; margin-bottom: 10px;
-    display: flex; align-items: center; gap: 12px;
-    box-shadow: var(--shadow); flex-wrap: wrap;
-  }
-  .admin-user-row.banned { background: #fef2f2; border-left: 4px solid var(--danger); }
-  .admin-user-row .avatar { width: 44px; height: 44px; font-size: 16px; cursor: default; }
-  .admin-user-row .info { flex: 1; min-width: 150px; }
-  .admin-user-row .uname { font-weight: 700; font-size: 14px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-  .admin-user-row .meta { font-size: 12px; color: var(--text-muted); display: flex; gap: 10px; margin-top: 2px; flex-wrap: wrap; }
-  .banned-tag {
-    background: var(--danger); color: #fff;
-    padding: 2px 8px; border-radius: 100px;
-    font-size: 10px; font-weight: 800; text-transform: uppercase;
-  }
-  .btn-icon {
-    padding: 8px 10px; border-radius: 8px;
-    font-size: 13px; font-weight: 600;
-    background: var(--bg); color: var(--text);
-    white-space: nowrap;
-  }
-  .btn-icon.primary { background: #eef2ff; color: var(--primary); }
-  .btn-icon.warn { background: #fef3c7; color: #92400e; }
-  .btn-icon.danger { background: #fee2e2; color: var(--danger); }
-  .btn-icon.success { background: #d1fae5; color: #065f46; }
-
-  .history-item {
-    background: #fff; border-radius: 12px;
-    padding: 12px; margin-bottom: 8px;
-    box-shadow: var(--shadow);
-    display: flex; align-items: center; gap: 10px;
-  }
-  .history-item .h-icon { font-size: 22px; flex-shrink: 0; }
-  .history-item .h-body { flex: 1; min-width: 0; }
-  .history-item .h-text { font-size: 13px; font-weight: 600; word-break: break-word; }
-  .history-item .h-time { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-  .history-item .h-amount { font-weight: 800; font-size: 14px; white-space: nowrap; }
-  .history-item .h-amount.plus { color: var(--success); }
-  .history-item .h-amount.minus { color: var(--danger); }
-
-  .queue-item {
-    background: #fff; border-radius: var(--radius);
-    padding: 14px; margin-bottom: 10px;
-    box-shadow: var(--shadow);
-    border-left: 4px solid var(--info);
-  }
-  .queue-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 10px; gap: 8px; flex-wrap: wrap;
-  }
-  .queue-title { font-weight: 700; font-size: 14px; }
-  .queue-time { font-size: 11px; color: var(--text-muted); }
-  .queue-info {
-    background: var(--bg); padding: 8px 12px; border-radius: 8px;
-    font-size: 12px; margin-bottom: 10px; word-break: break-all;
-    line-height: 1.6;
-  }
-  .queue-actions { display: flex; gap: 8px; }
-
-  @media (max-width: 480px) {
-    .topbar { padding: 10px 12px; }
-    .topbar-logo { font-size: 14px; }
-    .points-chip { padding: 6px 10px; font-size: 12px; }
-    .main { padding: 12px; }
-    .balance-card { padding: 20px; }
-    .balance-card .value { font-size: 34px; }
-    .notif-panel { top: 60px; right: 8px; left: 8px; width: auto; }
-    .auth-card { padding: 28px 20px; }
-    .sync-bar { bottom: 8px; right: 8px; font-size: 10px; }
-  }
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--cyan:#25F4EE;--pink:#FE2C55;--primary:#FE2C55;--ok:#10b981;--warn:#f59e0b;--err:#ef4444;--bg:#f8fafc;--text:#0f172a;--mut:#64748b;--bdr:#e2e8f0;--sh:0 1px 3px rgba(0,0,0,.08);--shl:0 10px 40px rgba(0,0,0,.1)}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5}
+button{font-family:inherit;cursor:pointer;border:0}
+input,select{font-family:inherit}
+.sync{position:fixed;bottom:12;background:rgba(15,23,42,.92);color:#fff;padding:8px 14px;border-radius:100px;font-size:11px;font-weight:700;z-index:9000;display:flex;gap:6px;align-items:center;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.sync .d{width:7px;height:7px;border-radius:50%;background:var(--ok)}
+.auth{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#000,#1a1a2e 50%,#FE2C55)}
+.card{background:#fff;border-radius:20px;padding:36px 28px;width:100%;max-width:420px;box-shadow:var(--shl)}
+.logo{text-align:center;font-size:44px;margin-bottom:8px}
+.card h1{text-align:center;font-size:26px;font-weight:800;margin-bottom:6px;background:linear-gradient(135deg,#25F4EE,#FE2C55);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.card .sub{text-align:center;color:var(--mut);font-size:14px;margin-bottom:24px}
+.fg{margin-bottom:16px}
+.fg label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+.fg input{width:100%;padding:12px 14px;border:2px solid var(--bdr);border-radius:10px;font-size:15px;outline:none}
+.fg input:focus{border-color:var(--primary)}
+.fg .hint{font-size:11px;color:var(--mut);margin-top:4px}
+.fg.err input{border-color:var(--err)}
+.btn-p{width:100%;padding:13px;background:linear-gradient(135deg,#25F4EE,#FE2C55);color:#fff;border-radius:10px;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-p:disabled{opacity:.6;cursor:not-allowed}
+.spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .6s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.sw{text-align:center;margin-top:20px;font-size:14px;color:var(--mut)}
+.sw a{color:var(--primary);font-weight:700;cursor:pointer}
+.aerr{background:#fef2f2;color:var(--err);padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:16px;display:none;border-left:3px solid var(--err)}
+.aerr.show{display:block}
+.ahint{text-align:center;margin-top:20px;font-size:11px;color:#94a3b8}
+.app{display:none;min-height:100vh}
+.app.show{display:block}
+.tb{background:#fff;border-bottom:1px solid var(--bdr);padding:12px 16px;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--sh);gap:8px;flex-wrap:wrap}
+.tb-logo{font-size:16px;font-weight:800;display:flex;align-items:center;gap:6px}
+.tb-logo .tt{background:linear-gradient(135deg,#25F4EE,#FE2C55);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.tb-u{display:flex;align-items:center;gap:8px}
+.chip{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#fff;padding:8px 14px;border-radius:100px;font-size:13px;font-weight:800;cursor:pointer}
+.av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:14px;cursor:pointer}
+.nbtn{background:transparent;padding:6px;border-radius:50%;font-size:18px;position:relative;width:36px;height:36px;display:flex;align-items:center;justify-content:center}
+.nbadge{position:absolute;top:2px;right:2px;background:var(--err);color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:100px;min-width:16px;text-align:center}
+.bo{background:transparent;color:var(--mut);padding:6px 10px;border-radius:6px;font-size:13px;font-weight:600}
+.tabs{display:flex;background:#fff;border-bottom:1px solid var(--bdr);position:sticky;top:60px;z-index:99;overflow-x:auto;scrollbar-width:none;box-shadow:0 2px 4px rgba(0,0,0,.04)}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:1;min-width:100px;padding:14px 8px;background:transparent;color:var(--mut);font-weight:700;font-size:13px;border-bottom:3px solid transparent;white-space:nowrap}
+.tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+.tab.admin{color:var(--err)}
+.tab.admin.active{color:var(--err);border-bottom-color:var(--err)}
+.main{max-width:720px;margin:0 auto;padding:16px;padding-bottom:80px}
+.pg{display:none}
+.pg.active{display:block}
+.bal{background:linear-gradient(135deg,#000,#1a1a2e);border-radius:14px;padding:24px;color:#fff;margin-bottom:16px;box-shadow:var(--shl);position:relative;overflow:hidden}
+.bal:before{content:"";position:absolute;top:-50%;right:-20%;width:200px;height:200px;background:linear-gradient(135deg,#25F4EE,#FE2C55);border-radius:50%;filter:blur(60px);opacity:.4}
+.bal .lbl{font-size:12px;text-transform:uppercase;letter-spacing:1px;opacity:.7;margin-bottom:6px;position:relative}
+.bal .val{font-size:42px;font-weight:800;line-height:1;position:relative;background:linear-gradient(135deg,#25F4EE,#FE2C55);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.bal .val small{font-size:16px;-webkit-text-fill-color:#fff;opacity:.7;margin-left:6px}
+.bal .s{font-size:13px;opacity:.7;margin-top:8px;position:relative}
+.st{font-size:15px;font-weight:800;margin:20px 0 12px;display:flex;align-items:center;gap:8px;justify-content:space-between}
+.st>span:first-child{display:flex;align-items:center;gap:8px}
+.st>span:first-child:before{content:"";width:4px;height:16px;background:linear-gradient(180deg,#25F4EE,#FE2C55);border-radius:2px}
+.sd{font-size:13px;color:var(--mut);margin-bottom:12px;margin-top:-4px}
+.sl{font-size:12px;color:var(--primary);font-weight:700;cursor:pointer;background:transparent}
+.rg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.ri{background:#fff;border-radius:10px;padding:12px 8px;text-align:center;box-shadow:var(--sh)}
+.ri .ic{font-size:20px;margin-bottom:4px}
+.ri .ll{font-size:11px;color:var(--mut);margin-bottom:2px}
+.ri .vv{font-size:14px;font-weight:800;color:var(--ok)}
+.tc{background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:var(--sh);border-left:4px solid var(--primary)}
+.tc.follow{border-left-color:var(--cyan)}
+.tc.like{border-left-color:var(--pink)}
+.tc.comment{border-left-color:var(--warn)}
+.th{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.tic{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;color:#fff}
+.tic.follow{background:linear-gradient(135deg,#25F4EE,#00b8d4)}
+.tic.like{background:linear-gradient(135deg,#FE2C55,#e11d48)}
+.tic.comment{background:linear-gradient(135deg,#f59e0b,#ea580c)}
+.tinfo{flex:1;min-width:0}
+.tname{font-weight:700;font-size:15px;margin-bottom:2px;word-break:break-word}
+.tmeta{font-size:12px;color:var(--mut);display:flex;gap:10px;flex-wrap:wrap}
+.trew{font-size:14px;font-weight:800;color:#92400e;background:linear-gradient(135deg,#fef3c7,#fde68a);padding:6px 12px;border-radius:100px;white-space:nowrap}
+.ta{display:flex;gap:8px;flex-wrap:wrap}
+.bt{flex:1;min-width:120px;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:700;text-align:center;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:4px}
+.bt.open{background:var(--bg);color:var(--text);border:2px solid var(--bdr)}
+.bt.done{background:linear-gradient(135deg,#25F4EE,#FE2C55);color:#fff}
+.bt.done:disabled{opacity:.5;cursor:not-allowed}
+.tp{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12px;color:var(--mut)}
+.tpb{flex:1;height:6px;background:var(--bg);border-radius:100px;overflow:hidden}
+.tpf{height:100%;background:linear-gradient(90deg,#25F4EE,#FE2C55);border-radius:100px}
+.sc{background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:var(--sh);display:flex;align-items:center;gap:14px;position:relative}
+.sc .bdg{position:absolute;top:-6px;right:12px;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;padding:3px 10px;border-radius:100px;font-size:10px;font-weight:800}
+.sc .bdg.best{background:linear-gradient(135deg,#fbbf24,#f59e0b)}
+.si{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;color:#fff}
+.si.follow{background:linear-gradient(135deg,#25F4EE,#00b8d4)}
+.si.like{background:linear-gradient(135deg,#FE2C55,#e11d48)}
+.si.comment{background:linear-gradient(135deg,#f59e0b,#ea580c)}
+.sinfo{flex:1;min-width:0}
+.sname{font-weight:700;font-size:15px;margin-bottom:2px}
+.sdesc{font-size:12px;color:var(--mut);margin-bottom:6px}
+.sprice{display:inline-flex;align-items:center;gap:4px;background:#fef3c7;color:#92400e;padding:4px 10px;border-radius:100px;font-size:13px;font-weight:800}
+.sprice.ok{background:#d1fae5;color:#065f46}
+.buy{padding:10px 18px;border-radius:10px;background:linear-gradient(135deg,#25F4EE,#FE2C55);color:#fff;font-weight:700;font-size:13px;white-space:nowrap}
+.buy:disabled{background:var(--bdr);color:var(--mut);cursor:not-allowed}
+.oc{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:var(--sh);border-left:4px solid var(--warn)}
+.oc.done{border-left-color:var(--ok);background:#f0fdf4}
+.oc.cancel{border-left-color:var(--mut);opacity:.7}
+.oh{display:flex;justify-content:space-between;margin-bottom:8px;gap:8px;flex-wrap:wrap}
+.oty{font-weight:700;font-size:14px}
+.ost{padding:3px 10px;border-radius:100px;font-size:11px;font-weight:800;text-transform:uppercase}
+.ost.pending{background:#fef3c7;color:#92400e}
+.ost.done{background:#d1fae5;color:#065f46}
+.ost.cancel{background:var(--bg);color:var(--mut)}
+.om{font-size:12px;color:var(--mut);margin-bottom:8px}
+.ot{background:var(--bg);padding:8px 12px;border-radius:8px;font-size:13px;font-weight:600;color:var(--primary);word-break:break-all;margin-bottom:8px}
+.cancel-o{background:#fee2e2;color:var(--err);padding:8px 14px;border-radius:8px;font-size:12px;font-weight:700;margin-top:8px}
+.pc{background:linear-gradient(135deg,#000,#1a1a2e);border-radius:14px;padding:24px;color:#fff;margin-bottom:16px;box-shadow:var(--shl);position:relative;z-index:1;overflow:hidden}
+.pc .ui{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.pc .avlg{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#25F4EE,#FE2C55);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;border:3px solid rgba(255,255,255,.4);flex-shrink:0}
+.pc .nm{font-size:20px;font-weight:800;word-break:break-word}
+.pc .ttu{font-size:13px;opacity:.8;margin-top:2px}
+.pc .abadge{display:inline-block;background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#fff;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:800;margin-left:6px}
+.sts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.sts .st1{background:rgba(255,255,255,.1);border-radius:12px;padding:12px;text-align:center}
+.sts .st1 .n{font-size:22px;font-weight:800}
+.sts .st1 .l{font-size:11px;opacity:.9;text-transform:uppercase}
+.ig{display:flex;gap:8px;margin-bottom:12px}
+.ig input{flex:1;padding:12px 14px;border:2px solid var(--bdr);border-radius:10px;font-size:14px;outline:none;min-width:0}
+.ig input:focus{border-color:var(--primary)}
+.emp{text-align:center;padding:40px 20px;color:var(--mut)}
+.emp .e{font-size:48px;margin-bottom:10px}
+.emp p{font-size:14px;margin-bottom:6px}
+.emp .h{font-size:12px;opacity:.7}
+.ib{background:#eff6ff;border-left:4px solid #3b82f6;border-radius:10px;padding:12px 14px;font-size:13px;color:#1e40af;margin-bottom:16px;line-height:1.6}
+.ib.warn{background:#fffbeb;border-left-color:var(--warn);color:#92400e}
+.ib.ok{background:#f0fdf4;border-left-color:var(--ok);color:#065f46}
+.ib.err{background:#fef2f2;border-left-color:var(--err);color:#991b1b}
+.ib strong{font-weight:800}
+.mov{position:fixed;inset:0;background:rgba(15,23,42,.6);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:9999;padding:20px;overflow-y:auto}
+.mov.show{display:flex}
+.mc{background:#fff;border-radius:16px;padding:24px;max-width:440px;width:100%;box-shadow:var(--shl);max-height:90vh;overflow-y:auto}
+.mc h3{font-size:18px;margin-bottom:8px}
+.mc p{font-size:14px;color:var(--mut);margin-bottom:16px;line-height:1.6}
+.mc .fg{margin-bottom:14px}
+.mc .fg input{width:100%}
+.ma{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+.btn{padding:10px 20px;border-radius:10px;font-weight:700;font-size:14px}
+.btn.sec{background:var(--bg);color:var(--text)}
+.btn.dg{background:var(--err);color:#fff}
+.btn.cf{background:linear-gradient(135deg,#25F4EE,#FE2C55);color:#fff}
+.vs{background:var(--bg);border-radius:10px;padding:12px 14px;margin-bottom:12px;display:flex;gap:10px;border-left:3px solid var(--bdr)}
+.vs .num{width:24px;height:24px;background:linear-gradient(135deg,#25F4EE,#FE2C55);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}
+.vs .bd{flex:1;font-size:13px;line-height:1.5}
+.vs.done{background:#f0fdf4;border-left-color:var(--ok)}
+.vs.done .num{background:var(--ok)}
+.vs.act{background:#eff6ff;border-left-color:#3b82f6}
+.vs.act .num{background:#3b82f6}
+.vcb{background:linear-gradient(135deg,#1e293b,#0f172a);color:#fff;padding:20px;700border-radius:12px;text-align:center;margin:12px 0}
+.vcb .code{font-family:'Courier New',monospace;font-size:28px;font-weight:800;letter-spacing:4px;background:linear-gradient(135deg,#25F4EE,#FE2C55);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:8px 0;user-select:all;cursor:pointer}
+.vcb .hint{font-size:12;px;opacity:.7}
+.vcd{text-alignmargin:center;padding:16px;background:linear-gradient(-bottom135deg,#fef3c7,#fde68a);:2border-radius:12px;margin:12px 0}
+.vcd .cdl{font-size:12px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:1px}
+.vcd .cdt{font-size:36px;font-weight:800;color:#92400e;line-height:1;margin:6px 0;font-variant-numeric:tabular-nums}
+.vcd .cdd{font-size:12px;color:#92400e;opacity:.8}
+.vcd.done{background:linear-gradient(135deg,#d1fae5,#a7f3d0)}
+.vcd.done .cdl,.vcd.done .cdt,.vcd.done .cdd{color:#065f46}
+.vin{width:100%;padding:12px 14px;border:2px solid var(--bdr);border-radius:10px;font-size:18px;text-transform:uppercase;letter-spacing:4px;text-align:center;font-weight:800;outline:none;margin:8px 0}
+.vin:focus{border-color:var(--primary)}
+.np{position:fixed;top:70px;right:16px;width:340px;max-width:calc(100vw - 32px);background:#fff;border-radius:14px;box-shadow:var(--shl);z-index:999;max-height:400px;overflow-y:auto;display:none}
+.np.show{display:block}
+.nh{padding:14px 16px;border-bottom:1px solid var(--bdr);font-weight:800;font-size:14px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#fff;border-radius:14px 14px 0 0}
+.ni{padding:12px 16px;border-bottom:1px solid var(--bdr);font-size:13px;display:flex;gap:10px;align-items:flex-start}
+.ni.unread{background:#f0f9ff}
+.ni .ic{font-size:18px;flex-shrink:0}
+.ni .bd{flex:1;min-width:0}
+.ni .tt{font-weight:px}
+.ni .tm{font-size:11px;color:var(--mut);margin-top:4px}
+.ne{padding:40px 16px;text-align:center;color:var(--mut);font-size:13px}
+.tst{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:10000;display:flex;flex-direction:column;gap:10px;pointer-events:none}
+.tst .t{background:#fff;padding:14px 20px;border-radius:12px;box-shadow:var(--shl);font-size:14px;font-weight:600;display:flex;align-items:center;gap:10px;pointer-events:auto;max-width:90vw;border-left:4px solid var(--primary);animation:sd .3s}
+.tst .t.ok{border-left-color:var(--ok);color:#065f46}
+.tst .t.wn{border-left-color:var(--warn);color:#92400e}
+.tst .t.er{border-left-color:var(--err);color:#991b1b}
+.tst .t.inf{border-left-color:#3b82f6;color:#1e40af}
+@keyframes sd{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px}
+.sk{background:#fff;border-radius:14px;padding:16px;box-shadow:var(--sh);border-left:4px solid var(--primary)}
+.sk.c{border-left-color:var(--cyan)}
+.sk.p{border-left-color:var(--pink)}
+.sk.o{border-left-color:var(--warn)}
+.sk .ll{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:6px}
+.sk .vv{font-size:24px;font-weight:800;line-height:1}
+.sk .s{font-size:11px;color:var(--mut);margin-top:4px}
+.ur{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;box-shadow:var(--sh);flex-wrap:wrap}
+.ur.banned{background:#fef2f2;border-left:4px solid var(--err)}
+.ur .av{width:44px;height:44px;font-size:16px;cursor:default}
+.ur .info{flex:1;min-width:150px}
+.ur .un{font-weight:700;font-size:14px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.ur .mt{font-size:12px;color:var(--mut);display:flex;gap:10px;margin-top:2px;flex-wrap:wrap}
+.btag{background:var(--err);color:#fff;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:800;text-transform:uppercase}
+.bi{padding:8px 10px;border-radius:8px;font-size:13px;font-weight:600;background:var(--bg);color:var(--text);white-space:nowrap}
+.bi.pri{background:#eef2ff;color:var(--primary)}
+.bi.wn{background:#fef3c7;color:#92400e}
+.bi.dg{background:#fee2e2;color:var(--err)}
+.bi.ok{background:#d1fae5;color:#065f46}
+.hi{background:#fff;border-radius:12px;padding:12px;margin-bottom:8px;box-shadow:var(--sh);display:flex;align-items:center;gap:10px}
+.hi .ic{font-size:22px;flex-shrink:0}
+.hi .bd{flex:1;min-width:0}
+.hi .tt{font-size:13px;font-weight:600;word-break:break-word}
+.hi .tm{font-size:11px;color:var(--mut);margin-top:2px}
+.hi .am{font-weight:800;font-size:14px;white-space:nowrap}
+.hi .am.p{color:var(--ok)}
+.hi .am.m{color:var(--err)}
+.qi{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:var(--sh);border-left:4px solid #3b82f6}
+.qh{display:flex;justify-content:space-between;margin-bottom:10px;gap:8px;flex-wrap:wrap}
+.qt{font-weight:700;font-size:14px}
+.qtime{font-size:11px;color:var(--mut)}
+.qinfo{background:var(--bg);padding:8px 12px;border-radius:8px;font-size:12px;margin-bottom:10px;word-break:break-all;line-height:1.6}
+.qa{display:flex;gap:8px}
+@media(max-width:480px){
+  .tb{padding:10px 12px}
+  .tb-logo{font-size:14px}
+  .chip{padding:6px 10px;font-size:12px}
+  .main{padding:12px}
+  .bal{padding:20px}
+  .bal .val{font-size:34px}
+  .np{top:60px;right:8px;left:8px;width:auto}
+  .card{padding:28px 20px}
+  .sync{bottom:8px;right:8px;font-size:10px}
+}
 </style>
 </head>
 <body>
 
-<!-- SYNC INDICATOR -->
-<div class="sync-bar" id="syncBar">
-  <span class="dot"></span>
-  <span id="syncText">Đã đồng bộ</span>
+<div class="sync" id="syncBar">
+  <span class="d"></span>
+  <span id="syncText">Đang kết nối...</span>
 </div>
 
 <!-- AUTH -->
-<div class="auth-screen" id="authScreen">
-  <div class="auth-card">
-    <div class="auth-logo">🎵</div>
+<div class="auth" id="authScreen">
+  <div class="card">
+    <div class="logo">🎵</div>
     <h1>TikTok Boost Pro</h1>
-    <p class="subtitle">Kiếm xu • Đổi follow & like TikTok</p>
-
-    <div class="auth-error" id="authError"></div>
-
-    <div class="form-group" id="usernameGroup">
-      <label for="authUsername">Tên đăng nhập</label>
-      <input type="text" id="authUsername" placeholder="Ít nhất 3 ký tự" autocomplete="username" maxlength="20">
-      <div class="input-hint">Chỉ chữ thường, số và dấu gạch dưới</div>
+    <p class="sub">Kiếm xu • Đổi follow & like TikTok</p>
+    <div class="aerr" id="authError"></div>
+    <div class="fg" id="uG">
+      <label for="aU">Tên đăng nhập</label>
+      <input type="text" id="aU" placeholder="Ít nhất 3 ký tự" maxlength="20" autocomplete="username">
+      <div class="hint">Chỉ chữ thường, số và dấu gạch dưới</div>
     </div>
-    <div class="form-group" id="passwordGroup">
-      <label for="authPassword">Mật khẩu</label>
-      <input type="password" id="authPassword" placeholder="Ít nhất 6 ký tự" autocomplete="current-password" maxlength="50">
-      <div class="input-hint">Tối thiểu 6 ký tự</div>
+    <div class="fg" id="pG">
+      <label for="aP">Mật khẩu</label>
+      <input type="password" id="aP" placeholder="Ít nhất 6 ký tự" maxlength="50" autocomplete="current-password">
+      <div class="hint">Tối thiểu 6 ký tự</div>
     </div>
-
-    <button class="btn-primary" id="authSubmit" type="button">
-      <span id="authBtnText">Đăng nhập</span>
-    </button>
-
-    <div class="auth-switch">
-      <span id="switchText">Chưa có tài khoản?</span>
-      <a id="switchMode" tabindex="0" role="button">Đăng ký ngay</a>
+    <button class="btn-p" id="aBtn" type="button"><span id="aBtnText">Đăng nhập</span></button>
+    <div class="sw">
+      <span id="swText">Chưa có tài khoản?</span>
+      <a id="swMode" tabindex="0" role="button">Đăng ký ngay</a>
     </div>
-
-    <p class="auth-hint">🔒 Auto-backup • Multi-tab sync • Bảo mật đa lớp</p>
+    <p class="ahint">🔥 Firebase • Real-time • Multi-device</p>
   </div>
 </div>
 
 <!-- APP -->
 <div class="app" id="app">
-  <div class="topbar">
-    <div class="topbar-logo">🎵 <span class="tt">TikTok Boost Pro</span></div>
-    <div class="topbar-user">
-      <div class="points-chip" id="topPoints">0 xu</div>
-      <button class="notif-btn" id="btnNotif" type="button">
-        🔔 <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
-      </button>
-      <div class="avatar" id="topAvatar"></div>
-      <button class="btn-logout" id="btnLogout" type="button">Đăng xuất</button>
+  <div class="tb">
+    <div class="tb-logo">🎵 <span class="tt">TikTok Boost Pro</span></div>
+    <div class="tb-u">
+      <div class="chip" id="topP">0 xu</div>
+      <button class="nbtn" id="btnN" type="button">🔔<span class="nbadge" id="nBadge" style="display:none">0</span></button>
+      <div class="av" id="topAv"></div>
+      <button class="bo" id="btnOut" type="button">Đăng xuất</button>
     </div>
   </div>
 
-  <div class="notif-panel" id="notifPanel">
-    <div class="notif-header">
-      <span>🔔 Thông báo</span>
-      <button class="section-link" id="btnClearNotif" type="button">Xóa hết</button>
-    </div>
-    <div id="notifList"></div>
+  <div class="np" id="nPanel">
+    <div class="nh"><span>🔔 Thông báo</span><button class="sl" id="btnClearN" type="button">Xóa hết</button></div>
+    <div id="nList"></div>
   </div>
 
-  <div class="tabs" id="tabs" role="tablist">
+  <div class="tabs" id="tabs">
     <button class="tab active" data-tab="tasks" type="button">💰 Kiếm xu</button>
     <button class="tab" data-tab="shop" type="button">🛒 Mua tương tác</button>
     <button class="tab" data-tab="orders" type="button">📦 Đơn của tôi</button>
     <button class="tab" data-tab="profile" type="button">👤 Cá nhân</button>
   </div>
 
-  <div class="main" id="main">
-
-    <div class="page active" id="page-tasks">
-      <div class="balance-card">
-        <div class="label">Số dư xu</div>
-        <div class="value" id="balanceValue">0<small>xu</small></div>
-        <div class="sub" id="balanceSub">Hoàn thành nhiệm vụ để kiếm xu</div>
+  <div class="main">
+    <!-- TASKS -->
+    <div class="pg active" id="pg-tasks">
+      <div class="bal">
+        <div class="lbl">Số dư xu</div>
+        <div class="val" id="balVal">0<small>xu</small></div>
+        <div class="s" id="balSub">Hoàn thành nhiệm vụ để kiếm xu</div>
       </div>
-
-      <div class="info-box"><strong>💡 Bảng giá kiếm xu:</strong></div>
-
-      <div class="rate-grid">
-        <div class="rate-item"><div class="rate-icon">👥</div><div class="rate-label">1 Follow</div><div class="rate-value">+100 xu</div></div>
-        <div class="rate-item"><div class="rate-icon">❤️</div><div class="rate-label">1 Tim</div><div class="rate-value">+50 xu</div></div>
-        <div class="rate-item"><div class="rate-icon">💬</div><div class="rate-label">1 Comment</div><div class="rate-value">+50 xu</div></div>
+      <div class="ib"><strong>💡 Bảng giá kiếm xu:</strong></div>
+      <div class="rg">
+        <div class="ri"><div class="ic">👥</div><div class="ll">1 Follow</div><div class="vv">+100 xu</div></div>
+        <div class="ri"><div class="ic">❤️</div><div class="ll">1 Tim</div><div class="vv">+50 xu</div></div>
+        <div class="ri"><div class="ic">💬</div><div class="ll">1 Comment</div><div class="vv">+50 xu</div></div>
       </div>
-
-      <div class="section-title">
+      <div class="st">
         <span>📋 Nhiệm vụ có sẵn</span>
-        <button class="section-link" id="btnRefreshTasks" type="button">🔄 Làm mới</button>
+        <button class="sl" id="btnRefresh" type="button">🔄 Làm mới</button>
       </div>
-      <div class="section-desc">Mở TikTok → làm theo yêu cầu → nhập mã xác nhận</div>
+      <div class="sd">Mở TikTok → làm → nhập mã xác nhận</div>
       <div id="taskList"></div>
     </div>
 
-    <div class="page" id="page-shop">
-      <div class="balance-card">
-        <div class="label">Số dư xu</div>
-        <div class="value" id="shopBalance">0<small>xu</small></div>
-        <div class="sub">Dùng xu mua tương tác cho TikTok của bạn</div>
+    <!-- SHOP -->
+    <div class="pg" id="pg-shop">
+      <div class="bal">
+        <div class="lbl">Số dư xu</div>
+        <div class="val" id="shopBal">0<small>xu</small></div>
+        <div class="s">Dùng xu mua tương tác cho TikTok của bạn</div>
       </div>
-      <div class="info-box warning" id="shopWarning" style="display:none;">
-        <strong>⚠️ Chưa có TikTok:</strong> Vào tab <b>Cá nhân</b> để cập nhật!
-      </div>
-      <div class="section-title"><span>🛒 Chọn gói tương tác</span></div>
+      <div class="ib warn" id="shopWarn" style="display:none"><strong>⚠️ Chưa có TikTok:</strong> Vào tab <b>Cá nhân</b> để cập nhật!</div>
+      <div class="st"><span>🛒 Chọn gói tương tác</span></div>
       <div id="shopList"></div>
     </div>
 
-    <div class="page" id="page-orders">
-      <div class="section-title"><span>📦 Đơn mua của bạn</span></div>
-      <div id="myOrders"></div>
+    <!-- ORDERS -->
+    <div class="pg" id="pg-orders">
+      <div class="st"><span>📦 Đơn mua của bạn</span></div>
+      <div id="orderList"></div>
     </div>
 
-    <div class="page" id="page-profile">
-      <div class="profile-card">
-        <div class="user-info">
-          <div class="avatar-lg" id="profileAvatar"></div>
-          <div style="min-width:0;">
-            <div class="name" id="profileName"></div>
-            <div class="tiktok-username" id="profileTikTok">@chưa-cập-nhật</div>
+    <!-- PROFILE -->
+    <div class="pg" id="pg-profile">
+      <div class="pc">
+        <div class="ui">
+          <div class="avlg" id="pAv"></div>
+          <div style="min-width:0">
+            <div class="nm" id="pName"></div>
+            <div class="ttu" id="pTik">@chưa-cập-nhật</div>
           </div>
         </div>
-        <div class="stats">
-          <div class="stat"><div class="num" id="statPoints">0</div><div class="lbl">Xu</div></div>
-          <div class="stat"><div class="num" id="statEarned">0</div><div class="lbl">Đã kiếm</div></div>
-          <div class="stat"><div class="num" id="statSpent">0</div><div class="lbl">Đã tiêu</div></div>
+        <div class="sts">
+          <div class="st1"><div class="n" id="stP">0</div><div class="l">Xu</div></div>
+          <div class="st1"><div class="n" id="stE">0</div><div class="l">Đã kiếm</div></div>
+          <div class="st1"><div class="n" id="stS">0</div><div class="l">Đã tiêu</div></div>
         </div>
       </div>
-
-      <div class="section-title"><span>🎵 TikTok của bạn</span></div>
-      <div class="input-group">
-        <input type="text" id="tiktokUsername" placeholder="@username_tiktok" maxlength="24" autocomplete="off">
-        <button class="btn-buy" id="btnSaveTikTok" type="button">Lưu</button>
+      <div class="st"><span>🎵 TikTok của bạn</span></div>
+      <div class="ig">
+        <input type="text" id="tikIn" placeholder="@username_tiktok" maxlength="24">
+        <button class="buy" id="btnSaveTik" type="button">Lưu</button>
       </div>
-
-      <div class="section-title"><span>📊 Lịch sử</span></div>
-      <div id="historyList"></div>
-
-      <div class="section-title"><span>⚙️ Cài đặt</span></div>
-      <button id="btnChangePassword" type="button" style="width:100%; padding:12px; background:var(--bg); border-radius:10px; font-weight:700; margin-bottom:8px;">🔑 Đổi mật khẩu</button>
-      <button id="btnExportMyData" type="button" style="width:100%; padding:12px; background:var(--bg); border-radius:10px; font-weight:700; margin-bottom:8px;">💾 Tải dữ liệu của tôi</button>
-      <button id="btnRestoreFromBackup" type="button" style="width:100%; padding:12px; background:var(--bg); border-radius:10px; font-weight:700; margin-bottom:8px;">📥 Khôi phục từ backup tự động</button>
+      <div class="st"><span>📊 Lịch sử</span></div>
+      <div id="histList"></div>
+      <div class="st"><span>⚙️ Cài đặt</span></div>
+      <button id="btnChangePw" type="button" style="width:100%;padding:12px;background:var(--bg);border-radius:10px;font-weight:700;margin-bottom:8px">🔑 Đổi mật khẩu</button>
+      <div class="ib ok" style="margin-top:12px"><strong>✅ Hệ thống tự động</strong><br><span style="font-size:12px">Dữ liệu đồng bộ real-time với Firebase. Mọi thiết bị thấy chung!</span></div>
     </div>
 
-    <div class="page" id="page-admin">
-      <div class="section-title"><span>🛡️ Dashboard</span></div>
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="label">Users</div>
-          <div class="value" id="admTotalUsers">0</div>
-          <div class="sub" id="admBannedSub">0 bị khóa</div>
-        </div>
-        <div class="stat-card cyan">
-          <div class="label">Task chờ</div>
-          <div class="value" id="admPendingTasks">0</div>
-        </div>
-        <div class="stat-card pink">
-          <div class="label">Đơn xong</div>
-          <div class="value" id="admCompletedOrders">0</div>
-        </div>
-        <div class="stat-card orange">
-          <div class="label">Verify chờ</div>
-          <div class="value" id="admPendingVerifies">0</div>
-        </div>
+    <!-- ADMIN -->
+    <div class="pg" id="pg-admin">
+      <div class="st"><span>🛡️ Dashboard</span></div>
+      <div class="sg">
+        <div class="sk"><div class="ll">Users</div><div class="vv" id="aUsers">0</div><div class="s" id="aBanned">0 bị khóa</div></div>
+        <div class="sk c"><div class="ll">Task chờ</div><div class="vv" id="aTasks">0</div></div>
+        <div class="sk p"><div class="ll">Đơn xong</div><div class="vv" id="aOrders">0</div></div>
+        <div class="sk o"><div class="ll">Verify chờ</div><div class="vv" id="aVerify">0</div></div>
       </div>
-
-      <div class="section-title">
+      <div class="st">
         <span>🔍 Hàng chờ xác minh</span>
-        <button class="section-link" id="btnAutoApprove" type="button">⚡ Duyệt hết</button>
+        <button class="sl" id="btnAutoApprove" type="button">⚡ Duyệt hết</button>
       </div>
-      <div id="verifyQueue"></div>
-
-      <div class="section-title"><span>👥 Quản lý Users</span></div>
-      <div class="input-group" style="flex-wrap:wrap;">
-        <input type="text" id="admSearch" placeholder="🔍 Tìm..." style="min-width:150px;">
-        <select id="admFilter" style="padding:12px 14px; border:2px solid var(--border); border-radius:10px; font-weight:600; outline:none;">
+      <div id="qList"></div>
+      <div class="st"><span>👥 Quản lý Users</span></div>
+      <div class="ig" style="flex-wrap:wrap">
+        <input type="text" id="aSearch" placeholder="🔍 Tìm..." style="min-width:150px">
+        <select id="aFilter" style="padding:12px 14px;border:2px solid var(--bdr);border-radius:10px;font-weight:600;outline:none">
           <option value="all">Tất cả</option>
           <option value="active">Hoạt động</option>
           <option value="banned">Bị khóa</option>
           <option value="admin">Admin</option>
-          <option value="rich">Nhiều xu (&gt;1000)</option>
+          <option value="rich">Nhiều xu</option>
         </select>
       </div>
-      <div id="admUserList"></div>
-
-      <div class="section-title" style="margin-top:32px;"><span>💾 Bảo trì & Backup</span></div>
-      <div class="info-box success" id="backupStatus">
-        <strong>✅ Auto-backup đang hoạt động</strong><br>
-        <span id="backupInfo">Chưa có backup</span>
-      </div>
-      <button id="btnExport" type="button" style="width:100%; padding:12px; background:var(--bg); border-radius:10px; font-weight:700; margin-bottom:8px;">💾 Sao lưu hệ thống (tải file)</button>
-      <button id="btnImport" type="button" style="width:100%; padding:12px; background:var(--bg); border-radius:10px; font-weight:700; margin-bottom:8px;">📂 Khôi phục từ file</button>
-      <button id="btnListBackups" type="button" style="width:100%; padding:12px; background:var(--bg); border-radius:10px; font-weight:700; margin-bottom:8px;">📋 Xem backup tự động</button>
-      <input type="file" id="importFile" accept=".json" style="display:none;">
-
-      <div class="section-title" style="margin-top:32px;"><span>⚠️ Vùng nguy hiểm</span></div>
-      <div style="background:#fff; border-radius:14px; padding:16px; box-shadow:var(--shadow); border-left:4px solid var(--danger);">
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn-icon warn" id="btnResetPoints" type="button">🔄 Reset xu</button>
-          <button class="btn-icon danger" id="btnResetAll" type="button">💣 Reset toàn bộ</button>
-        </div>
+      <div id="userList"></div>
+      <div class="st" style="margin-top:32px"><span>⚠️ Vùng nguy hiểm</span></div>
+      <div style="background:#fff;border-radius:14px;padding:16px;box-shadow:var(--sh);border-left:4px solid var(--err)">
+        <button class="bi wn" id="btnReset" type="button">🔄 Reset xu tất cả</button>
       </div>
     </div>
-
   </div>
 </div>
 
-<div class="modal-overlay" id="modalOverlay" role="dialog">
-  <div class="modal" id="modalContent"></div>
-</div>
-
-<div class="toast-container" id="toastContainer" aria-live="polite"></div>
-
-<script>
-/* ============================================================
-   TikTok Boost Pro v5.0 - Persistent + Auto-backup + Sync
-   Admin: admingang / Rmg16062007
-   Tỷ giá: Follow = 100 xu | Like = 50 xu | Comment = 50 xu
-   ============================================================ */
-(function() {
-  'use strict';
-
-  // ══════════════════════════════════════════════════════════
-  // 🗄️ STORAGE LAYER - KHÔNG BAO GIỜ ĐỔI CÁC HẰNG SỐ NÀY
-  // ══════════════════════════════════════════════════════════
-  const STORAGE_NS = 'ttboost_persistent';   // 🔒 KHÔNG ĐỔI
-  const DATA_VERSION = 5;                     // Chỉ tăng khi schema đổi
-  const SCHEMA_VERSION_KEY = STORAGE_NS + '_schema';
-  
-  // Keys cố định — không phụ thuộc version code
-  const KEYS = {
-    users: STORAGE_NS + '_users',
-    tasks: STORAGE_NS + '_tasks',
-    orders: STORAGE_NS + '_orders',
-    notifications: STORAGE_NS + '_notifications',
-    verifyQueue: STORAGE_NS + '_verifyQueue',
-    session: STORAGE_NS + '_session',
-    loginAttempts: STORAGE_NS + '_loginAttempts',
-    meta: STORAGE_NS + '_meta'
-  };
-
-  // ══════════════════════════════════════════════════════════
-  // 📦 INDEXEDDB - Tầng backup thứ 2
-  // ══════════════════════════════════════════════════════════
-  const IDB_NAME = 'ttboost_backup_db';
-  const IDB_VERSION = 1;
-  const IDB_STORE = 'backups';
-  let idbInstance = null;
-
-  async function idbOpen() {
-    if (idbInstance) return idbInstance;
-    return new Promise((resolve, reject) => {
-      const req = indexedDB.open(IDB_NAME, IDB_VERSION);
-      req.onupgradeneeded = e => {
-        const db = e.target.result;
-        if (!db.objectStoreNames.contains(IDB_STORE)) {
-          const store = db.createObjectStore(IDB_STORE, { keyPath: 'id', autoIncrement: true });
-          store.createIndex('timestamp', 'timestamp');
-        }
-      };
-      req.onsuccess = () => { idbInstance = req.result; resolve(idbInstance); };
-      req.onerror = () => reject(req.error);
-    });
-  }
-
-  async function idbSave(snapshot) {
-    try {
-      const db = await idbOpen();
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction(IDB_STORE, 'readwrite');
-        const store = tx.objectStore(IDB_STORE);
-        const record = {
-          timestamp: Date.now(),
-          version: DATA_VERSION,
-          data: snapshot
-        };
-        store.add(record);
-        
-        // Chỉ giữ 10 backup gần nhất
-        const countReq = store.count();
-        countReq.onsuccess = () => {
-          if (countReq.result > 10) {
-            const cursor = store.openCursor();
-            let toDelete = countReq.result - 10;
-            cursor.onsuccess = e => {
-              const c = e.target.result;
-              if (c && toDelete > 0) {
-                c.delete();
-                toDelete--;
-                c.continue();
-              }
-            };
-          }
-        };
-        tx.oncomplete = () => resolve(true);
-        tx.onerror = () => reject(tx.error);
-      });
-    } catch (e) {
-      console.warn('IndexedDB save failed:', e);
-      return false;
-    }
-  }
-
-  async function idbLoadLatest() {
-    try {
-      const db = await idbOpen();
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction(IDB_STORE, 'readonly');
-        const store = tx.objectStore(IDB_STORE);
-        const idx = store.index('timestamp');
-        const req = idx.openCursor(null, 'prev');
-        req.onsuccess = e => {
-          const cursor = e.target.result;
-          if (cursor) resolve(cursor.value);
-          else resolve(null);
-        };
-        req.onerror = () => reject(req.error);
-      });
-    } catch (e) {
-      return null;
-    }
-  }
-
-  async function idbListAll() {
-    try {
-      const db = await idbOpen();
-      return new Promise((resolve) => {
-        const tx = db.transaction(IDB_STORE, 'readonly');
-        const store = tx.objectStore(IDB_STORE);
-        const req = store.getAll();
-        req.onsuccess = () => resolve(req.result || []);
-        req.onerror = () => resolve([]);
-      });
-    } catch (e) { return []; }
-  }
-
-  // ══════════════════════════════════════════════════════════
-  // 🔄 BROADCAST CHANNEL - Multi-tab sync
-  // ══════════════════════════════════════════════════════════
-  let syncChannel = null;
-  const TAB_ID = 'tab_' + Math.random().toString(36).slice(2, 10);
-
-  function initBroadcast() {
-    if (typeof BroadcastChannel === 'undefined') return;
-    try {
-      syncChannel = new BroadcastChannel('ttboost_sync_' + STORAGE_NS);
-      syncChannel.onmessage = (event) => {
-        const { type, tabId, payload } = event.data || {};
-        if (tabId === TAB_ID) return; // Bỏ qua tin nhắn của chính mình
-        
-        if (type === 'data_changed') {
-          showSyncBar('syncing', 'Đồng bộ từ tab khác...');
-          // Reload data từ storage
-          loadAll(true);
-          // Re-render nếu đang login
-          if (currentUser && users[currentUser]) {
-            renderApp();
-          }
-          setTimeout(() => showSyncBar('idle', 'Đã đồng bộ'), 1000);
-        }
-        
-        if (type === 'user_logged_out') {
-          if (payload && payload.username === currentUser) {
-            logout(true);
-          }
-        }
-        
-        if (type === 'ping') {
-          // Respond
-          syncChannel.postMessage({ type: 'pong', tabId: TAB_ID });
-        }
-      };
-      console.log('📡 BroadcastChannel active');
-    } catch (e) {
-      console.warn('BroadcastChannel not supported');
-    }
-  }
-
-  function broadcastChange(type, payload) {
-    if (!syncChannel) return;
-    try {
-      syncChannel.postMessage({ type, tabId: TAB_ID, payload });
-    } catch (e) {}
-  }
-
-  // ══════════════════════════════════════════════════════════
-  // 🛡️ AUTO-RECOVERY - Phát hiện & sửa data hỏng
-  // ══════════════════════════════════════════════════════════
-  function safeGet(key, fallback) {
-    try {
-      const raw = localStorage.getItem(key);
-      if (!raw) return fallback;
-      const parsed = JSON.parse(raw);
-      // Validate type
-      if (fallback !== null && typeof fallback === 'object') {
-        if (Array.isArray(fallback) && !Array.isArray(parsed)) return fallback;
-        if (!Array.isArray(fallback) && (typeof parsed !== 'object' || Array.isArray(parsed))) return fallback;
-      }
-      return parsed;
-    } catch (e) {
-      console.warn('⚠️ Corrupted data detected for:', key, '— Attempting recovery');
-      // Auto-recovery: trả về fallback
-      return fallback;
-    }
-  }
-
-  function safeSet(key, value) {
-    try {
-      localStorage.setItem(key, JSON.stringify(value));
-      return true;
-    } catch (e) {
-      if (e.name === 'QuotaExceededError') {
-        showToast('⚠️ Bộ nhớ đầy', 'error');
-      }
-      return false;
-    }
-  }
-
-  // ══════════════════════════════════════════════════════════
-  // 🔀 AUTO-MIGRATION - Nâng cấp schema tự động
-  // ══════════════════════════════════════════════════════════
-  function migrateData() {
-    const currentSchema = safeGet(SCHEMA_VERSION_KEY, 0);
-    
-    if (currentSchema >= DATA_VERSION) return;
-    
-    console.log('🔄 Migrating schema from', currentSchema, 'to', DATA_VERSION);
-    
-    // Migration từ v0 → v1 (thêm welcome bonus)
-    if (currentSchema < 1) {
-      Object.values(users).forEach(u => {
-        if (!u.history) u.history = [];
-        if (typeof u.earned === 'undefined') u.earned = u.points || 0;
-        if (typeof u.spent === 'undefined') u.spent = 0;
-      });
-    }
-    
-    // Migration v1 → v2 (thêm checksum cho admin)
-    if (currentSchema < 2) {
-      Object.values(users).forEach(u => {
-        if (!u.checksum && typeof crypto2 !== 'undefined' && crypto2.checksum) {
-          try { u.checksum = crypto2.checksum(u); } catch(e) {}
-        }
-      });
-    }
-    
-    // Migration v2 → v3 (thêm verifyQueue)
-    if (currentSchema < 3) {
-      if (!Array.isArray(verifyQueue)) verifyQueue = [];
-    }
-    
-    // Migration v3 → v4 (thêm dailyTasks)
-    if (currentSchema < 4) {
-      Object.values(users).forEach(u => {
-        if (!u.dailyTasks) u.dailyTasks = {};
-      });
-    }
-    
-    // Migration v4 → v5 (thêm taskOpenedAt)
-    if (currentSchema < 5) {
-      Object.values(users).forEach(u => {
-        if (!u.taskOpenedAt) u.taskOpenedAt = {};
-      });
-    }
-    
-    // Save migrated data
-    saveUsers();
-    saveTasks();
-    saveOrders();
-    saveNotifs();
-    saveVerifyQueue();
-    
-    safeSet(SCHEMA_VERSION_KEY, DATA_VERSION);
-    console.log('✅ Migration complete');
-  }
-
-  // ══════════════════════════════════════════════════════════
-  // 💾 DATA PERSISTENCE
-  // ══════════════════════════════════════════════════════════
-  let currentUser = null;
-  let users = {};
-  let tasks = [];
-  let orders = [];
-  let notifications = [];
-  let verifyQueue = [];
-  let authMode = 'login';
-  let admFilterValue = 'all';
-  let admSearchValue = '';
-  let isProcessing = false;
-  let lastActivity = Date.now();
-  let adminLastActive = 0;
-  let loginAttempts = {};
-  let verifyTimers = {};
-  let isDirty = false; // Có thay đổi chưa save
-  let lastBackupTime = 0;
-
-  function loadAll(silent) {
-    users = safeGet(KEYS.users, {});
-    tasks = safeGet(KEYS.tasks, []);
-    orders = safeGet(KEYS.orders, []);
-    notifications = safeGet(KEYS.notifications, []);
-    verifyQueue = safeGet(KEYS.verifyQueue, []);
-    loginAttempts = safeGet(KEYS.loginAttempts, {});
-    
-    const session = safeGet(KEYS.session, null);
-    if (session && session.username && session.expiresAt > Date.now()) {
-      if (crypto2.verifySessionToken(session.username, session.token)) {
-        if (users[session.username] && !users[session.username].banned) {
-          currentUser = session.username;
-          lastActivity = Date.now();
-        }
-      }
-    }
-    
-    if (!silent) console.log('📦 Loaded:', Object.keys(users).length, 'users');
-  }
-
-  function saveUsers() { isDirty = true; return safeSet(KEYS.users, users); }
-  function saveTasks() { isDirty = true; return safeSet(KEYS.tasks, tasks); }
-  function saveOrders() { isDirty = true; return safeSet(KEYS.orders, orders); }
-  function saveNotifs() { isDirty = true; return safeSet(KEYS.notifications, notifications); }
-  function saveVerifyQueue() { isDirty = true; return safeSet(KEYS.verifyQueue, verifyQueue); }
-  function saveLoginAttempts() { return safeSet(KEYS.loginAttempts, loginAttempts); }
-
-  function saveSession(username, remember) {
-    if (username && remember) {
-      const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
-      safeSet(KEYS.session, {
-        username,
-        token: crypto2.sessionToken(username, expiresAt),
-        expiresAt
-      });
-    } else {
-      try { localStorage.removeItem(KEYS.session); } catch(e) {}
-    }
-  }
-
-  // ══════════════════════════════════════════════════════════
-  // 💓 HEARTBEAT - Auto-save mỗi 5 giây
-  // ══════════════════════════════════════════════════════════
-  function heartbeat() {
-    if (isDirty && currentUser) {
-      showSyncBar('saving', 'Đang lưu...');
-      // Đã save ngay trong các hàm rồi, chỉ cần force sync
-      isDirty = false;
-      setTimeout(() => showSyncBar('idle', 'Đã lưu'), 500);
-    }
-    updateAdminActivity();
-  }
-
-  // ══════════════════════════════════════════════════════════
-  // 📤 AUTO-BACKUP - Định kỳ lưu vào IndexedDB
-  // ══════════════════════════════════════════════════════════
-  async function autoBackup() {
-    const now = Date.now();
-    if (now - lastBackupTime < 60000) return; // Tối thiểu 1 phút giữa các backup
-    if (!currentUser && Object.keys(users).length === 0) return; // Không backup khi trống
-    
-    lastBackupTime = now;
-    
-    const snapshot = {
-      users,
-      tasks,
-      orders,
-      notifications,
-      verifyQueue,
-      timestamp: now,
-      version: DATA_VERSION
-    };
-    
-    const ok = await idbSave(snapshot);
-    if (ok) {
-      safeSet(KEYS.meta, {
-        lastBackup: now,
-        version: DATA_VERSION,
-        userCount: Object.keys(users).length
-      });
-      updateBackupStatus();
-      console.log('💾 Auto-backup saved to IndexedDB');
-    }
-  }
-
-  async function restoreFromBackup() {
-    const backup = await idbLoadLatest();
-    if (!backup) {
-      showToast('Không có backup tự động', 'warning');
-      return false;
-    }
-    
-    if (!confirm(`Khôi phục từ backup ${new Date(backup.timestamp).toLocaleString('vi-VN')}?\nDữ liệu hiện tại sẽ bị ghi đè.`)) {
-      return false;
-    }
-    
-    const data = backup.data;
-    users = data.users || {};
-    tasks = data.tasks || [];
-    orders = data.orders || [];
-    notifications = data.notifications || [];
-    verifyQueue = data.verifyQueue || [];
-    
-    saveUsers(); saveTasks(); saveOrders(); saveNotifs(); saveVerifyQueue();
-    
-    broadcastChange('data_changed');
-    showToast('✅ Đã khôi phục từ backup', 'success');
-    return true;
-  }
-
-  function updateBackupStatus() {
-    const meta = safeGet(KEYS.meta, null);
-    const info = $('#backupInfo');
-    if (info && meta) {
-      const ago = Math.floor((Date.now() - meta.lastBackup) / 60000);
-      info.textContent = `Backup lần cuối: ${ago < 1 ? 'vừa xong' : ago + ' phút trước'} • ${meta.userCount || 0} users • Schema v${meta.version}`;
-    }
-  }
-
-  // ══════════════════════════════════════════════════════════
-  // 📊 SYNC INDICATOR UI
-  // ══════════════════════════════════════════════════════════
-  function showSyncBar(state, text) {
-    const bar = $('#syncBar');
-    const txt = $('#syncText');
-    if (!bar || !txt) return;
-    bar.className = 'sync-bar ' + (state !== 'idle' ? state : '');
-    txt.textContent = text;
-  }
-
-  // ══════════════════════════════════════════════════════════
-  // CRYPTO (giữ nguyên)
-  // ══════════════════════════════════════════════════════════
-  const crypto2 = {
-    SECRET_1: 'TT_Boost_x9K2m_2024_prod_key_A',
-    SECRET_2: 'TT_Boost_p7N4q_2024_prod_key_B',
-    SECRET_3: 'TT_Boost_z3R8w_2024_prod_key_C',
-    DEFAULT_ADMIN_USER: 'admingang',
-    DEFAULT_ADMIN_PASS: 'Rmg16062007',
-    PBKDF2_ITERATIONS: 50000,  // Giảm để nhanh hơn trên mobile
-    SALT: 'TTBoost_Salt_v3_2024',
-
-    fallbackHash(str) {
-      let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
-      for (let i = 0; i < str.length; i++) {
-        const ch = str.charCodeAt(i);
-        h1 = Math.imul(h1 ^ ch, 2654435761);
-        h2 = Math.imul(h2 ^ ch, 1597334677);
-      }
-      h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
-      h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
-      return (h2 >>> 0).toString(16).padStart(8, '0') + (h1 >>> 0).toString(16).padStart(8, '0');
-    },
-
-    async hashPassword(password, salt) {
-      salt = salt || this.SALT;
-      if (window.crypto && window.crypto.subtle) {
-        try {
-          const enc = new TextEncoder();
-          const keyMaterial = await window.crypto.subtle.importKey(
-            'raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']
-          );
-          const bits = await window.crypto.subtle.deriveBits(
-            { name: 'PBKDF2', salt: enc.encode(salt), iterations: this.PBKDF2_ITERATIONS, hash: 'SHA-256' },
-            keyMaterial, 256
-          );
-          return Array.from(new Uint8Array(bits)).map(b => b.toString(16).padStart(2, '0')).join('');
-        } catch(e) {}
-      }
-      // Fallback
-      let h = password + salt;
-      for (let i = 0; i < 500; i++) h = this.fallbackHash(h + i);
-      return h;
-    },
-
-    syncHash(str) {
-      let h = 5381;
-      for (let i = 0; i < str.length; i++) {
-        h = ((h << 5) + h) + str.charCodeAt(i);
-        h |= 0;
-      }
-      return 'h' + Math.abs(h).toString(36);
-    },
-
-    checksum(user) {
-      const payload = [
-        user.username, user.passwordHash, user.createdAt,
-        user.isAdmin ? '1' : '0', user.isGuest ? '1' : '0',
-        this.SECRET_1
-      ].join('|');
-      return this.syncHash(payload);
-    },
-
-    sessionToken(username, expiresAt) {
-      return this.syncHash(username + '|' + expiresAt + '|' + this.SECRET_2) + '.' + expiresAt;
-    },
-
-    verifySessionToken(username, token) {
-      if (!token || typeof token !== 'string') return false;
-      const parts = token.split('.');
-      if (parts.length !== 2) return false;
-      const exp = parseInt(parts[1], 10);
-      if (isNaN(exp) || exp < Date.now()) return false;
-      return this.syncHash(username + '|' + exp + '|' + this.SECRET_2) === parts[0];
-    },
-
-    genId(prefix) {
-      const rand = Array.from(window.crypto.getRandomValues(new Uint8Array(8)))
-        .map(b => b.toString(16).padStart(2, '0')).join('');
-      return (prefix || 'id') + Date.now().toString(36) + rand;
-    },
-
-    genVerifyCode() {
-      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-      const bytes = window.crypto.getRandomValues(new Uint8Array(6));
-      let code = '';
-      for (let i = 0; i < 6; i++) code += chars[bytes[i] % chars.length];
-      return code;
-    }
-  };
-
-  // ══════════════════════════════════════════════════════════
-  // CONFIG
-  // ══════════════════════════════════════════════════════════
-  const CONFIG = {
-    minUsername: 3, minPassword: 6,
-    taskCooldownMs: 30 * 1000,
-    dailyTaskLimit: 50,
-    verifyCodeTTL: 10 * 60 * 1000,
-    maxLoginAttempts: 5,
-    loginLockoutMs: 5 * 60 * 1000,
-    sessionIdleMs: 30 * 60 * 1000,
-    minTimeOnTikTokMs: 5000,              // Rút xuống 5s cho trải nghiệm nhanh
-    minDelayBeforeVerifyMs: 15000,        // 15s chờ verify
-    autoApproveAfterMs: 3 * 60 * 1000,    // Auto duyệt sau 3 phút
-    adminOnlineTimeoutMs: 60 * 1000,
-    heartbeatMs: 5000,                    // Lưu mỗi 5s
-    autoBackupMs: 30000,                  // Backup mỗi 30s
-    rewards: { follow: 100, like: 50, comment: 50 },
-    welcomeBonus: 500,
-    packages: [
-      { id: 'f10',  type: 'follow',  qty: 10,  price: 1000, name: '10 Follow TikTok',  desc: '100 xu/follow' },
-      { id: 'f50',  type: 'follow',  qty: 50,  price: 4500, name: '50 Follow TikTok',  desc: '90 xu/follow • -10%', badge: 'HOT' },
-      { id: 'f100', type: 'follow',  qty: 100, price: 8000, name: '100 Follow TikTok', desc: '80 xu/follow • -20%', badge: 'BEST' },
-      { id: 'l20',  type: 'like',    qty: 20,  price: 1000, name: '20 Tim video',      desc: '50 xu/tim' },
-      { id: 'l100', type: 'like',    qty: 100, price: 4500, name: '100 Tim video',     desc: '45 xu/tim • -10%', badge: 'HOT' },
-      { id: 'c10',  type: 'comment', qty: 10,  price: 500,  name: '10 Comment',        desc: '50 xu/comment' }
-    ]
-  };
-
-  // ══════════════════════════════════════════════════════════
-  // UTILS
-  // ══════════════════════════════════════════════════════════
-  const $ = s => document.querySelector(s);
-  const $$ = s => document.querySelectorAll(s);
-
-  function escapeHtml(s) {
-    if (s == null) return '';
-    const div = document.createElement('div');
-    div.textContent = String(s);
-    return div.innerHTML;
-  }
-
-  function colorFromName(name) {
-    let h = 0;
-    for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
-    const colors = ['#6366f1','#8b5cf6','#ec4899','#f59e0b','#10b981','#06b6d4','#ef4444','#84cc16','#f97316','#14b8a6'];
-    return colors[Math.abs(h) % colors.length];
-  }
-
-  function initials(name) { return name ? name.slice(0, 2).toUpperCase() : '??'; }
-
-  function timeAgo(ts) {
-    const diff = Date.now() - ts;
-    if (diff < 0) return 'vừa xong';
-    const m = Math.floor(diff / 60000);
-    if (m < 1) return 'vừa xong';
-    if (m < 60) return m + ' phút trước';
-    const h = Math.floor(m / 60);
-    if (h < 24) return h + ' giờ trước';
-    return Math.floor(h / 24) + ' ngày trước';
-  }
-
-  function formatNumber(n) { return n.toLocaleString('vi-VN'); }
-  function todayKey() {
-    const d = new Date();
-    return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
-  }
-  function normalizeTikTok(u) { return !u ? '' : String(u).trim().replace(/^@+/, '').toLowerCase(); }
-  function isValidTikTok(u) { return /^[a-zA-Z0-9._]{2,24}$/.test(u); }
-  function isValidUsername(u) { return /^[a-z0-9_]{3,20}$/.test(u); }
-
-  function showToast(msg, type) {
-    type = type || '';
-    const container = $('#toastContainer');
-    if (!container) return;
-    const toast = document.createElement('div');
-    toast.className = 'toast ' + type;
-    toast.textContent = msg;
-    container.appendChild(toast);
-    setTimeout(() => {
-      if (toast.parentNode) toast.remove();
-    }, 2600);
-  }
-
-  function bumpPoints() {
-    const chip = $('#topPoints');
-    if (!chip) return;
-    chip.classList.remove('bump');
-    void chip.offsetWidth;
-    chip.classList.add('bump');
-  }
-
-  function showModal(html) {
-    $('#modalContent').innerHTML = html;
-    $('#modalOverlay').classList.add('show');
-  }
-
-  function hideModal() {
-    $('#modalOverlay').classList.remove('show');
-    Object.keys(verifyTimers).forEach(k => {
-      clearInterval(verifyTimers[k]);
-      delete verifyTimers[k];
-    });
-  }
-
-  // ══════════════════════════════════════════════════════════
-  // ADMIN
-  // ══════════════════════════════════════════════════════════
-  function requireAdmin() {
-    if (!currentUser) return false;
-    const u = users[currentUser];
-    if (!u || !u.isAdmin || u.banned || u.isGuest) return false;
-    if (!u.checksum || u.checksum !== crypto2.checksum(u)) return false;
-    return true;
-  }
-
-  function updateAdminActivity() {
-    if (requireAdmin()) adminLastActive = Date.now();
-  }
-
-  function isAdminOnline() {
-    return (Date.now() - adminLastActive) < CONFIG.adminOnlineTimeoutMs;
-  }
-
-  // ══════════════════════════════════════════════════════════
-  // NOTIFICATIONS
-  // ══════════════════════════════════════════════════════════
-  function pushNotif(user, type, title, body) {
-    if (!user) return;
-    notifications.unshift({
-      id: crypto2.genId('n'),
-      user, type, title, body: body || '',
-      read: false, time: Date.now()
-    });
-    const userNotifs = notifications.filter(n => n.user === user);
-    if (userNotifs.length > 100) {
-      const keep = new Set(userNotifs.slice(0, 100).map(n => n.id));
-      notifications = notifications.filter(n => n.user !== user || keep.has(n.id));
-    }
-    saveNotifs();
-  }
-
-  // ══════════════════════════════════════════════════════════
-  // AUTH
-  // ══════════════════════════════════════════════════════════
-  function showAuthError(msg) {
-    const el = $('#authError');
-    el.textContent = msg;
-    el.classList.add('show');
-    setTimeout(() => el.classList.remove('show'), 4000);
-  }
-
-  function setAuthLoading(loading) {
-    const btn = $('#authSubmit');
-    const text = $('#authBtnText');
-    btn.disabled = loading;
-    text.innerHTML = loading 
-      ? '<span class="spinner"></span> Đang xử lý...' 
-      : (authMode === 'login' ? 'Đăng nhập' : 'Đăng ký');
-  }
-
-  async function handleAuth() {
-    if (isProcessing) return;
-
-    const usernameEl = $('#authUsername');
-    const passwordEl = $('#authPassword');
-    const usernameGroup = $('#usernameGroup');
-    const passwordGroup = $('#passwordGroup');
-    const username = usernameEl.value.trim().toLowerCase();
-    const password = passwordEl.value;
-
-    usernameGroup.classList.remove('error');
-    passwordGroup.classList.remove('error');
-
-    if (username.length < CONFIG.minUsername) {
-      usernameGroup.classList.add('error');
-      showAuthError('Tên đăng nhập ≥ ' + CONFIG.minUsername + ' ký tự');
-      return;
-    }
-    if (!isValidUsername(username)) {
-      usernameGroup.classList.add('error');
-      showAuthError('Tên chỉ chứa a-z, 0-9, _');
-      return;
-    }
-    if (password.length < CONFIG.minPassword) {
-      passwordGroup.classList.add('error');
-      showAuthError('Mật khẩu ≥ ' + CONFIG.minPassword + ' ký tự');
-      return;
-    }
-
-    if (authMode === 'login') {
-      const a = loginAttempts[username] || { count: 0, lockedUntil: 0 };
-      if (a.lockedUntil > Date.now()) {
-        const mins = Math.ceil((a.lockedUntil - Date.now()) / 60000);
-        showAuthError(`Khóa ${mins} phút`);
-        return;
-      }
-    }
-
-    isProcessing = true;
-    setAuthLoading(true);
-
-    try {
-      if (authMode === 'register') {
-        if (username === crypto2.DEFAULT_ADMIN_USER) {
-          showAuthError('Tên không khả dụng');
-          setAuthLoading(false); isProcessing = false; return;
-        }
-        if (users[username]) {
-          usernameGroup.classList.add('error');
-          showAuthError('Tên đã tồn tại!');
-          setAuthLoading(false); isProcessing = false; return;
-        }
-
-        const passwordHash = await crypto2.hashPassword(password);
-        const bonus = CONFIG.welcomeBonus;
-        
-        const newUser = {
-          username, passwordHash,
-          points: bonus, earned: bonus, spent: 0,
-          tiktokUsername: '',
-          history: [{ type: 'earn', action: 'welcome', points: bonus, time: Date.now() }],
-          dailyTasks: {}, lastTaskAt: 0, taskOpenedAt: {},
-          isAdmin: false, banned: false, isGuest: false,
-          createdAt: Date.now(), lastLoginAt: Date.now()
-        };
-        newUser.checksum = crypto2.checksum(newUser);
-        
-        users[username] = newUser;
-        saveUsers();
-        pushNotif(username, 'success', '🎉 Chào mừng!', `Bạn nhận ${formatNumber(bonus)} xu khởi đầu.`);
-        broadcastChange('data_changed');
-        login(username, true);
-        showToast(`🎉 +${formatNumber(bonus)} xu`, 'success');
-        
-      } else {
-        // Admin đầu tiên
-        if (username === crypto2.DEFAULT_ADMIN_USER && password === crypto2.DEFAULT_ADMIN_PASS) {
-          const hasAdmin = Object.values(users).some(u => 
-            u.isAdmin === true && u.checksum === crypto2.checksum(u)
-          );
-          
-          if (!hasAdmin && !users[crypto2.DEFAULT_ADMIN_USER]) {
-            const passwordHash = await crypto2.hashPassword(password);
-            const adminUser = {
-              username: crypto2.DEFAULT_ADMIN_USER,
-              passwordHash,
-              points: 999999, earned: 999999, spent: 0,
-              tiktokUsername: '', history: [],
-              dailyTasks: {}, lastTaskAt: 0, taskOpenedAt: {},
-              isAdmin: true, banned: false, isGuest: false,
-              createdAt: Date.now(), lastLoginAt: Date.now()
-            };
-            adminUser.checksum = crypto2.checksum(adminUser);
-            
-            users[crypto2.DEFAULT_ADMIN_USER] = adminUser;
-            saveUsers();
-            delete loginAttempts[crypto2.DEFAULT_ADMIN_USER];
-            saveLoginAttempts();
-            broadcastChange('data_changed');
-            login(crypto2.DEFAULT_ADMIN_USER, true);
-            setTimeout(() => showToast('👑 Admin kích hoạt!', 'success'), 500);
-            return;
-          }
-        }
-        
-        const user = users[username];
-        if (!user) {
-          recordLoginFailure(username);
-          showAuthError('Sai tên hoặc mật khẩu!');
-          setAuthLoading(false); isProcessing = false; return;
-        }
-        
-        const passwordHash = await crypto2.hashPassword(password);
-        if (user.passwordHash !== passwordHash) {
-          recordLoginFailure(username);
-          const attempts = loginAttempts[username] || { count: 0 };
-          const left = CONFIG.maxLoginAttempts - attempts.count;
-          showAuthError(left > 0 && left <= 2 
-            ? `Sai! Còn ${left} lần thử` 
-            : 'Sai tên hoặc mật khẩu!');
-          setAuthLoading(false); isProcessing = false; return;
-        }
-        
-        if (user.banned) {
-          showAuthError('Tài khoản bị khóa!');
-          setAuthLoading(false); isProcessing = false; return;
-        }
-        
-        delete loginAttempts[username];
-        saveLoginAttempts();
-        user.lastLoginAt = Date.now();
-        saveUsers();
-        login(username, true);
-        showToast(`👋 Chào mừng, ${username}!`, 'success');
-      }
-    } catch (e) {
-      console.error(e);
-      showAuthError('Có lỗi, thử lại');
-      setAuthLoading(false); isProcessing = false;
-    }
-  }
-
-  function recordLoginFailure(username) {
-    const a = loginAttempts[username] || { count: 0, lockedUntil: 0 };
-    a.count++;
-    if (a.count >= CONFIG.maxLoginAttempts) {
-      a.lockedUntil = Date.now() + CONFIG.loginLockoutMs;
-      a.count = 0;
-    }
-    loginAttempts[username] = a;
-    saveLoginAttempts();
-  }
-
-  function login(username, remember) {
-    currentUser = username;
-    lastActivity = Date.now();
-    saveSession(username, remember);
-    isProcessing = false;
-    setAuthLoading(false);
-    renderApp();
-    if (requireAdmin()) adminLastActive = Date.now();
-  }
-
-  function logout(silent) {
-    currentUser = null;
-    saveSession(null, false);
-    $('#app').classList.remove('show');
-    $('#authScreen').style.display = 'flex';
-    $('#authPassword').value = '';
-    $('#authUsername').value = '';
-    $('#notifPanel').classList.remove('show');
-    hideModal();
-    authMode = 'login';
-    $('#authBtnText').textContent = 'Đăng nhập';
-    $('#switchText').textContent = 'Chưa có tài khoản?';
-    $('#switchMode').textContent = 'Đăng ký ngay';
-    if (!silent) broadcastChange('user_logged_out', { username: currentUser });
-  }
-
-  function checkIdle() {
-    if (!currentUser) return;
-    if (Date.now() - lastActivity > CONFIG.sessionIdleMs) {
-      showToast('⏰ Phiên hết hạn', 'warning');
-      setTimeout(() => logout(), 1500);
-    }
-  }
-
-  ['click', 'keypress', 'mousemove', 'touchstart', 'scroll'].forEach(evt => {
-    document.addEventListener(evt, () => { lastActivity = Date.now(); }, { passive: true });
-  });
-
-  // ══════════════════════════════════════════════════════════
-  // RENDER
-  // ══════════════════════════════════════════════════════════
-  function renderApp() {
-    if (!currentUser || !users[currentUser]) {
-      $('#authScreen').style.display = 'flex';
-      $('#app').classList.remove('show');
-      return;
-    }
-
-    $('#authScreen').style.display = 'none';
-    $('#app').classList.add('show');
-
-    // Admin tab
-    const tabsContainer = $('#tabs');
-    const existing = tabsContainer.querySelector('.admin-tab');
-    if (requireAdmin()) {
-      if (!existing) {
-        const tab = document.createElement('button');
-        tab.className = 'tab admin-tab';
-        tab.dataset.tab = 'admin';
-        tab.type = 'button';
-        tab.textContent = '🛡️ Admin';
-        tab.addEventListener('click', () => switchTab('admin'));
-        tabsContainer.appendChild(tab);
-      }
-    } else if (existing) existing.remove();
-
-    renderTopbar();
-    renderTasks();
-    renderShop();
-    renderOrders();
-    renderProfile();
-    renderNotifs();
-    if (requireAdmin()) {
-      renderAdmin();
-      updateBackupStatus();
-    }
-  }
-
-  function switchTab(tabName) {
-    if (tabName === 'admin' && !requireAdmin()) {
-      showToast('⛔ Không có quyền', 'error');
-      return;
-    }
-    $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
-    $$('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + tabName));
-    
-    if (tabName === 'tasks') renderTasks();
-    if (tabName === 'shop') renderShop();
-    if (tabName === 'orders') renderOrders();
-    if (tabName === 'profile') renderProfile();
-    if (tabName === 'admin') { renderAdmin(); updateBackupStatus(); }
-  }
-
-  function renderTopbar() {
-    const u = users[currentUser];
-    if (!u) return;
-    $('#topPoints').textContent = formatNumber(u.points) + ' xu';
-    const av = $('#topAvatar');
-    av.textContent = initials(u.username);
-    av.style.background = colorFromName(u.username);
-    renderNotifs();
-  }
-
-  // ══════════════════════════════════════════════════════════
-  // TASKS
-  // ══════════════════════════════════════════════════════════
-  function renderTasks() {
-    const u = users[currentUser];
-    if (!u) return;
-
-    $('#balanceValue').innerHTML = formatNumber(u.points) + '<small>xu</small>';
-    $('#balanceSub').textContent = 'Đã kiếm: ' + formatNumber(u.earned) + ' • Đã tiêu: ' + formatNumber(u.spent);
-
-    const list = $('#taskList');
-    const now = Date.now();
-    const today = todayKey();
-    const dailyCount = (u.dailyTasks && u.dailyTasks[today]) || 0;
-    const cooldownLeft = Math.max(0, CONFIG.taskCooldownMs - (now - (u.lastTaskAt || 0)));
-
-    const available = tasks.filter(t => {
-      if (t.completed) return false;
-      if (t.targetUser === currentUser) return false;
-      if (t.workers.indexOf(currentUser) !== -1) return false;
-      if (t.slotsLeft <= 0) return false;
-      return true;
-    }).sort((a, b) => b.slotsLeft - a.slotsLeft || a.createdAt - b.createdAt);
-
-    if (available.length === 0) {
-      list.innerHTML = '<div class="empty"><div class="emoji">⏳</div><p>Chưa có nhiệm vụ nào</p><p class="hint">Khi có người mua, nhiệm vụ sẽ xuất hiện!</p></div>';
-      return;
-    }
-
-    if (dailyCount >= CONFIG.dailyTaskLimit) {
-      list.innerHTML = '<div class="info-box warning"><strong>⏰ Đạt giới hạn:</strong> ' + CONFIG.dailyTaskLimit + ' task/ngày.</div>';
-      return;
-    }
-
-    list.innerHTML = available.slice(0, 20).map(task => {
-      const taskUser = users[task.targetUser];
-      if (!taskUser) return '';
-      const reward = CONFIG.rewards[task.type] || 0;
-      
-      let icon = '👥', iconClass = 'follow', actionText = 'Follow';
-      if (task.type === 'like') { icon = '❤️'; iconClass = 'like'; actionText = 'Tim'; }
-      else if (task.type === 'comment') { icon = '💬'; iconClass = 'comment'; actionText = 'Comment'; }
-
-      const progress = ((task.totalSlots - task.slotsLeft) / task.totalSlots) * 100;
-      const tiktokHandle = taskUser.tiktokUsername ? '@' + escapeHtml(taskUser.tiktokUsername) : 'chưa cập nhật';
-
-      return '<div class="task-card ' + task.type + '-task">' +
-        '<div class="task-header">' +
-          '<div class="task-icon ' + iconClass + '">' + icon + '</div>' +
-          '<div class="task-info">' +
-            '<div class="task-name">' + actionText + ' TikTok của @' + escapeHtml(task.targetUser) + '</div>' +
-            '<div class="task-meta"><span>🎵 ' + tiktokHandle + '</span></div>' +
-          '</div>' +
-          '<div class="task-reward">+' + formatNumber(reward) + ' xu</div>' +
-        '</div>' +
-        '<div class="task-progress">' +
-          '<span>' + (task.totalSlots - task.slotsLeft) + '/' + task.totalSlots + '</span>' +
-          '<div class="task-progress-bar"><div class="task-progress-fill" style="width:' + progress + '%"></div></div>' +
-          '<span>' + task.slotsLeft + ' chỗ</span>' +
-        '</div>' +
-        '<div class="task-actions">' +
-          '<a class="btn-task btn-open" href="' + getTikTokUrl(task, taskUser) + '" target="_blank" rel="noopener" data-open="' + task.id + '">🔗 Mở TikTok</a>' +
-          '<button class="btn-task btn-complete" data-complete="' + task.id + '" type="button" disabled>' +
-            (cooldownLeft > 0 ? '⏱ Chờ ' + Math.ceil(cooldownLeft / 1000) + 's' : '✓ Đã ' + actionText.toLowerCase()) +
-          '</button>' +
-        '</div>' +
-      '</div>';
-    }).join('');
-
-    list.querySelectorAll('[data-open]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const taskId = btn.dataset.open;
-        const me = users[currentUser];
-        if (!me.taskOpenedAt) me.taskOpenedAt = {};
-        me.taskOpenedAt[taskId] = Date.now();
-        saveUsers();
-        
-        const completeBtn = list.querySelector('[data-complete="' + taskId + '"]');
-        if (completeBtn) {
-          completeBtn.disabled = false;
-          completeBtn.textContent = '✓ Đã hoàn thành';
-        }
-        showToast('⏱ Chờ ' + (CONFIG.minTimeOnTikTokMs/1000) + 's', 'info');
-      });
-    });
-
-    list.querySelectorAll('[data-complete]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (btn.disabled) return;
-        openVerifyModal(btn.dataset.complete);
-      });
-    });
-
-    if (cooldownLeft > 0) setTimeout(renderTasks, cooldownLeft + 100);
-  }
-
-  function getTikTokUrl(task, taskUser) {
-    const handle = normalizeTikTok(taskUser.tiktokUsername);
-    if (!handle) return 'https://www.tiktok.com/';
-    if (task.type === 'follow') return 'https://www.tiktok.com/@' + encodeURIComponent(handle);
-    if ((task.type === 'like' || task.type === 'comment') && task.videoUrl) {
-      try {
-        const url = new URL(task.videoUrl);
-        if (url.hostname.includes('tiktok.com')) return url.href;
-      } catch(e) {}
-    }
-    return 'https://www.tiktok.com/@' + encodeURIComponent(handle);
-  }
-
-  // ══════════════════════════════════════════════════════════
-  // VERIFY MODAL
-  // ══════════════════════════════════════════════════════════
-  function openVerifyModal(taskId) {
-    const task = tasks.find(t => t.id === taskId);
-    if (!task) { showToast('Không tồn tại', 'error'); return; }
-    const me = users[currentUser];
-    if (!me) return;
-
-    const cooldownLeft = Math.max(0, CONFIG.taskCooldownMs - (Date.now() - (me.lastTaskAt || 0)));
-    if (cooldownLeft > 0) {
-      showToast(`⏱ Chờ ${Math.ceil(cooldownLeft / 1000)}s`, 'warning');
-      return;
-    }
-
-    const today = todayKey();
-    if (((me.dailyTasks && me.dailyTasks[today]) || 0) >= CONFIG.dailyTaskLimit) {
-      showToast('⏰ Đạt giới hạn', 'warning');
-      return;
-    }
-
-    if (task.completed || task.slotsLeft <= 0) {
-      showToast('Hết chỗ', 'error'); renderTasks(); return;
-    }
-    if (task.workers.indexOf(currentUser) !== -1) {
-      showToast('Đã làm rồi', 'warning'); return;
-    }
-
-    const openedAt = (me.taskOpenedAt && me.taskOpenedAt[taskId]) || 0;
-    const timeOnTikTok = Date.now() - openedAt;
-    if (timeOnTikTok < CONFIG.minTimeOnTikTokMs) {
-      showToast(`⚠️ Cần thêm ${Math.ceil((CONFIG.minTimeOnTikTokMs - timeOnTikTok) / 1000)}s`, 'warning');
-      return;
-    }
-
-    if (!task.verifyCode) {
-      task.verifyCode = crypto2.genVerifyCode();
-      task.verifyCodeAt = Date.now();
-      saveTasks();
-    }
-
-    const reward = CONFIG.rewards[task.type] || 0;
-
-    showModal(
-      '<h3>🔐 Xác minh</h3>' +
-      '<p>Làm 3 bước để hoàn thành</p>' +
-      '<div class="verify-step active" id="step1">' +
-        '<div class="step-num">1</div>' +
-        '<div class="step-body">Copy mã và dán vào <strong>bình luận TikTok</strong></div>' +
-      '</div>' +
-      '<div class="verify-code-box">' +
-        '<div style="font-size:12px; opacity:0.7;">Mã xác nhận</div>' +
-        '<div class="code" id="verifyCodeDisplay">' + task.verifyCode + '</div>' +
-        '<div class="hint">👆 Nhấn để copy</div>' +
-      '</div>' +
-      '<div class="verify-step" id="step2">' +
-        '<div class="step-num">2</div>' +
-        '<div class="step-body">Chờ <strong>' + Math.ceil(CONFIG.minDelayBeforeVerifyMs/1000) + 's</strong> hệ thống xác minh</div>' +
-      '</div>' +
-      '<div class="verify-countdown" id="countdownBox">' +
-        '<div class="cd-label">⏳ Đang xác minh</div>' +
-        '<div class="cd-timer" id="cdTimer">' + Math.ceil(CONFIG.minDelayBeforeVerifyMs/1000) + '</div>' +
-        '<div class="cd-desc">Vui lòng đợi...</div>' +
-      '</div>' +
-      '<div class="verify-step" id="step3">' +
-        '<div class="step-num">3</div>' +
-        '<div class="step-body">Nhập lại mã để hoàn tất</div>' +
-      '</div>' +
-      '<input type="text" class="verify-input" id="verifyInput" placeholder="MÃ 6 KÝ TỰ" maxlength="6" autocomplete="off" disabled>' +
-      '<p style="font-size:12px; margin-top:12px;">Thưởng: <b style="color:#10b981;">+' + formatNumber(reward) + ' xu</b></p>' +
-      '<div class="modal-actions">' +
-        '<button class="btn btn-secondary" id="cancelVerify" type="button">Hủy</button>' +
-        '<button class="btn btn-confirm" id="confirmVerify" type="button" disabled>Hoàn tất</button>' +
-      '</div>'
-    );
-
-    const codeDisplay = $('#verifyCodeDisplay');
-    codeDisplay.addEventListener('click', async () => {
-      try {
-        await navigator.clipboard.writeText(task.verifyCode);
-        showToast('📋 Đã copy!', 'success');
-        $('#step1').classList.add('done');
-      } catch (e) {
-        const range = document.createRange();
-        range.selectNode(codeDisplay);
-        window.getSelection().removeAllRanges();
-        window.getSelection().addRange(range);
-        try { 
-          document.execCommand('copy'); 
-          showToast('📋 Đã copy!', 'success');
-          $('#step1').classList.add('done');
-        } catch(err) {}
-      }
-    });
-
-    $('#step2').classList.add('active');
-    let countdown = Math.ceil(CONFIG.minDelayBeforeVerifyMs / 1000);
-    const cdTimer = $('#cdTimer');
-    const countdownBox = $('#countdownBox');
-    
-    verifyTimers.verify = setInterval(() => {
-      countdown--;
-      cdTimer.textContent = countdown;
-      
-      if (countdown <= 0) {
-        clearInterval(verifyTimers.verify);
-        delete verifyTimers.verify;
-        
-        countdownBox.classList.add('done');
-        countdownBox.querySelector('.cd-label').textContent = '✅ Xác minh xong';
-        countdownBox.querySelector('.cd-timer').textContent = '✓';
-        countdownBox.querySelector('.cd-desc').textContent = 'Nhập mã để hoàn tất';
-        
-        $('#step2').classList.remove('active');
-        $('#step2').classList.add('done');
-        $('#step3').classList.add('active');
-        
-        const input = $('#verifyInput');
-        input.disabled = false;
-        input.focus();
-      }
-    }, 1000);
-
-    const verifyInput = $('#verifyInput');
-    const confirmBtn = $('#confirmVerify');
-
-    verifyInput.addEventListener('input', () => {
-      confirmBtn.disabled = verifyInput.value.trim().toUpperCase().length !== 6;
-    });
-    verifyInput.addEventListener('keypress', e => {
-      if (e.key === 'Enter' && !confirmBtn.disabled) confirmBtn.click();
-    });
-
-    $('#cancelVerify').addEventListener('click', hideModal);
-    
-    confirmBtn.addEventListener('click', () => {
-      const input = verifyInput.value.trim().toUpperCase();
-      if (input !== task.verifyCode) {
-        showToast('❌ Sai mã', 'error');
-        verifyInput.value = '';
-        confirmBtn.disabled = true;
-        return;
-      }
-      if (Date.now() - task.verifyCodeAt > CONFIG.verifyCodeTTL) {
-        showToast('⏰ Mã hết hạn', 'warning');
-        task.verifyCode = null;
-        saveTasks(); hideModal(); renderTasks();
-        return;
-      }
-      hideModal();
-      submitForVerification(task.id);
-    });
-  }
-
-  function submitForVerification(taskId) {
-    if (isProcessing) return;
-    isProcessing = true;
-
-    try {
-      const task = tasks.find(t => t.id === taskId);
-      const me = users[currentUser];
-      if (!task || !me) { isProcessing = false; return; }
-
-      if (task.completed || task.slotsLeft <= 0 || task.workers.indexOf(currentUser) !== -1) {
-        showToast('Không thể hoàn thành', 'error');
-        isProcessing = false; return;
-      }
-
-      const reward = CONFIG.rewards[task.type] || 0;
-      const now = Date.now();
-      const today = todayKey();
-
-      verifyQueue.unshift({
-        id: crypto2.genId('q'),
-        taskId: task.id, orderId: task.orderId, type: task.type,
-        worker: currentUser,
-        workerTiktok: me.tiktokUsername || '',
-        targetUser: task.targetUser,
-        targetTiktok: users[task.targetUser] ? users[task.targetUser].tiktokUsername : '',
-        verifyCode: task.verifyCode,
-        reward, status: 'pending',
-        submittedAt: now, reviewedAt: null, reviewedBy: null,
-        autoApproveAt: now + CONFIG.autoApproveAfterMs
-      });
-      saveVerifyQueue();
-
-      task.workers.push(currentUser);
-      task.slotsLeft--;
-      me.lastTaskAt = now;
-      if (!me.dailyTasks) me.dailyTasks = {};
-      me.dailyTasks[today] = (me.dailyTasks[today] || 0) + 1;
-      if (me.taskOpenedAt && me.taskOpenedAt[taskId]) delete me.taskOpenedAt[taskId];
-      if (task.slotsLeft <= 0) task.completed = true;
-
-      saveUsers(); saveTasks();
-      broadcastChange('data_changed');
-
-      showToast('✅ Đã gửi xác minh!', 'success');
-      renderTasks();
-      renderProfile();
-
-      scheduleAutoApprove();
-    } catch (e) {
-      showToast('Có lỗi', 'error');
-    } finally {
-      isProcessing = false;
-    }
-  }
-
-  function approveVerification(queueId, adminUser) {
-    const item = verifyQueue.find(q => q.id === queueId);
-    if (!item || item.status !== 'pending') return false;
-
-    const worker = users[item.worker];
-    if (!worker) return false;
-
-    worker.points += item.reward;
-    worker.earned += item.reward;
-    if (!worker.history) worker.history = [];
-    worker.history.unshift({
-      type: 'earn', action: item.type,
-      targetUser: item.targetUser,
-      points: item.reward, time: Date.now()
-    });
-    worker.history = worker.history.slice(0, 50);
-    worker.checksum = crypto2.checksum(worker);
-
-    const order = orders.find(o => o.id === item.orderId);
-    if (order) {
-      order.completedSlots = (order.completedSlots || 0) + 1;
-      if (order.completedSlots >= order.qty) {
-        order.status = 'done';
-        order.completedAt = Date.now();
-        pushNotif(order.buyer, 'success', '🎉 Đơn xong!', order.qty + ' ' + order.type);
-      }
-    }
-
-    item.status = 'approved';
-    item.reviewedAt = Date.now();
-    item.reviewedBy = adminUser || 'system';
-
-    saveUsers(); saveOrders(); saveVerifyQueue();
-    broadcastChange('data_changed');
-    pushNotif(item.worker, 'success', '✅ Nhiệm vụ được duyệt!', '+' + formatNumber(item.reward) + ' xu');
-
-    return true;
-  }
-
-  function rejectVerification(queueId, adminUser, reason) {
-    const item = verifyQueue.find(q => q.id === queueId);
-    if (!item || item.status !== 'pending') return false;
-
-    const worker = users[item.worker];
-    const task = tasks.find(t => t.id === item.taskId);
-    if (task) {
-      task.workers = task.workers.filter(w => w !== item.worker);
-      task.slotsLeft++;
-      if (task.slotsLeft > 0) task.completed = false;
-    }
-
-    if (worker) {
-      const today = todayKey();
-      if (worker.dailyTasks && worker.dailyTasks[today]) {
-        worker.dailyTasks[today] = Math.max(0, worker.dailyTasks[today] - 1);
-      }
-    }
-
-    item.status = 'rejected';
-    item.reviewedAt = Date.now();
-    item.reviewedBy = adminUser || 'system';
-    item.reason = reason || 'Không đạt';
-
-    saveUsers(); saveTasks(); saveVerifyQueue();
-    broadcastChange('data_changed');
-    pushNotif(item.worker, 'error', '❌ Bị từ chối', item.reason);
-
-    return true;
-  }
-
-  function scheduleAutoApprove() {
-    const pending = verifyQueue.filter(q => q.status === 'pending');
-    pending.forEach(item => {
-      if (item._scheduled) return;
-      item._scheduled = true;
-      
-      setTimeout(() => {
-        const fresh = verifyQueue.find(q => q.id === item.id);
-        if (!fresh || fresh.status !== 'pending') return;
-        
-        if (Date.now() >= fresh.autoApproveAt && !isAdminOnline()) {
-          if (approveVerification(fresh.id, 'system_auto')) {
-            console.log('🎯 Auto-approved:', fresh.id);
-            if (currentUser) renderTopbar();
-            if (requireAdmin()) renderAdmin();
-          }
-        } else {
-          fresh._scheduled = false;
-          scheduleAutoApprove();
-        }
-      }, Math.max(1000, item.autoApproveAt - Date.now()));
-    });
-  }
-
-  // ══════════════════════════════════════════════════════════
-  // SHOP
-  // ══════════════════════════════════════════════════════════
-  function renderShop() {
-    const u = users[currentUser];
-    if (!u) return;
-
-    $('#shopBalance').innerHTML = formatNumber(u.points) + '<small>xu</small>';
-    $('#shopWarning').style.display = u.tiktokUsername ? 'none' : 'block';
-
-    const list = $('#shopList');
-    list.innerHTML = CONFIG.packages.map(pkg => {
-      let icon = '👥', iconClass = 'follow';
-      if (pkg.type === 'like') { icon = '❤️'; iconClass = 'like'; }
-      else if (pkg.type === 'comment') { icon = '💬'; iconClass = 'comment'; }
-
-      const canAfford = u.points >= pkg.price;
-      const badgeHtml = pkg.badge ? '<span class="badge ' + (pkg.badge === 'BEST' ? 'best' : '') + '">' + pkg.badge + '</span>' : '';
-      
-      return '<div class="shop-card">' + badgeHtml +
-        '<div class="shop-icon ' + iconClass + '">' + icon + '</div>' +
-        '<div class="shop-info">' +
-          '<div class="shop-name">' + escapeHtml(pkg.name) + '</div>' +
-          '<div class="shop-desc">' + escapeHtml(pkg.desc) + '</div>' +
-          '<div class="shop-price ' + (canAfford ? 'affordable' : '') + '">💰 ' + formatNumber(pkg.price) + ' xu</div>' +
-        '</div>' +
-        '<button class="btn-buy" data-pkg="' + pkg.id + '" type="button" ' + (canAfford ? '' : 'disabled') + '>Mua</button>' +
-      '</div>';
-    }).join('');
-
-    list.querySelectorAll('[data-pkg]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const pkg = CONFIG.packages.find(p => p.id === btn.dataset.pkg);
-        if (pkg) buyPackage(pkg);
-      });
-    });
-  }
-
-  function buyPackage(pkg) {
-    const me = users[currentUser];
-    if (!me.tiktokUsername) {
-      showToast('⚠️ Cập nhật TikTok trước!', 'error');
-      switchTab('profile');
-      return;
-    }
-    if (me.points < pkg.price) {
-      showToast(`Cần ${formatNumber(pkg.price)} xu`, 'error');
-      return;
-    }
-
-    if (pkg.type === 'like' || pkg.type === 'comment') {
-      showModal(
-        '<h3>📹 Link video TikTok</h3>' +
-        '<div class="form-group">' +
-          '<label>Link video</label>' +
-          '<input type="text" id="videoUrlInput" placeholder="https://www.tiktok.com/@user/video/...">' +
-        '</div>' +
-        '<div class="modal-actions">' +
-          '<button class="btn btn-secondary" id="cancelBuy" type="button">Hủy</button>' +
-          '<button class="btn btn-confirm" id="confirmBuy" type="button">Mua (-' + formatNumber(pkg.price) + ' xu)</button>' +
-        '</div>'
-      );
-      $('#cancelBuy').addEventListener('click', hideModal);
-      $('#confirmBuy').addEventListener('click', () => {
-        const url = $('#videoUrlInput').value.trim();
-        if (!url) { showToast('Nhập link', 'warning'); return; }
-        try {
-          const u = new URL(url);
-          if (!u.hostname.includes('tiktok.com')) throw new Error();
-        } catch (e) { showToast('Link không hợp lệ', 'error'); return; }
-        hideModal();
-        doBuy(pkg, url);
-      });
-      setTimeout(() => $('#videoUrlInput') && $('#videoUrlInput').focus(), 100);
-    } else {
-      showModal(
-        '<h3>🛒 Xác nhận</h3>' +
-        '<p>Mua <b>' + escapeHtml(pkg.name) + '</b> với <b style="color:#f59e0b;">' + formatNumber(pkg.price) + ' xu</b>?</p>' +
-        '<div class="info-box success">🎵 @' + escapeHtml(me.tiktokUsername) + '</div>' +
-        '<div class="modal-actions">' +
-          '<button class="btn btn-secondary" id="cancelBuy" type="button">Hủy</button>' +
-          '<button class="btn btn-confirm" id="confirmBuy" type="button">Xác nhận</button>' +
-        '</div>'
-      );
-      $('#cancelBuy').addEventListener('click', hideModal);
-      $('#confirmBuy').addEventListener('click', () => { hideModal(); doBuy(pkg, null); });
-    }
-  }
-
-  function doBuy(pkg, videoUrl) {
-    if (isProcessing) return;
-    isProcessing = true;
-    try {
-      const me = users[currentUser];
-      if (me.points < pkg.price) {
-        showToast('Không đủ xu!', 'error');
-        isProcessing = false; return;
-      }
-      const now = Date.now();
-      me.points -= pkg.price;
-      me.spent += pkg.price;
-      if (!me.history) me.history = [];
-      me.history.unshift({ type: 'spend', action: 'buy_' + pkg.type, qty: pkg.qty, points: pkg.price, time: now });
-      me.history = me.history.slice(0, 50);
-      me.checksum = crypto2.checksum(me);
-
-      const order = {
-        id: crypto2.genId('o'),
-        buyer: currentUser, type: pkg.type,
-        qty: pkg.qty, price: pkg.price, videoUrl,
-        status: 'pending', completedSlots: 0, createdAt: now
-      };
-      orders.unshift(order);
-
-      const task = {
-        id: crypto2.genId('t'),
-        orderId: order.id, type: pkg.type,
-        targetUser: currentUser, videoUrl,
-        totalSlots: pkg.qty, slotsLeft: pkg.qty,
-        workers: [], completed: false,
-        verifyCode: null, createdAt: now
-      };
-      tasks.unshift(task);
-
-      saveUsers(); saveOrders(); saveTasks();
-      broadcastChange('data_changed');
-
-      pushNotif(currentUser, 'success', '🛒 Đã mua!', pkg.qty + ' ' + pkg.type + ' đang chờ');
-      bumpPoints();
-      showToast(`🎉 Đã mua ${pkg.qty} ${pkg.type}`, 'success');
-      
-      renderShop(); renderTopbar(); renderOrders(); renderTasks(); renderProfile();
-      switchTab('orders');
-    } catch (e) {
-      showToast('Có lỗi', 'error');
-    } finally {
-      isProcessing = false;
-    }
-  }
-
-  // ══════════════════════════════════════════════════════════
-  // ORDERS
-  // ══════════════════════════════════════════════════════════
-  function renderOrders() {
-    const list = $('#myOrders');
-    const mine = orders.filter(o => o.buyer === currentUser);
-
-    if (mine.length === 0) {
-      list.innerHTML = '<div class="empty"><div class="emoji">📦</div><p>Chưa có đơn</p><p class="hint">Mua tương tác để tạo đơn!</p></div>';
-      return;
-    }
-
-    list.innerHTML = mine.map(o => {
-      let icon = '👥', name = 'Follow';
-      if (o.type === 'like') { icon = '❤️'; name = 'Tim'; }
-      else if (o.type === 'comment') { icon = '💬'; name = 'Comment'; }
-
-      const completed = o.completedSlots || 0;
-      const progress = (completed / o.qty) * 100;
-      const isDone = o.status === 'done';
-      const isCancelled = o.status === 'cancelled';
-      const canCancel = !isDone && !isCancelled && completed === 0;
-      const targetTikTok = users[o.buyer] ? users[o.buyer].tiktokUsername : 'N/A';
-
-      return '<div class="order-card ' + (isDone ? 'done' : '') + ' ' + (isCancelled ? 'cancelled' : '') + '">' +
-        '<div class="order-header">' +
-          '<div class="order-type">' + icon + ' ' + o.qty + ' ' + name + '</div>' +
-          '<div class="order-status ' + (isDone ? 'done' : isCancelled ? 'cancelled' : 'pending') + '">' +
-            (isDone ? '✓ Xong' : isCancelled ? '✗ Hủy' : '⏳ Chờ') +
-          '</div>' +
-        '</div>' +
-        '<div class="order-meta">💰 ' + formatNumber(o.price) + ' xu • ' + timeAgo(o.createdAt) + '</div>' +
-        '<div class="order-target">🎵 @' + escapeHtml(targetTikTok || 'N/A') + '</div>' +
-        '<div class="task-progress">' +
-          '<span>' + completed + '/' + o.qty + '</span>' +
-          '<div class="task-progress-bar"><div class="task-progress-fill" style="width:' + progress + '%"></div></div>' +
-          '<span>' + Math.round(progress) + '%</span>' +
-        '</div>' +
-        (canCancel ? '<button class="btn-cancel-order" data-cancel-order="' + o.id + '" type="button">✗ Hủy & hoàn xu</button>' : '') +
-      '</div>';
-    }).join('');
-
-    list.querySelectorAll('[data-cancel-order]').forEach(btn => {
-      btn.addEventListener('click', () => cancelOrder(btn.dataset.cancelOrder));
-    });
-  }
-
-  function cancelOrder(orderId) {
-    const order = orders.find(o => o.id === orderId);
-    if (!order || order.buyer !== currentUser) return;
-    if (order.completedSlots > 0) { showToast('Không thể hủy', 'error'); return; }
-
-    showModal(
-      '<h3>✗ Hủy đơn?</h3>' +
-      '<p>Hoàn <b>' + formatNumber(order.price) + ' xu</b>?</p>' +
-      '<div class="modal-actions">' +
-        '<button class="btn btn-secondary" id="cancelModal" type="button">Không</button>' +
-        '<button class="btn btn-danger" id="confirmCancel" type="button">Hủy</button>' +
-      '</div>'
-    );
-    $('#cancelModal').addEventListener('click', hideModal);
-    $('#confirmCancel').addEventListener('click', () => {
-      const me = users[currentUser];
-      order.status = 'cancelled';
-      me.points += order.price;
-      me.spent = Math.max(0, me.spent - order.price);
-      me.checksum = crypto2.checksum(me);
-      tasks = tasks.filter(t => t.orderId !== orderId);
-      saveUsers(); saveOrders(); saveTasks();
-      broadcastChange('data_changed');
-      hideModal();
-      bumpPoints();
-      showToast('✅ Hoàn ' + formatNumber(order.price) + ' xu', 'success');
-      renderOrders(); renderShop(); renderTasks(); renderTopbar();
-    });
-  }
-
-  // ══════════════════════════════════════════════════════════
-  // PROFILE
-  // ══════════════════════════════════════════════════════════
-  function renderProfile() {
-    const u = users[currentUser];
-    if (!u) return;
-
-    $('#profileAvatar').textContent = initials(u.username);
-    $('#profileName').innerHTML = '@' + escapeHtml(u.username) + (u.isAdmin ? ' <span class="admin-badge">👑 ADMIN</span>' : '');
-    $('#profileTikTok').textContent = u.tiktokUsername ? '@' + u.tiktokUsername : '@chưa-cập-nhật';
-    $('#statPoints').textContent = formatNumber(u.points);
-    $('#statEarned').textContent = formatNumber(u.earned);
-    $('#statSpent').textContent = formatNumber(u.spent);
-    $('#tiktokUsername').value = u.tiktokUsername || '';
-    renderHistory();
-  }
-
-  function renderHistory() {
-    const u = users[currentUser];
-    const hList = $('#historyList');
-    const history = u.history || [];
-    if (history.length === 0) {
-      hList.innerHTML = '<div class="empty"><div class="emoji">📊</div><p>Chưa có hoạt động</p></div>';
-      return;
-    }
-
-    hList.innerHTML = history.slice(0, 20).map(h => {
-      let icon = '💰', text = '', sign = '+', cls = 'plus';
-      if (h.type === 'earn') {
-        icon = h.action === 'follow' ? '👥' : h.action === 'like' ? '❤️' : h.action === 'comment' ? '💬' : '🎁';
-        text = h.action === 'welcome' ? 'Xu chào mừng' : 'Đã ' + (h.action === 'like' ? 'tim' : h.action) + ' @' + escapeHtml(h.targetUser || '');
-        cls = 'plus';
-      } else if (h.type === 'spend') {
-        icon = '🛒';
-        const actName = h.action.replace('buy_', '');
-        text = 'Mua ' + h.qty + ' ' + (actName === 'like' ? 'tim' : actName);
-        sign = '-'; cls = 'minus';
-      }
-      return '<div class="history-item">' +
-        '<div class="h-icon">' + icon + '</div>' +
-        '<div class="h-body"><div class="h-text">' + text + '</div><div class="h-time">' + timeAgo(h.time) + '</div></div>' +
-        '<div class="h-amount ' + cls + '">' + sign + formatNumber(h.points) + '</div>' +
-      '</div>';
-    }).join('');
-  }
-
-  function saveTikTokUsername() {
-    const el = $('#tiktokUsername');
-    const val = normalizeTikTok(el.value);
-    if (!val) { showToast('Nhập username', 'warning'); return; }
-    if (!isValidTikTok(val)) { showToast('Username không hợp lệ', 'error'); return; }
-    
-    const u = users[currentUser];
-    u.tiktokUsername = val;
-    u.checksum = crypto2.checksum(u);
-    saveUsers();
-    broadcastChange('data_changed');
-    el.value = val;
-    showToast('✅ Đã lưu @' + val, 'success');
-    renderProfile();
-    renderShop();
-  }
-
-  // ══════════════════════════════════════════════════════════
-  // NOTIFICATIONS
-  // ══════════════════════════════════════════════════════════
-  function renderNotifs() {
-    if (!currentUser) return;
-    const myNotifs = notifications.filter(n => n.user === currentUser);
-    const unread = myNotifs.filter(n => !n.read).length;
-    
-    const badge = $('#notifBadge');
-    if (unread > 0) {
-      badge.textContent = unread > 99 ? '99+' : unread;
-      badge.style.display = 'block';
-    } else badge.style.display = 'none';
-
-    const list = $('#notifList');
-    if (myNotifs.length === 0) {
-      list.innerHTML = '<div class="notif-empty">🔕 Chưa có thông báo</div>';
-      return;
-    }
-    const icons = { success: '✅', info: 'ℹ️', warning: '⚠️', error: '❌' };
-    list.innerHTML = myNotifs.slice(0, 30).map(n => 
-      '<div class="notif-item ' + (n.read ? '' : 'unread') + '">' +
-        '<div class="notif-icon">' + (icons[n.type] || '🔔') + '</div>' +
-        '<div class="notif-body">' +
-          '<div class="notif-title">' + escapeHtml(n.title) + '</div>' +
-          (n.body ? '<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">' + escapeHtml(n.body) + '</div>' : '') +
-          '<div class="notif-time">' + timeAgo(n.time) + '</div>' +
-        '</div>' +
-      '</div>'
-    ).join('');
-  }
-
-  function toggleNotifPanel() {
-    const panel = $('#notifPanel');
-    if (panel.classList.contains('show')) {
-      panel.classList.remove('show');
-    } else {
-      panel.classList.add('show');
-      let changed = false;
-      notifications.forEach(n => {
-        if (n.user === currentUser && !n.read) { n.read = true; changed = true; }
-      });
-      if (changed) { saveNotifs(); renderNotifs(); }
-    }
-  }
-
-  // ══════════════════════════════════════════════════════════
-  // ADMIN PANEL
-  // ══════════════════════════════════════════════════════════
-  function renderAdmin() {
-    if (!requireAdmin()) return;
-    
-    const allUsers = Object.values(users);
-    const banned = allUsers.filter(u => u.banned).length;
-    const pendingTasks = tasks.filter(t => !t.completed).length;
-    const completedOrders = orders.filter(o => o.status === 'done').length;
-    const pendingVerifies = verifyQueue.filter(q => q.status === 'pending').length;
-
-    $('#admTotalUsers').textContent = allUsers.length;
-    $('#admBannedSub').textContent = banned + ' bị khóa';
-    $('#admPendingTasks').textContent = pendingTasks;
-    $('#admCompletedOrders').textContent = completedOrders;
-    $('#admPendingVerifies').textContent = pendingVerifies;
-
-    renderVerifyQueue();
-    renderAdminUsers();
-  }
-
-  function renderVerifyQueue() {
-    const list = $('#verifyQueue');
-    const pending = verifyQueue.filter(q => q.status === 'pending').sort((a, b) => b.submittedAt - a.submittedAt);
-    
-    if (pending.length === 0) {
-      list.innerHTML = '<div class="empty"><div class="emoji">✨</div><p>Không có gì chờ duyệt</p></div>';
-      return;
-    }
-
-    list.innerHTML = pending.map(q => {
-      let typeIcon = '👥', typeName = 'Follow';
-      if (q.type === 'like') { typeIcon = '❤️'; typeName = 'Tim'; }
-      else if (q.type === 'comment') { typeIcon = '💬'; typeName = 'Comment'; }
-      
-      const autoIn = Math.max(0, Math.ceil((q.autoApproveAt - Date.now()) / 1000));
-      
-      return '<div class="queue-item">' +
-        '<div class="queue-header">' +
-          '<div class="queue-title">' + typeIcon + ' ' + typeName + ' - @' + escapeHtml(q.worker) + '</div>' +
-          '<div class="queue-time">' + timeAgo(q.submittedAt) + '</div>' +
-        '</div>' +
-        '<div class="queue-info">' +
-          '🎵 Worker: @' + escapeHtml(q.workerTiktok || 'N/A') + '<br>' +
-          '🎯 Target: @' + escapeHtml(q.targetTiktok || q.targetUser) + '<br>' +
-          '🔑 Mã: <b>' + escapeHtml(q.verifyCode) + '</b> • 💰 +' + formatNumber(q.reward) + ' xu' +
-        '</div>' +
-        '<div style="font-size:11px; color:var(--text-muted); margin-bottom:8px;">' +
-          '⏰ Auto duyệt sau: <b>' + autoIn + 's</b>' +
-        '</div>' +
-        '<div class="queue-actions">' +
-          '<button class="btn-icon success" data-verify="approve" data-qid="' + q.id + '" type="button">✅ Duyệt</button>' +
-          '<button class="btn-icon danger" data-verify="reject" data-qid="' + q.id + '" type="button">❌ Từ chối</button>' +
-        '</div>' +
-      '</div>';
-    }).join('');
-
-    list.querySelectorAll('[data-verify]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const action = btn.dataset.verify;
-        const qid = btn.dataset.qid;
-        if (action === 'approve') {
-          if (approveVerification(qid, currentUser)) {
-            showToast('✅ Đã duyệt', 'success');
-            renderAdmin();
-          }
-        } else {
-          showRejectModal(qid);
-        }
-      });
-    });
-  }
-
-  function showRejectModal(qid) {
-    const item = verifyQueue.find(q => q.id === qid);
-    if (!item) return;
-    
-    showModal(
-      '<h3>❌ Từ chối?</h3>' +
-      '<p>Nhiệm vụ của @' + escapeHtml(item.worker) + '</p>' +
-      '<div class="form-group">' +
-        '<label>Lý do</label>' +
-        '<input type="text" id="rejectReason" placeholder="VD: Không có mã trong comment" maxlength="100">' +
-      '</div>' +
-      '<div class="modal-actions">' +
-        '<button class="btn btn-secondary" id="cancelModal" type="button">Hủy</button>' +
-        '<button class="btn btn-danger" id="confirmReject" type="button">Từ chối</button>' +
-      '</div>'
-    );
-    $('#cancelModal').addEventListener('click', hideModal);
-    $('#confirmReject').addEventListener('click', () => {
-      const reason = ($('#rejectReason').value || '').trim() || 'Không đạt yêu cầu';
-      if (rejectVerification(qid, currentUser, reason)) {
-        hideModal();
-        showToast('Đã từ chối', 'warning');
-        renderAdmin();
-      }
-    });
-  }
-
-  function autoApproveAll() {
-    if (!requireAdmin()) return;
-    const pending = verifyQueue.filter(q => q.status === 'pending');
-    if (pending.length === 0) { showToast('Không có gì', 'info'); return; }
-    
-    showModal(
-      '<h3>⚡ Duyệt tất cả?</h3>' +
-      '<p>Duyệt <b>' + pending.length + '</b> nhiệm vụ?</p>' +
-      '<div class="modal-actions">' +
-        '<button class="btn btn-secondary" id="cancelModal" type="button">Hủy</button>' +
-        '<button class="btn btn-confirm" id="confirmAuto" type="button">Duyệt</button>' +
-      '</div>'
-    );
-    $('#cancelModal').addEventListener('click', hideModal);
-    $('#confirmAuto').addEventListener('click', () => {
-      let count = 0;
-      pending.forEach(q => { if (approveVerification(q.id, currentUser)) count++; });
-      hideModal();
-      showToast('✅ Đã duyệt ' + count, 'success');
-      renderAdmin();
-    });
-  }
-
-  function renderAdminUsers() {
-    if (!requireAdmin()) return;
-    let list = Object.values(users);
-    if (admFilterValue === 'active') list = list.filter(u => !u.banned);
-    else if (admFilterValue === 'banned') list = list.filter(u => u.banned);
-    else if (admFilterValue === 'admin') list = list.filter(u => u.isAdmin);
-    else if (admFilterValue === 'rich') list = list.filter(u => u.points > 1000);
-    if (admSearchValue) {
-      const q = admSearchValue.toLowerCase();
-      list = list.filter(u => u.username.toLowerCase().includes(q));
-    }
-    list.sort((a, b) => b.points - a.points);
-
-    const container = $('#admUserList');
-    if (list.length === 0) {
-      container.innerHTML = '<div class="empty"><div class="emoji">🔍</div><p>Không tìm thấy</p></div>';
-      return;
-    }
-
-    container.innerHTML = list.map(u => {
-      const isMe = u.username === currentUser;
-      return '<div class="admin-user-row ' + (u.banned ? 'banned' : '') + '">' +
-        '<div class="avatar" style="background:' + colorFromName(u.username) + '">' + initials(u.username) + '</div>' +
-        '<div class="info">' +
-          '<div class="uname">@' + escapeHtml(u.username) +
-            (u.isAdmin ? ' 👑' : '') +
-            (u.banned ? ' <span class="banned-tag">Khóa</span>' : '') +
-          '</div>' +
-          '<div class="meta">' +
-            '<span>💰 ' + formatNumber(u.points) + ' xu</span>' +
-            '<span>🎵 @' + escapeHtml(u.tiktokUsername || 'N/A') + '</span>' +
-          '</div>' +
-        '</div>' +
-        '<div style="display:flex; gap:6px; flex-wrap:wrap;">' +
-          '<button class="btn-icon primary" data-adm="points" data-user="' + u.username + '" type="button">💰</button>' +
-          (!isMe ?
-            '<button class="btn-icon ' + (u.banned ? 'success' : 'warn') + '" data-adm="ban" data-user="' + u.username + '" type="button">' + (u.banned ? '🔓' : '🔒') + '</button>' +
-            '<button class="btn-icon ' + (u.isAdmin ? 'warn' : 'primary') + '" data-adm="toggleadmin" data-user="' + u.username + '" type="button">' + (u.isAdmin ? '👤' : '👑') + '</button>' +
-            '<button class="btn-icon danger" data-adm="delete" data-user="' + u.username + '" type="button">🗑️</button>'
-          : '<span style="font-size:12px;color:#94a3b8;padding:8px;">(Bạn)</span>') +
-        '</div>' +
-      '</div>';
-    }).join('');
-
-    container.querySelectorAll('[data-adm]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const action = btn.dataset.adm;
-        const username = btn.dataset.user;
-        if (action === 'points') admEditPoints(username);
-        else if (action === 'ban') admToggleBan(username);
-        else if (action === 'toggleadmin') admToggleAdmin(username);
-        else if (action === 'delete') admDeleteUser(username);
-      });
-    });
-  }
-
-  function admEditPoints(username) {
-    if (!requireAdmin()) return;
-    const u = users[username];
-    if (!u) return;
-    showModal(
-      '<h3>💰 Chỉnh xu @' + escapeHtml(username) + '</h3>' +
-      '<p>Hiện tại: <b>' + formatNumber(u.points) + ' xu</b></p>' +
-      '<div class="form-group"><label>Số xu thêm (âm để trừ)</label><input type="number" id="admPointsInput" value="1000"></div>' +
-      '<div class="modal-actions">' +
-        '<button class="btn btn-secondary" id="cancelModal" type="button">Hủy</button>' +
-        '<button class="btn btn-confirm" id="confirmPoints" type="button">Áp dụng</button>' +
-      '</div>'
-    );
-    $('#cancelModal').addEventListener('click', hideModal);
-    $('#confirmPoints').addEventListener('click', () => {
-      const val = parseInt($('#admPointsInput').value, 10);
-      if (isNaN(val)) { showToast('Số không hợp lệ', 'error'); return; }
-      u.points = Math.max(0, u.points + val);
-      u.checksum = crypto2.checksum(u);
-      saveUsers();
-      broadcastChange('data_changed');
-      hideModal();
-      pushNotif(username, 'info', '💰 Xu cập nhật', (val >= 0 ? '+' : '') + formatNumber(val) + ' xu');
-      renderAdmin(); renderTopbar();
-      showToast((val >= 0 ? '+' : '') + formatNumber(val) + ' xu', 'success');
-    });
-  }
-
-  function admToggleBan(username) {
-    if (!requireAdmin()) return;
-    const u = users[username];
-    if (!u) return;
-    u.banned = !u.banned;
-    u.checksum = crypto2.checksum(u);
-    saveUsers();
-    broadcastChange('data_changed');
-    pushNotif(username, u.banned ? 'warning' : 'success', 
-      u.banned ? '🔒 Tài khoản bị khóa' : '🔓 Đã mở khóa', '');
-    renderAdmin();
-    showToast(u.banned ? 'Đã khóa' : 'Đã mở', u.banned ? 'warning' : 'success');
-  }
-
-  function admToggleAdmin(username) {
-    if (!requireAdmin()) return;
-    const u = users[username];
-    if (!u) return;
-    u.isAdmin = !u.isAdmin;
-    u.checksum = crypto2.checksum(u);
-    saveUsers();
-    broadcastChange('data_changed');
-    pushNotif(username, 'info', u.isAdmin ? '👑 Được cấp Admin' : 'Mất Admin', '');
-    renderAdmin();
-    showToast(u.isAdmin ? '👑 Đã cấp' : 'Đã hạ', 'success');
-  }
-
-  function admDeleteUser(username) {
-    if (!requireAdmin()) return;
-    showModal(
-      '<h3>⚠️ Xóa @' + escapeHtml(username) + '?</h3>' +
-      '<p style="color:#ef4444;">Toàn bộ dữ liệu sẽ bị xóa!</p>' +
-      '<div class="modal-actions">' +
-        '<button class="btn btn-secondary" id="cancelModal" type="button">Hủy</button>' +
-        '<button class="btn btn-danger" id="confirmDeleteUser" type="button">Xóa</button>' +
-      '</div>'
-    );
-    $('#cancelModal').addEventListener('click', hideModal);
-    $('#confirmDeleteUser').addEventListener('click', () => {
-      tasks = tasks.filter(t => t.targetUser !== username && t.workers.indexOf(username) === -1);
-      orders = orders.filter(o => o.buyer !== username);
-      notifications = notifications.filter(n => n.user !== username);
-      verifyQueue = verifyQueue.filter(q => q.worker !== username && q.targetUser !== username);
-      delete users[username];
-      saveUsers(); saveTasks(); saveOrders(); saveNotifs(); saveVerifyQueue();
-      broadcastChange('data_changed');
-      hideModal();
-      renderAdmin(); renderTasks();
-      showToast('Đã xóa', 'success');
-    });
-  }
-
-  // ══════════════════════════════════════════════════════════
-  // EXPORT / IMPORT
-  // ══════════════════════════════════════════════════════════
-  function exportData() {
-    if (!requireAdmin()) return;
-    try {
-      const data = {
-        version: DATA_VERSION,
-        exportedAt: Date.now(),
-        users, tasks, orders, notifications, verifyQueue
-      };
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'ttb_backup_' + new Date().toISOString().slice(0, 10) + '.json';
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-      showToast('💾 Đã xuất', 'success');
-    } catch (e) { showToast('Lỗi xuất', 'error'); }
-  }
-
-  function exportMyData() {
-    const me = users[currentUser];
-    if (!me) return;
-    try {
-      const data = {
-        version: DATA_VERSION,
-        exportedAt: Date.now(),
-        myData: {
-          username: me.username, points: me.points,
-          earned: me.earned, spent: me.spent,
-          tiktokUsername: me.tiktokUsername,
-          history: me.history, createdAt: me.createdAt
-        },
-        myOrders: orders.filter(o => o.buyer === currentUser)
-      };
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'mydata_' + currentUser + '_' + new Date().toISOString().slice(0, 10) + '.json';
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-      showToast('💾 Đã tải', 'success');
-    } catch (e) { showToast('Lỗi xuất', 'error'); }
-  }
-
-  function importData() {
-    if (!requireAdmin()) return;
-    const input = $('#importFile');
-    input.onchange = (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        try {
-          const data = JSON.parse(ev.target.result);
-          if (!data.users || typeof data.users !== 'object') throw new Error();
-          showModal(
-            '<h3>📂 Khôi phục?</h3>' +
-            '<p>Dữ liệu sẽ bị <b>GHI ĐÈ</b>!</p>' +
-            '<div class="modal-actions">' +
-              '<button class="btn btn-secondary" id="cancelImport" type="button">Hủy</button>' +
-              '<button class="btn btn-danger" id="confirmImport" type="button">Ghi đè</button>' +
-            '</div>'
-          );
-          $('#cancelImport').addEventListener('click', hideModal);
-          $('#confirmImport').addEventListener('click', () => {
-            users = data.users || {};
-            tasks = data.tasks || [];
-            orders = data.orders || [];
-            notifications = data.notifications || [];
-            verifyQueue = data.verifyQueue || [];
-            saveUsers(); saveTasks(); saveOrders(); saveNotifs(); saveVerifyQueue();
-            broadcastChange('data_changed');
-            hideModal();
-            showToast('✅ Đã khôi phục', 'success');
-            if (currentUser && !users[currentUser]) logout();
-            else renderApp();
-          });
-        } catch (err) { showToast('File không hợp lệ', 'error'); }
-        input.value = '';
-      };
-      reader.readAsText(file);
-    };
-    input.click();
-  }
-
-  async function showBackupList() {
-    if (!requireAdmin()) return;
-    const backups = await idbListAll();
-    if (backups.length === 0) {
-      showModal('<h3>📋 Backups</h3><p>Chưa có backup tự động nào.</p><div class="modal-actions"><button class="btn btn-secondary" id="cancelModal" type="button">Đóng</button></div>');
-      $('#cancelModal').addEventListener('click', hideModal);
-      return;
-    }
-
-    backups.sort((a, b) => b.timestamp - a.timestamp);
-    
-    showModal(
-      '<h3>📋 Auto-backups (' + backups.length + ')</h3>' +
-      '<div style="max-height:400px; overflow-y:auto;">' +
-      backups.map((b, i) => {
-        const uCount = Object.keys((b.data && b.data.users) || {}).length;
-        return '<div style="padding:12px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; gap:8px;">' +
-          '<div style="min-width:0;">' +
-            '<div style="font-weight:700; font-size:13px;">' + new Date(b.timestamp).toLocaleString('vi-VN') + '</div>' +
-            '<div style="font-size:11px; color:var(--text-muted);">' + uCount + ' users • v' + b.version + '</div>' +
-          '</div>' +
-          '<button class="btn-icon primary" data-restore="' + b.id + '" type="button">Khôi phục</button>' +
-        '</div>';
-      }).join('') +
-      '</div>' +
-      '<div class="modal-actions"><button class="btn btn-secondary" id="cancelModal" type="button">Đóng</button></div>'
-    );
-    
-    $('#cancelModal').addEventListener('click', hideModal);
-    $('#modalContent').querySelectorAll('[data-restore]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id = parseInt(btn.dataset.restore, 10);
-        const backup = backups.find(b => b.id === id);
-        if (!backup) return;
-        if (!confirm('Khôi phục từ backup này?')) return;
-        
-        const data = backup.data;
-        users = data.users || {};
-        tasks = data.tasks || [];
-        orders = data.orders || [];
-        notifications = data.notifications || [];
-        verifyQueue = data.verifyQueue || [];
-        
-        saveUsers(); saveTasks(); saveOrders(); saveNotifs(); saveVerifyQueue();
-        broadcastChange('data_changed');
-        hideModal();
-        showToast('✅ Đã khôi phục', 'success');
-        renderApp();
-      });
-    });
-  }
-
-  // ══════════════════════════════════════════════════════════
-  // CHANGE PASSWORD
-  // ══════════════════════════════════════════════════════════
-  async function changePassword() {
-    showModal(
-      '<h3>🔑 Đổi mật khẩu</h3>' +
-      '<div class="form-group"><label>Mật khẩu hiện tại</label><input type="password" id="oldPass" maxlength="50"></div>' +
-      '<div class="form-group"><label>Mật khẩu mới</label><input type="password" id="newPass" maxlength="50"></div>' +
-      '<div class="form-group"><label>Nhập lại</label><input type="password" id="confirmPass" maxlength="50"></div>' +
-      '<div class="modal-actions">' +
-        '<button class="btn btn-secondary" id="cancelModal" type="button">Hủy</button>' +
-        '<button class="btn btn-confirm" id="confirmChange" type="button">Đổi</button>' +
-      '</div>'
-    );
-    $('#cancelModal').addEventListener('click', hideModal);
-    $('#confirmChange').addEventListener('click', async () => {
-      const oldP = $('#oldPass').value;
-      const newP = $('#newPass').value;
-      const confP = $('#confirmPass').value;
-      const u = users[currentUser];
-
-      const oldHash = await crypto2.hashPassword(oldP);
-      if (u.passwordHash !== oldHash) { showToast('Mật khẩu sai', 'error'); return; }
-      if (newP.length < CONFIG.minPassword) { showToast('Quá ngắn', 'error'); return; }
-      if (newP !== confP) { showToast('Không khớp', 'error'); return; }
-      
-      u.passwordHash = await crypto2.hashPassword(newP);
-      u.checksum = crypto2.checksum(u);
-      saveUsers();
-      broadcastChange('data_changed');
-      hideModal();
-      showToast('✅ Đã đổi', 'success');
-    });
-  }
-
-  // ══════════════════════════════════════════════════════════
-  // EVENTS
-  // ══════════════════════════════════════════════════════════
-  function bindEvents() {
-    $('#authSubmit').addEventListener('click', handleAuth);
-    $('#authUsername').addEventListener('keypress', e => { if (e.key === 'Enter') $('#authPassword').focus(); });
-    $('#authPassword').addEventListener('keypress', e => { if (e.key === 'Enter') handleAuth(); });
-
-    $('#switchMode').addEventListener('click', () => {
-      authMode = authMode === 'login' ? 'register' : 'login';
-      setAuthLoading(false);
-      $('#authBtnText').textContent = authMode === 'login' ? 'Đăng nhập' : 'Đăng ký';
-      $('#switchText').textContent = authMode === 'login' ? 'Chưa có tài khoản?' : 'Đã có tài khoản?';
-      $('#switchMode').textContent = authMode === 'login' ? 'Đăng ký ngay' : 'Đăng nhập';
-      $('#authError').classList.remove('show');
-    });
-
-    $('#btnLogout').addEventListener('click', () => {
-      showModal(
-        '<h3>👋 Đăng xuất?</h3>' +
-        '<div class="modal-actions">' +
-          '<button class="btn btn-secondary" id="cancelLogout" type="button">Ở lại</button>' +
-          '<button class="btn btn-danger" id="confirmLogout" type="button">Đăng xuất</button>' +
-        '</div>'
-      );
-      $('#cancelLogout').addEventListener('click', hideModal);
-      $('#confirmLogout').addEventListener('click', () => { hideModal(); logout(); });
-    });
-
-    $$('.tab').forEach(tab => {
-      tab.addEventListener('click', () => switchTab(tab.dataset.tab));
-    });
-
-    $('#btnNotif').addEventListener('click', (e) => { e.stopPropagation(); toggleNotifPanel(); });
-    $('#btnClearNotif').addEventListener('click', (e) => {
-      e.stopPropagation();
-      notifications = notifications.filter(n => n.user !== currentUser);
-      saveNotifs();
-      renderNotifs();
-      showToast('Đã xóa', 'success');
-    });
-
-    document.addEventListener('click', (e) => {
-      const panel = $('#notifPanel');
-      const btn = $('#btnNotif');
-      if (!panel.classList.contains('show')) return;
-      if (panel.contains(e.target) || btn.contains(e.target)) return;
-      panel.classList.remove('show');
-    });
-
-    $('#topAvatar').addEventListener('click', () => switchTab('profile'));
-    $('#topPoints').addEventListener('click', () => switchTab('tasks'));
-    $('#btnRefreshTasks').addEventListener('click', () => { renderTasks(); showToast('🔄 Đã làm mới', 'info'); });
-    $('#btnSaveTikTok').addEventListener('click', saveTikTokUsername);
-    $('#tiktokUsername').addEventListener('keypress', e => { if (e.key === 'Enter') saveTikTokUsername(); });
-    $('#btnChangePassword').addEventListener('click', changePassword);
-    $('#btnExportMyData').addEventListener('click', exportMyData);
-    
-    $('#btnRestoreFromBackup').addEventListener('click', async () => {
-      const ok = await restoreFromBackup();
-      if (ok) renderApp();
-    });
-
-    $('#admSearch').addEventListener('input', e => { admSearchValue = e.target.value; renderAdminUsers(); });
-    $('#admFilter').addEventListener('change', e => { admFilterValue = e.target.value; renderAdminUsers(); });
-
-    $('#btnExport').addEventListener('click', exportData);
-    $('#btnImport').addEventListener('click', importData);
-    $('#btnAutoApprove').addEventListener('click', autoApproveAll);
-    $('#btnListBackups').addEventListener('click', showBackupList);
-
-    $('#btnResetPoints').addEventListener('click', () => {
-      if (!requireAdmin()) return;
-      showModal(
-        '<h3>🔄 Reset xu?</h3><p>Không thể hoàn tác!</p>' +
-        '<div class="modal-actions">' +
-          '<button class="btn btn-secondary" id="cancelModal" type="button">Hủy</button>' +
-          '<button class="btn btn-danger" id="confirmResetPoints" type="button">Reset</button>' +
-        '</div>'
-      );
-      $('#cancelModal').addEventListener('click', hideModal);
-      $('#confirmResetPoints').addEventListener('click', () => {
-        Object.values(users).forEach(u => { 
-          u.points = 0; u.checksum = crypto2.checksum(u); 
-        });
-        saveUsers();
-        broadcastChange('data_changed');
-        hideModal();
-        renderAdmin(); renderTopbar();
-        showToast('Đã reset xu', 'success');
-      });
-    });
-
-    $('#btnResetAll').addEventListener('click', () => {
-      if (!requireAdmin()) return;
-      showModal(
-        '<h3 style="color:#ef4444;">💣 RESET TOÀN BỘ?</h3>' +
-        '<p style="color:#ef4444;">Tất cả dữ liệu sẽ bị xóa!</p>' +
-        '<input type="text" id="confirmText" placeholder="Nhập XOA HET" style="width:100%; padding:12px; border:2px solid #e2e8f0; border-radius:10px; text-transform:uppercase;">' +
-        '<div class="modal-actions">' +
-          '<button class="btn btn-secondary" id="cancelModal" type="button">Hủy</button>' +
-          '<button class="btn btn-danger" id="confirmResetAll" type="button">XÓA</button>' +
-        '</div>'
-      );
-      $('#cancelModal').addEventListener('click', hideModal);
-      $('#confirmResetAll').addEventListener('click', () => {
-        if ($('#confirmText').value.trim().toUpperCase() !== 'XOA HET') {
-          showToast('Nhập đúng "XOA HET"', 'error');
+<div class="mov" id="modal"><div class="mc" id="modalC"></div></div>
+<div class="tst" id="toasts"></div>
+
+<script type="module">
+import{initializeApp}from'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+import{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,updatePassword,EmailAuthProvider,reauthenticateWithCredential}from'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
+import{getFirestore,doc,getDoc,setDoc,updateDoc,collection,addDoc,onSnapshot,writeBatch}from'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+
+const firebaseConfig={
+  apiKey:"AIzaSyCaVrogtc-0vZvMImksZySECgkwV4yOm2g",
+  authDomain:"tiktok-boots-pro.firebaseapp.com",
+  projectId:"tiktok-boots-pro",
+  storageBucket:"tiktok-boots-pro.firebasestorage.app",
+  messagingSenderId:"53399098081",
+  appId:"1:53399098081:web:b7582dc8bfff81b3569da0"
+};
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
+
+const FAKE_DOMAIN='@ttboost.app';
+const ADMIN_USER='admingang';
+const ADMIN_PASS='Rmg16062007';
+const CFG={
+  minU:3,minP:6,cooldown:30000,dailyLimit:50,
+  minTimeTT:5000,delayVerify:15000,autoApprove:180000,
+  rewards:{follow:100,like:50,comment:50},
+  bonus:500,
+  pkgs:[
+    {id:'f10',type:'follow',qty:10,price:1000,name:'10 Follow TikTok',desc:'100 xu/follow'},
+    {id:'f50',type:'follow',qty:50,price:4500,name:'50 Follow TikTok',desc:'90 xu/follow • -10%',badge:'HOT'},
+    {id:'f100',type:'follow',qty:100,price:8000,name:'100 Follow TikTok',desc:'80 xu/follow • -20%',badge:'BEST'},
+    {id:'l20',type:'like',qty:20,price:1000,name:'20 Tim video',desc:'50 xu/tim'},
+    {id:'l100',type:'like',qty:100,price:4500,name:'100 Tim video',desc:'45 xu/tim • -10%',badge:'HOT'},
+    {id:'c10',type:'comment',qty:10,price:500,name:'10 Comment',desc:'50 xu/comment'}
+  ]
+};
+
+let curUser=null,curProf=null;
+let users={},tasks=[],orders=[],notifs=[],queue=[];
+let mode='login',filter='all',search='';
+let busy=false,timers={},opened={},subs=[];
+
+const $=s=>document.querySelector(s);
+const $$=s=>document.querySelectorAll(s);
+const fmt=n=>Number(n||0).toLocaleString('vi-VN');
+const esc=s=>{if(s==null)return'';const d=document.createElement('div');d.textContent=String(s);return d.innerHTML;};
+const col=n=>{let h=0;for(let i=0;i<n.length;i++)h=n.charCodeAt(i)+((h<<5)-h);const c=['#6366f1','#8b5cf6','#ec4899','#f59e0b','#10b981','#06b6d4','#ef4444','#84cc16','#f97316','#14b8a6'];return c[Math.abs(h)%c.length];};
+const ini=n=>n?n.slice(0,2).toUpperCase():'??';
+const ago=t=>{if(!t)return'';const ms=typeof t==='number'?t:(t.seconds?t.seconds*1000:t);const d=Date.now()-ms;if(d<0)return'vừa xong';const m=Math.floor(d/60000);if(m<1)return'vừa xong';if(m<60)return m+' phút trước';const h=Math.floor(m/60);if(h<24)return h+' giờ trước';return Math.floor(h/24)+' ngày trước';};
+const todayKey=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();};
+const normTik=u=>!u?'':String(u).trim().replace(/^@+/,'').toLowerCase();
+const validTik=u=>/^[a-zA-Z0-9._]{2,24}$/.test(u);
+const validU=u=>/^[a-z0-9_]{3,20}$/.test(u);
+
+function toast(m,t){t=t||'';const c=$('#toasts');const el=document.createElement('div');el.className='t '+t;el.textContent=m;c.appendChild(el);setTimeout(()=>el.remove(),2600);}
+function modal(h){$('#modalC').innerHTML=h;$('#modal').classList.add('show');}
+function closeModal(){$('#modal').classList.remove('show');Object.keys(timers).forEach(k=>{clearInterval(timers[k]);delete timers[k];});}
+function syncBar(state,txt){const b=$('#syncBar');if(!b)return;b.querySelector('#syncText').textContent=txt;}
+function isAdmin(){return curProf&&curProf.isAdmin===true&&!curProf.banned;}
+function userData(uid){return users[uid]||null;}
+function genCode(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';const b=crypto.getRandomValues(new Uint8Array(6));let s='';for(let i=0;i<6;i++)s+=c[b[i]%c.length];return s;}
+
+function startSubs(){
+  subs.push(onSnapshot(collection(db,'users'),sn=>{users={};sn.forEach(d=>{users[d.id]=d.data();});if(curUser&&users[curUser.uid]){curProf=users[curUser.uid];renderTop();renderProfile();if(isAdmin())renderAdmin();}}));
+  subs.push(onSnapshot(collection(db,'tasks'),sn=>{tasks=sn.docs.map(d=>({id:d.id,...d.data()}));if(curUser){renderTasks();if(isAdmin())renderAdmin();}}));
+  subs.push(onSnapshot(collection(db,'orders'),sn=>{orders=sn.docs.map(d=>({id:d.id,...d.data()}));if(curUser){renderOrders();renderProfile();}}));
+  subs.push(onSnapshot(collection(db,'notifications'),sn=>{notifs=sn.docs.map(d=>({id:d.id,...d.data()}));if(curUser)renderNotifs();}));
+  subs.push(onSnapshot(collection(db,'verifyQueue'),sn=>{queue=sn.docs.map(d=>({id:d.id,...d.data()}));if(isAdmin()){renderQueue();renderAdmin();}autoApprove();}));
+  syncBar('idle','Đã kết nối Firebase');
+}
+function stopSubs(){subs.forEach(u=>{try{u();}catch(e){}});subs=[];}
+
+// ═══ AUTH ═══
+function authErr(m){const e=$('#authError');e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),5000);}
+function setAuthLoad(l){const b=$('#aBtn'),t=$('#aBtnText');b.disabled=l;t.innerHTML=l?'<span class="spin"></span> Đang xử lý...':(mode==='login'?'Đăng nhập':'Đăng ký');}
+
+async function doAuth(){
+  if(busy)return;
+  const uEl=$('#aU'),pEl=$('#aP');
+  const u=uEl.value.trim().toLowerCase(),p=pEl.value;
+  $('#uG').classList.remove('err');$('#pG').classList.remove('err');
+  if(u.length<CFG.minU){$('#uG').classList.add('err');authErr('Tên ≥ '+CFG.minU+' ký tự');return;}
+  if(!validU(u)){$('#uG').classList.add('err');authErr('Tên chỉ chứa a-z, 0-9, _');return;}
+  if(p.length<CFG.minP){$('#pG').classList.add('err');authErr('Mật khẩu ≥ '+CFG.minP+' ký tự');return;}
+  busy=true;setAuthLoad(true);
+  try{
+    const email=u+FAKE_DOMAIN;
+    if(mode==='register'){
+      if(u===ADMIN_USER){authErr('Tên không khả dụng');setAuthLoad(false);busy=false;return;}
+      const ck=await getDoc(doc(db,'usernames',u));
+      if(ck.exists()){$('#uG').classList.add('err');authErr('Tên đã tồn tại!');setAuthLoad(false);busy=false;return;}
+      const cr=await createUserWithEmailAndPassword(auth,email,p);
+      const uid=cr.user.uid;
+      const prof={uid,username:u,email,points:CFG.bonus,earned:CFG.bonus,spent:0,tiktokUsername:'',history:[{type:'earn',action:'welcome',points:CFG.bonus,time:Date.now()}],dailyTasks:{},lastTaskAt:0,isAdmin:false,banned:false,createdAt:Date.now(),lastLoginAt:Date.now()};
+      await setDoc(doc(db,'users',uid),prof);
+      await setDoc(doc(db,'usernames',u),{uid,username:u,createdAt:Date.now()});
+      toast('🎉 Đăng ký thành công!','ok');
+    }else{
+      if(u===ADMIN_USER&&p===ADMIN_PASS){
+        const ck=await getDoc(doc(db,'usernames',ADMIN_USER));
+        if(!ck.exists()){
+          const cr=await createUserWithEmailAndPassword(auth,email,p);
+          const uid=cr.user.uid;
+          const ap={uid,username:ADMIN_USER,email,points:999999,earned:999999,spent:0,tiktokUsername:'',history:[],dailyTasks:{},lastTaskAt:0,isAdmin:true,banned:false,createdAt:Date.now(),lastLoginAt:Date.now()};
+          await setDoc(doc(db,'users',uid),ap);
+          await setDoc(doc(db,'usernames',ADMIN_USER),{uid,username:ADMIN_USER,createdAt:Date.now()});
+          toast('👑 Admin đã kích hoạt!','ok');
           return;
         }
-        Object.keys(localStorage).forEach(k => {
-          if (k.indexOf(STORAGE_NS) === 0) localStorage.removeItem(k);
-        });
-        location.reload();
-      });
-    });
-
-    $('#modalOverlay').addEventListener('click', e => {
-      if (e.target.id === 'modalOverlay') hideModal();
-    });
-
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') {
-        hideModal();
-        $('#notifPanel').classList.remove('show');
       }
-    });
-
-    // Save on unload
-    window.addEventListener('beforeunload', () => {
-      if (isDirty) {
-        saveUsers(); saveTasks(); saveOrders(); saveNotifs(); saveVerifyQueue();
-      }
-    });
-    
-    // Save on visibility hidden (mobile)
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden && isDirty) {
-        saveUsers(); saveTasks(); saveOrders(); saveNotifs(); saveVerifyQueue();
-        autoBackup();
-      }
-    });
-  }
-
-  // ══════════════════════════════════════════════════════════
-  // PROCESS QUEUE
-  // ══════════════════════════════════════════════════════════
-  function processQueue() {
-    const now = Date.now();
-    let changed = false;
-
-    verifyQueue.forEach(item => {
-      if (item.status !== 'pending') return;
-      if (now >= item.autoApproveAt && !isAdminOnline()) {
-        if (approveVerification(item.id, 'system_auto')) {
-          changed = true;
-        }
-      }
-    });
-
-    if (changed) {
-      if (currentUser) renderTopbar();
-      if (requireAdmin()) renderAdmin();
+      await signInWithEmailAndPassword(auth,email,p);
+      toast('👋 Chào mừng, '+u+'!','ok');
     }
+  }catch(e){
+    console.error(e);
+    let m='Có lỗi xảy ra';
+    if(['auth/user-not-found','auth/wrong-password','auth/invalid-credential'].includes(e.code))m='Sai tên đăng nhập hoặc mật khẩu!';
+    else if(e.code==='auth/email-already-in-use')m='Tên đăng nhập đã tồn tại!';
+    else if(e.code==='auth/weak-password')m='Mật khẩu quá yếu!';
+    else if(e.code==='auth/too-many-requests')m='Quá nhiều lần thử. Vui lòng đợi!';
+    else if(e.code==='auth/unauthorized-domain')m='Domain chưa được cấp phép!';
+    else if(e.message)m=e.message;
+    authErr(m);
+    setAuthLoad(false);busy=false;
   }
+}
 
-  // ══════════════════════════════════════════════════════════
-  // INIT
-  // ══════════════════════════════════════════════════════════
-  async function init() {
-    console.log('%c🚀 TikTok Boost Pro v5.0', 'color:#FE2C55; font-weight:bold;');
-    console.log('📌 7 features: Persistent, Backup, Sync, Migration, Recovery, Heartbeat, Export');
-
-    // 1. Load data
-    loadAll();
-    
-    // 2. Migration
-    try { migrateData(); } catch(e) { console.warn('Migration error:', e); }
-    
-    // 3. Broadcast channel
-    initBroadcast();
-    
-    // 4. Bind events
-    bindEvents();
-
-    // 5. Heartbeat mỗi 5s
-    setInterval(heartbeat, CONFIG.heartbeatMs);
-    
-    // 6. Auto-backup mỗi 30s
-    setInterval(autoBackup, CONFIG.autoBackupMs);
-    
-    // 7. Idle check
-    setInterval(checkIdle, 30000);
-    
-    // 8. Process verify queue
-    setInterval(processQueue, 30000);
-    
-    // 9. Initial backup
-    setTimeout(autoBackup, 5000);
-
-    // 10. Render
-    if (currentUser && users[currentUser] && !users[currentUser].banned) {
-      renderApp();
-      if (requireAdmin()) adminLastActive = Date.now();
-    }
-
-    showSyncBar('idle', 'Đã đồng bộ');
-    
-    // Welcome message
-    setTimeout(() => {
-      const meta = safeGet(KEYS.meta, null);
-      if (meta && meta.lastBackup) {
-        const ago = Math.floor((Date.now() - meta.lastBackup) / 60000);
-        console.log('💾 Last backup:', ago < 1 ? 'just now' : ago + 'm ago');
-      }
-    }, 1000);
-
-    console.log('%c✅ Ready!', 'color:#10b981; font-weight:bold;');
+onAuthStateChanged(auth,async user=>{
+  busy=false;setAuthLoad(false);
+  if(user){
+    curUser=user;
+    try{
+      const d=await getDoc(doc(db,'users',user.uid));
+      if(!d.exists()){authErr('Tài khoản chưa được thiết lập!');await signOut(auth);return;}
+      curProf=d.data();
+      if(curProf.banned){authErr('Tài khoản đã bị khóa!');await signOut(auth);return;}
+      await updateDoc(doc(db,'users',user.uid),{lastLoginAt:Date.now()});
+      $('#authScreen').style.display='none';
+      $('#app').classList.add('show');
+      startSubs();renderTop();updateAdminTab();
+    }catch(e){console.error(e);await signOut(auth);}
+  }else{
+    curUser=null;curProf=null;users={};tasks=[];orders=[];notifs=[];queue=[];
+    stopSubs();
+    $('#app').classList.remove('show');
+    $('#authScreen').style.display='flex';
+    $('#aP').value='';mode='login';
+    $('#aBtnText').textContent='Đăng nhập';
+    $('#swText').textContent='Chưa có tài khoản?';
+    $('#swMode').textContent='Đăng ký ngay';
+    closeModal();
+    const t=document.querySelector('.tab.admin');if(t)t.remove();
   }
+});
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
+// ═══ RENDER ═══
+function updateAdminTab(){
+  const tabs=$('#tabs'),ex=tabs.querySelector('.tab.admin');
+  if(isAdmin()){if(!ex){const b=document.createElement('button');b.className='tab admin';b.dataset.tab='admin';b.type='button';b.textContent='🛡️ Admin';b.addEventListener('click',()=>switchTab('admin'));tabs.appendChild(b);}}
+  else if(ex)ex.remove();
+}
 
-  window.addEventListener('error', (e) => {
-    console.warn('Global error:', e.message);
+function switchTab(n){
+  if(n==='admin'&&!isAdmin()){toast('⛔ Không có quyền','er');return;}
+  $$('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===n));
+  $$('.pg').forEach(p=>p.classList.toggle('active',p.id==='pg-'+n));
+  if(n==='tasks')renderTasks();
+  if(n==='shop')renderShop();
+  if(n==='orders')renderOrders();
+  if(n==='profile')renderProfile();
+  if(n==='admin')renderAdmin();
+}
+
+function renderTop(){
+  if(!curProf)return;
+  $('#topP').textContent=fmt(curProf.points)+' xu';
+  const a=$('#topAv');a.textContent=ini(curProf.username);a.style.background=col(curProf.username);
+  renderNotifs();
+}
+
+function renderTasks(){
+  if(!curProf)return;
+  $('#balVal').innerHTML=fmt(curProf.points)+'<small>xu</small>';
+  $('#balSub').textContent='Đã kiếm: '+fmt(curProf.earned)+' • Đã tiêu: '+fmt(curProf.spent);
+  const list=$('#taskList');
+  const now=Date.now(),today=todayKey();
+  const daily=(curProf.dailyTasks&&curProf.dailyTasks[today])||0;
+  const cd=Math.max(0,CFG.cooldown-(now-(curProf.lastTaskAt||0)));
+  const avail=tasks.filter(t=>{
+    if(t.completed)return false;
+    if(t.targetUid===curUser.uid)return false;
+    if(t.workers&&t.workers.includes(curUser.uid))return false;
+    if(t.slotsLeft<=0)return false;
+    return true;
+  }).sort((a,b)=>b.slotsLeft-a.slotsLeft||a.createdAt-b.createdAt);
+  if(avail.length===0){list.innerHTML='<div class="emp"><div class="e">⏳</div><p>Chưa có nhiệm vụ nào</p><p class="h">Khi có người mua, nhiệm vụ sẽ xuất hiện!</p></div>';return;}
+  if(daily>=CFG.dailyLimit){list.innerHTML='<div class="ib warn"><strong>⏰ Đạt giới hạn:</strong> '+CFG.dailyLimit+' task/ngày.</div>';return;}
+  list.innerHTML=avail.slice(0,20).map(t=>{
+    const tu=userData(t.targetUid);if(!tu)return'';
+    const rw=CFG.rewards[t.type]||0;
+    let ic='👥',cls='follow',txt='Follow';
+    if(t.type==='like'){ic='❤️';cls='like';txt='Tim';}
+    else if(t.type==='comment'){ic='💬';cls='comment';txt='Comment';}
+    const pr=((t.totalSlots-t.slotsLeft)/t.totalSlots)*100;
+    const h=tu.tiktokUsername?'@'+esc(tu.tiktokUsername):'chưa cập nhật';
+    return '<div class="tc '+cls+'"><div class="th"><div class="tic '+cls+'">'+ic+'</div><div class="tinfo"><div class="tname">'+txt+' TikTok của @'+esc(tu.username)+'</div><div class="tmeta"><span>🎵 '+h+'</span></div></div><div class="trew">+'+fmt(rw)+' xu</div></div><div class="tp"><span>'+(t.totalSlots-t.slotsLeft)+'/'+t.totalSlots+'</span><div class="tpb"><div class="tpf" style="width:'+pr+'%"></div></div><span>'+t.slotsLeft+' chỗ</span></div><div class="ta"><a class="bt open" href="'+getTikUrl(t,tu)+'" target="_blank" rel="noopener" data-open="'+t.id+'">🔗 Mở TikTok</a><button class="bt done" data-done="'+t.id+'" type="button" disabled>'+(cd>0?'⏱ Chờ '+Math.ceil(cd/1000)+'s':'✓ Đã '+txt.toLowerCase())+'</button></div></div>';
+  }).join('');
+  list.querySelectorAll('[data-open]').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const id=b.dataset.open;opened[id]=Date.now();
+      const d=list.querySelector('[data-done="'+id+'"]');
+      if(d){d.disabled=false;d.textContent='✓ Đã hoàn thành';}
+      toast('⏱ Chờ '+(CFG.minTimeTT/1000)+'s','inf');
+    });
   });
-  window.addEventListener('unhandledrejection', () => {});
+  list.querySelectorAll('[data-done]').forEach(b=>{
+    b.addEventListener('click',()=>{if(b.disabled)return;openVerify(b.dataset.done);});
+  });
+  if(cd>0)setTimeout(renderTasks,cd+100);
+}
 
-})();
+function getTikUrl(t,tu){
+  const h=normTik(tu.tiktokUsername);if(!h)return'https://www.tiktok.com/';
+  if(t.type==='follow')return'https://www.tiktok.com/@'+encodeURIComponent(h);
+  if((t.type==='like'||t.type==='comment')&&t.videoUrl){try{const u=new URL(t.videoUrl);if(u.hostname.includes('tiktok.com'))return u.href;}catch(e){}}
+  return'https://www.tiktok.com/@'+encodeURIComponent(h);
+}
+
+function openVerify(taskId){
+  const t=tasks.find(x=>x.id===taskId);if(!t||!curProf)return;
+  const cd=Math.max(0,CFG.cooldown-(Date.now()-(curProf.lastTaskAt||0)));
+  if(cd>0){toast('⏱ Chờ '+Math.ceil(cd/1000)+'s','wn');return;}
+  const today=todayKey();
+  if(((curProf.dailyTasks&&curProf.dailyTasks[today])||0)>=CFG.dailyLimit){toast('⏰ Đạt giới hạn','wn');return;}
+  if(t.completed||t.slotsLeft<=0){toast('Hết chỗ','er');renderTasks();return;}
+  if(t.workers&&t.workers.includes(curUser.uid)){toast('Đã làm rồi','wn');return;}
+  const op=opened[taskId]||0,tt=Date.now()-op;
+  if(tt<CFG.minTimeTT){toast('⚠️ Cần thêm '+Math.ceil((CFG.minTimeTT-tt)/1000)+'s','wn');return;}
+  const code=genCode();
+  const rw=CFG.rewards[t.type]||0;
+  modal('<h3>🔐 Xác minh</h3><p>Làm 3 bước để hoàn thành</p><div class="vs act" id="vs1"><div class="num">1</div><div class="bd">Copy mã và dán vào <strong>bình luận TikTok</strong></div></div><div class="vcb"><div style="font-size:12px;opacity:.7">Mã xác nhận</div><div class="code" id="vc">'+code+'</div><div class="hint">👆 Nhấn để copy</div></div><div class="vs" id="vs2"><div class="num">2</div><div class="bd">Chờ <strong>'+Math.ceil(CFG.delayVerify/1000)+'s</strong> hệ thống xác minh</div></div><div class="vcd" id="vcd"><div class="cdl">⏳ Đang xác minh</div><div class="cdt" id="cdt">'+Math.ceil(CFG.delayVerify/1000)+'</div><div class="cdd">Vui lòng đợi...</div></div><div class="vs" id="vs3"><div class="num">3</div><div class="bd">Nhập lại mã để hoàn tất</div></div><input type="text" class="vin" id="vin" placeholder="MÃ 6 KÝ TỰ" maxlength="6" autocomplete="off" disabled><p style="font-size:12px;margin-top:12px">Thưởng: <b style="color:#10b981">+'+fmt(rw)+' xu</b></p><div class="ma"><button class="btn sec" id="cv" type="button">Hủy</button><button class="btn cf" id="cf" type="button" disabled>Hoàn tất</button></div>');
+  const cEl=$('#vc');
+  cEl.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(code);toast('📋 Đã copy!','ok');$('#vs1').classList.add('done');}catch(e){const r=document.createRange();r.selectNode(cEl);window.getSelection().removeAllRanges();window.getSelection().addRange(r);try{document.execCommand('copy');toast('📋 Đã copy!','ok');$('#vs1').classList.add('done');}catch(x){}}});
+  $('#vs2').classList.add('act');
+  let cd2=Math.ceil(CFG.delayVerify/1000);
+  timers.v=setInterval(()=>{cd2--;$('#cdt').textContent=cd2;if(cd2<=0){clearInterval(timers.v);delete timers.v;$('#vcd').classList.add('done');$('#vcd').querySelector('.cdl').textContent='✅ Xác minh xong';$('#vcd').querySelector('.cdt').textContent='✓';$('#vcd').querySelector('.cdd').textContent='Nhập mã để hoàn tất';$('#vs2').classList.remove('act');$('#vs2').classList.add('done');$('#vs3').classList.add('act');const i=$('#vin');i.disabled=false;i.focus();}},1000);
+  const vin=$('#vin'),cf=$('#cf');
+  vin.addEventListener('input',()=>{cf.disabled=vin.value.trim().toUpperCase().length!==6;});
+  vin.addEventListener('keypress',e=>{if(e.key==='Enter'&&!cf.disabled)cf.click();});
+  $('#cv').addEventListener('click',closeModal);
+  cf.addEventListener('click',()=>{
+    const v=vin.value.trim().toUpperCase();
+    if(v!==code){toast('❌ Sai mã','er');vin.value='';cf.disabled=true;return;}
+    closeModal();submitVerify(t.id,code);
+  });
+}
+
+async function submitVerify(taskId,code){
+  if(busy)return;busy=true;
+  try{
+    const t=tasks.find(x=>x.id===taskId);if(!t||!curProf){busy=false;return;}
+    if(t.completed||t.slotsLeft<=0||(t.workers&&t.workers.includes(curUser.uid))){toast('Không thể','er');busy=false;return;}
+    const rw=CFG.rewards[t.type]||0,now=Date.now(),today=todayKey();
+    await addDoc(collection(db,'verifyQueue'),{taskId:t.id,orderId:t.orderId,type:t.type,workerUid:curUser.uid,workerUsername:curProf.username,workerTiktok:curProf.tiktokUsername||'',targetUid:t.targetUid,targetUsername:(userData(t.targetUid)||{}).username||'',targetTiktok:(userData(t.targetUid)||{}).tiktokUsername||'',verifyCode:code,reward:rw,status:'pending',submittedAt:now,autoApproveAt:now+CFG.autoApprove});
+    const nw=[...(t.workers||[]),curUser.uid];
+    await updateDoc(doc(db,'tasks',t.id),{workers:nw,slotsLeft:t.slotsLeft-1,completed:t.slotsLeft-1<=0});
+    const ndt={...(curProf.dailyTasks||{})};ndt[today]=(ndt[today]||0)+1;
+    await updateDoc(doc(db,'users',curUser.uid),{lastTaskAt:now,dailyTasks:ndt});
+    delete opened[taskId];
+    toast('✅ Đã gửi xác minh!','ok');
+    autoApprove();
+  }catch(e){console.error(e);toast('Lỗi: '+e.message,'er');}
+  finally{busy=false;}
+}
+
+async function autoApprove(){
+  if(!curUser)return;
+  const now=Date.now();
+  for(const it of queue){
+    if(it.status!=='pending')continue;
+    if(now<it.autoApproveAt)continue;
+    try{await approveV(it.id);}catch(e){}
+  }
+}
+
+async function approveV(qid){
+  const it=queue.find(q=>q.id===qid);if(!it||it.status!=='pending')return;
+  const w=userData(it.workerUid);if(!w)return;
+  const b=writeBatch(db);
+  const nh=[{type:'earn',action:it.type,targetUsername:it.targetUsername,points:it.reward,time:Date.now()},...(w.history||[])].slice(0,50);
+  b.update(doc(db,'users',it.workerUid),{points:(w.points||0)+it.reward,earned:(w.earned||0)+it.reward,history:nh});
+  const o=orders.find(x=>x.id===it.orderId);
+  if(o){const nc=(o.completedSlots||0)+1;b.update(doc(db,'orders',it.orderId),{completedSlots:nc,status:nc>=o.qty?'done':'pending',completedAt:nc>=o.qty?Date.now():null});}
+  b.update(doc(db,'verifyQueue',qid),{status:'approved',reviewedAt:Date.now(),reviewedBy:'system'});
+  b.set(doc(collection(db,'notifications')),{userUid:it.workerUid,type:'success',title:'✅ Nhiệm vụ được duyệt!',body:'+'+fmt(it.reward)+' xu',read:false,time:Date.now()});
+  await b.commit();
+}
+
+async function rejectV(qid,reason){
+  const it=queue.find(q=>q.id===qid);if(!it||it.status!=='pending')return;
+  const t=tasks.find(x=>x.id===it.taskId);
+  const b=writeBatch(db);
+  if(t){const nw=(t.workers||[]).filter(w=>w!==it.workerUid);b.update(doc(db,'tasks',it.taskId),{workers:nw,slotsLeft:t.slotsLeft+1,completed:false});}
+  b.update(doc(db,'verifyQueue',qid),{status:'rejected',reviewedAt:Date.now(),reviewedBy:curUser.uid,reason:reason||'Không đạt'});
+  b.set(doc(collection(db,'notifications')),{userUid:it.workerUid,type:'error',title:'❌ Nhiệm vụ bị từ chối',body:reason||'Không đạt',read:false,time:Date.now()});
+  await b.commit();
+}
+
+function renderShop(){
+  if(!curProf)return;
+  $('#shopBal').innerHTML=fmt(curProf.points)+'<small>xu</small>';
+  $('#shopWarn').style.display=curProf.tiktokUsername?'none':'block';
+  const l=$('#shopList');
+  l.innerHTML=CFG.pkgs.map(p=>{
+    let ic='👥',cls='follow';
+    if(p.type==='like'){ic='❤️';cls='like';}
+    else if(p.type==='comment'){ic='💬';cls='comment';}
+    const ok=curProf.points>=p.price;
+    const bd=p.badge?'<span class="bdg '+(p.badge==='BEST'?'best':'')+'">'+p.badge+'</span>':'';
+    return '<div class="sc">'+bd+'<div class="si '+cls+'">'+ic+'</div><div class="sinfo"><div class="sname">'+esc(p.name)+'</div><div class="sdesc">'+esc(p.desc)+'</div><div class="sprice '+(ok?'ok':'')+'">💰 '+fmt(p.price)+' xu</div></div><button class="buy" data-pkg="'+p.id+'" type="button" '+(ok?'':'disabled')+'>Mua</button></div>';
+  }).join('');
+  l.querySelectorAll('[data-pkg]').forEach(b=>{b.addEventListener('click',()=>{const p=CFG.pkgs.find(x=>x.id===b.dataset.pkg);if(p)buyP(p);});});
+}
+
+function buyP(p){
+  if(!curProf.tiktokUsername){toast('⚠️ Cập nhật TikTok trước!','er');switchTab('profile');return;}
+  if(curProf.points<p.price){toast('Cần '+fmt(p.price)+' xu','er');return;}
+  if(p.type==='like'||p.type==='comment'){
+    modal('<h3>📹 Link video TikTok</h3><div class="fg"><label>Link video</label><input type="text" id="vurl" placeholder="https://www.tiktok.com/@user/video/..."></div><div class="ma"><button class="btn sec" id="cb" type="button">Hủy</button><button class="btn cf" id="cfb" type="button">Mua (-'+fmt(p.price)+' xu)</button></div>');
+    $('#cb').addEventListener('click',closeModal);
+    $('#cfb').addEventListener('click',()=>{const u=$('#vurl').value.trim();if(!u){toast('Nhập link','wn');return;}try{const x=new URL(u);if(!x.hostname.includes('tiktok.com'))throw 0;}catch(e){toast('Link không hợp lệ','er');return;}closeModal();doBuy(p,u);});
+  }else{
+    modal('<h3>🛒 Xác nhận</h3><p>Mua <b>'+esc(p.name)+'</b> với <b style="color:#f59e0b">'+fmt(p.price)+' xu</b>?</p><div class="ib ok">🎵 @'+esc(curProf.tiktokUsername)+'</div><div class="ma"><button class="btn sec" id="cb" type="button">Hủy</button><button class="btn cf" id="cfb" type="button">Xác nhận</button></div>');
+    $('#cb').addEventListener('click',closeModal);
+    $('#cfb').addEventListener('click',()=>{closeModal();doBuy(p,null);});
+  }
+}
+
+async function doBuy(p,vurl){
+  if(busy)return;busy=true;
+  try{
+    if(curProf.points<p.price){toast('Không đủ xu!','er');busy=false;return;}
+    const now=Date.now(),b=writeBatch(db);
+    const nh=[{type:'spend',action:'buy_'+p.type,qty:p.qty,points:p.price,time:now},...(curProf.history||[])].slice(0,50);
+    b.update(doc(db,'users',curUser.uid),{points:curProf.points-p.price,spent:(curProf.spent||0)+p.price,history:nh});
+    const oRef=doc(collection(db,'orders'));
+    b.set(oRef,{buyerUid:curUser.uid,buyerUsername:curProf.username,type:p.type,qty:p.qty,price:p.price,videoUrl:vurl,status:'pending',completedSlots:0,createdAt:now});
+    const tRef=doc(collection(db,'tasks'));
+    b.set(tRef,{orderId:oRef.id,type:p.type,targetUid:curUser.uid,targetUsername:curProf.username,videoUrl:vurl,totalSlots:p.qty,slotsLeft:p.qty,workers:[],completed:false,createdAt:now});
+    b.set(doc(collection(db,'notifications')),{userUid:curUser.uid,type:'success',title:'🛒 Đã mua thành công!',body:p.qty+' '+p.type+' đang chờ',read:false,time:now});
+    await b.commit();
+    toast('🎉 Đã mua '+p.qty+' '+p.type,'ok');
+    switchTab('orders');
+  }catch(e){toast('Lỗi: '+e.message,'er');}
+  finally{busy=false;}
+}
+
+function renderOrders(){
+  if(!curUser)return;
+  const l=$('#orderList');
+  const mine=orders.filter(o=>o.buyerUid===curUser.uid);
+  if(mine.length===0){l.innerHTML='<div class="emp"><div class="e">📦</div><p>Chưa có đơn</p><p class="h">Mua tương tác để tạo đơn!</p></div>';return;}
+  l.innerHTML=mine.map(o=>{
+    let ic='👥',nm='Follow';
+    if(o.type==='like'){ic='❤️';nm='Tim';}
+    else if(o.type==='comment'){ic='💬';nm='Comment';}
+    const c=o.completedSlots||0,pr=(c/o.qty)*100;
+    const dn=o.status==='done',cn=o.status==='cancelled';
+    const cc=!dn&&!cn&&c===0;
+    return '<div class="oc '+(dn?'done':'')+' '+(cn?'cancel':'')+'"><div class="oh"><div class="oty">'+ic+' '+o.qty+' '+nm+'</div><div class="ost '+(dn?'done':cn?'cancel':'pending')+'">'+(dn?'✓ Xong':cn?'✗ Hủy':'⏳ Chờ')+'</div></div><div class="om">💰 '+fmt(o.price)+' xu • '+ago(o.createdAt)+'</div><div class="ot">🎵 @'+esc(curProf.tiktokUsername||'N/A')+'</div><div class="tp"><span>'+c+'/'+o.qty+'</span><div class="tpb"><div class="tpf" style="width:'+pr+'%"></div></div><span>'+Math.round(pr)+'%</span></div>'+(cc?'<button class="cancel-o" data-cancel="'+o.id+'" type="button">✗ Hủy & hoàn xu</button>':'')+'</div>';
+  }).join('');
+  l.querySelectorAll('[data-cancel]').forEach(b=>{b.addEventListener('click',()=>cancelOrd(b.dataset.cancel));});
+}
+
+async function cancelOrd(oid){
+  const o=orders.find(x=>x.id===oid);if(!o||o.buyerUid!==curUser.uid)return;
+  if(o.completedSlots>0){toast('Không thể hủy','er');return;}
+  modal('<h3>✗ Hủy đơn?</h3><p>Hoàn <b>'+fmt(o.price)+' xu</b>?</p><div class="ma"><button class="btn sec" id="cb" type="button">Không</button><button class="btn dg" id="cfb" type="button">Hủy</button></div>');
+  $('#cb').addEventListener('click',closeModal);
+  $('#cfb').addEventListener('click',async()=>{
+    const b=writeBatch(db);
+    b.update(doc(db,'orders',oid),{status:'cancelled'});
+    b.update(doc(db,'users',curUser.uid),{points:curProf.points+o.price,spent:Math.max(0,(curProf.spent||0)-o.price)});
+    tasks.filter(t=>t.orderId===oid).forEach(t=>b.delete(doc(db,'tasks',t.id)));
+    await b.commit();closeModal();toast('✅ Hoàn '+fmt(o.price)+' xu','ok');
+  });
+}
+
+function renderProfile(){
+  if(!curProf)return;
+  $('#pAv').textContent=ini(curProf.username);
+  $('#pName').innerHTML='@'+esc(curProf.username)+(curProf.isAdmin?' <span class="abadge">👑 ADMIN</span>':'');
+  $('#pTik').textContent=curProf.tiktokUsername?'@'+curProf.tiktokUsername:'@chưa-cập-nhật';
+  $('#stP').textContent=fmt(curProf.points);
+  $('#stE').textContent=fmt(curProf.earned);
+  $('#stS').textContent=fmt(curProf.spent);
+  $('#tikIn').value=curProf.tiktokUsername||'';
+  renderHist();
+}
+
+function renderHist(){
+  const l=$('#histList');
+  const h=curProf.history||[];
+  if(h.length===0){l.innerHTML='<div class="emp"><div class="e">📊</div><p>Chưa có hoạt động</p></div>';return;}
+  l.innerHTML=h.slice(0,20).map(x=>{
+    let ic='💰',txt='',sg='+',cls='p';
+    if(x.type==='earn'){ic=x.action==='follow'?'👥':x.action==='like'?'❤️':x.action==='comment'?'💬':'🎁';txt=x.action==='welcome'?'Xu chào mừng':'Đã '+(x.action==='like'?'tim':x.action)+' @'+esc(x.targetUsername||'');}
+    else if(x.type==='spend'){ic='🛒';const a=x.action.replace('buy_','');txt='Mua '+x.qty+' '+(a==='like'?'tim':a);sg='-';cls='m';}
+    return '<div class="hi"><div class="ic">'+ic+'</div><div class="bd"><div class="tt">'+txt+'</div><div class="tm">'+ago(x.time)+'</div></div><div class="am '+cls+'">'+sg+fmt(x.points)+'</div></div>';
+  }).join('');
+}
+
+async function saveTik(){
+  const v=normTik($('#tikIn').value);
+  if(!v){toast('Nhập username','wn');return;}
+  if(!validTik(v)){toast('Username không hợp lệ','er');return;}
+  await updateDoc(doc(db,'users',curUser.uid),{tiktokUsername:v});
+  $('#tikIn').value=v;toast('✅ Đã lưu @'+v,'ok');
+}
+
+function renderNotifs(){
+  if(!curUser)return;
+  const mine=notifs.filter(n=>n.userUid===curUser.uid).sort((a,b)=>(b.time||0)-(a.time||0));
+  const ur=mine.filter(n=>!n.read).length;
+  const bd=$('#nBadge');
+  if(ur>0){bd.textContent=ur>99?'99+':ur;bd.style.display='block';}else bd.style.display='none';
+  const l=$('#nList');
+  if(mine.length===0){l.innerHTML='<div class="ne">🔕 Chưa có thông báo</div>';return;}
+  const ic={success:'✅',info:'ℹ️',warning:'⚠️',error:'❌'};
+  l.innerHTML=mine.slice(0,30).map(n=>'<div class="ni '+(n.read?'':'unread')+'"><div class="ic">'+(ic[n.type]||'🔔')+'</div><div class="bd"><div class="tt">'+esc(n.title)+'</div>'+(n.body?'<div style="font-size:12px;color:var(--mut);margin-top:2px">'+esc(n.body)+'</div>':'')+'<div class="tm">'+ago(n.time)+'</div></div></div>').join('');
+}
+
+function toggleNP(){
+  const p=$('#nPanel');
+  if(p.classList.contains('show')){p.classList.remove('show');}
+  else{p.classList.add('show');
+    notifs.filter(n=>n.userUid===curUser.uid&&!n.read).forEach(async n=>{try{await updateDoc(doc(db,'notifications',n.id),{read:true});}catch(e){}});
+  }
+}
+
+async function clearN(){
+  const b=writeBatch(db);
+  notifs.filter(n=>n.userUid===curUser.uid).forEach(n=>b.delete(doc(db,'notifications',n.id)));
+  await b.commit();toast('Đã xóa','ok');
+}
+
+function renderAdmin(){
+  if(!isAdmin())return;
+  const au=Object.values(users);
+  $('#aUsers').textContent=au.length;
+  $('#aBanned').textContent=au.filter(u=>u.banned).length+' bị khóa';
+  $('#aTasks').textContent=tasks.filter(t=>!t.completed).length;
+  $('#aOrders').textContent=orders.filter(o=>o.status==='done').length;
+  $('#aVerify').textContent=queue.filter(q=>q.status==='pending').length;
+  renderQueue();renderUsers();
+}
+
+function renderQueue(){
+  const l=$('#qList');
+  const p=queue.filter(q=>q.status==='pending').sort((a,b)=>b.submittedAt-a.submittedAt);
+  if(p.length===0){l.innerHTML='<div class="emp"><div class="e">✨</div><p>Không có gì chờ duyệt</p></div>';return;}
+  l.innerHTML=p.map(q=>{
+    let ic='👥',nm='Follow';
+    if(q.type==='like'){ic='❤️';nm='Tim';}
+    else if(q.type==='comment'){ic='💬';nm='Comment';}
+    const ai=Math.max(0,Math.ceil((q.autoApproveAt-Date.now())/1000));
+    return '<div class="qi"><div class="qh"><div class="qt">'+ic+' '+nm+' - @'+esc(q.workerUsername)+'</div><div class="qtime">'+ago(q.submittedAt)+'</div></div><div class="qinfo">🎵 Worker: @'+esc(q.workerTiktok||'N/A')+'<br>🎯 Target: @'+esc(q.targetTiktok||q.targetUsername||'N/A')+'<br>🔑 Mã: <b>'+esc(q.verifyCode)+'</b> • 💰 +'+fmt(q.reward)+' xu</div><div style="font-size:11px;color:var(--mut);margin-bottom:8px">⏰ Auto duyệt sau: <b>'+ai+'s</b></div><div class="qa"><button class="bi ok" data-v="a" data-id="'+q.id+'" type="button">✅ Duyệt</button><button class="bi dg" data-v="r" data-id="'+q.id+'" type="button">❌ Từ chối</button></div></div>';
+  }).join('');
+  l.querySelectorAll('[data-v]').forEach(b=>{
+    b.addEventListener('click',async()=>{
+      if(b.dataset.v==='a'){await approveV(b.dataset.id);toast('✅ Đã duyệt','ok');}
+      else showReject(b.dataset.id);
+    });
+  });
+}
+
+function showReject(qid){
+  const it=queue.find(q=>q.id===qid);if(!it)return;
+  modal('<h3>❌ Từ chối?</h3><p>Nhiệm vụ của @'+esc(it.workerUsername)+'</p><div class="fg"><label>Lý do</label><input type="text" id="rr" placeholder="VD: Không có mã" maxlength="100"></div><div class="ma"><button class="btn sec" id="cb" type="button">Hủy</button><button class="btn dg" id="cfb" type="button">Từ chối</button></div>');
+  $('#cb').addEventListener('click',closeModal);
+  $('#cfb').addEventListener('click',async()=>{const r=($('#rr').value||'').trim()||'Không đạt';await rejectV(qid,r);closeModal();toast('Đã từ chối','wn');});
+}
+
+async function autoApproveAll(){
+  const p=queue.filter(q=>q.status==='pending');
+  if(p.length===0){toast('Không có gì','inf');return;}
+  for(const q of p){try{await approveV(q.id);}catch(e){}}
+  toast('✅ Đã duyệt '+p.length,'ok');
+}
+
+function renderUsers(){
+  let l=Object.values(users);
+  if(filter==='active')l=l.filter(u=>!u.banned);
+  else if(filter==='banned')l=l.filter(u=>u.banned);
+  else if(filter==='admin')l=l.filter(u=>u.isAdmin);
+  else if(filter==='rich')l=l.filter(u=>u.points>1000);
+  if(search){const q=search.toLowerCase();l=l.filter(u=>u.username.toLowerCase().includes(q));}
+  l.sort((a,b)=>b.points-a.points);
+  const c=$('#userList');
+  if(l.length===0){c.innerHTML='<div class="emp"><div class="e">🔍</div><p>Không tìm thấy</p></div>';return;}
+  c.innerHTML=l.map(u=>{
+    const me=u.uid===curUser.uid;
+    return '<div class="ur '+(u.banned?'banned':'')+'"><div class="av" style="background:'+col(u.username)+'">'+ini(u.username)+'</div><div class="info"><div class="un">@'+esc(u.username)+(u.isAdmin?' 👑':'')+(u.banned?' <span class="btag">Khóa</span>':'')+'</div><div class="mt"><span>💰 '+fmt(u.points)+' xu</span><span>🎵 @'+esc(u.tiktokUsername||'N/A')+'</span></div></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="bi pri" data-a="p" data-id="'+u.uid+'">💰</button>'+(me?'<span style="font-size:12px;color:#94a3b8;padding:8px">(Bạn)</span>':'<button class="bi '+(u.banned?'ok':'wn')+'" data-a="b" data-id="'+u.uid+'">'+(u.banned?'🔓':'🔒')+'</button><button class="bi '+(u.isAdmin?'wn':'pri')+'" data-a="t" data-id="'+u.uid+'">'+(u.isAdmin?'👤':'👑')+'</button><button class="bi dg" data-a="d" data-id="'+u.uid+'">🗑️</button>')+'</div></div>';
+  }).join('');
+  c.querySelectorAll('[data-a]').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const a=b.dataset.a,id=b.dataset.id;
+      if(a==='p')editPts(id);
+      else if(a==='b')togBan(id);
+      else if(a==='t')togAdm(id);
+      else if(a==='d')delU(id);
+    });
+  });
+}
+
+function editPts(uid){
+  const u=users[uid];if(!u)return;
+  modal('<h3>💰 Chỉnh xu @'+esc(u.username)+'</h3><p>Hiện tại: <b>'+fmt(u.points)+' xu</b></p><div class="fg"><label>Số xu thêm (âm để trừ)</label><input type="number" id="pi" value="1000"></div><div class="ma"><button class="btn sec" id="cb" type="button">Hủy</button><button class="btn cf" id="cfb" type="button">Áp dụng</button></div>');
+  $('#cb').addEventListener('click',closeModal);
+  $('#cfb').addEventListener('click',async()=>{
+    const v=parseInt($('#pi').value,10);
+    if(isNaN(v)){toast('Số không hợp lệ','er');return;}
+    await updateDoc(doc(db,'users',uid),{points:Math.max(0,u.points+v)});
+    await addDoc(collection(db,'notifications'),{userUid:uid,type:'info',title:'💰 Xu cập nhật',body:(v>=0?'+':'')+fmt(v)+' xu',read:false,time:Date.now()});
+    closeModal();toast((v>=0?'+':'')+fmt(v)+' xu','ok');
+  });
+}
+
+async function togBan(uid){
+  const u=users[uid];if(!u)return;
+  const nb=!u.banned;
+  await updateDoc(doc(db,'users',uid),{banned:nb});
+  await addDoc(collection(db,'notifications'),{userUid:uid,type:nb?'warning':'success',title:nb?'🔒 Tài khoản bị khóa':'🔓 Đã mở khóa',body:'',read:false,time:Date.now()});
+  toast(nb?'Đã khóa':'Đã mở',nb?'wn':'ok');
+}
+
+async function togAdm(uid){
+  const u=users[uid];if(!u)return;
+  const na=!u.isAdmin;
+  await updateDoc(doc(db,'users',uid),{isAdmin:na});
+  await addDoc(collection(db,'notifications'),{userUid:uid,type:'info',title:na?'👑 Được cấp Admin':'Mất Admin',body:'',read:false,time:Date.now()});
+  toast(na?'👑 Đã cấp':'Đã hạ','ok');
+}
+
+function delU(uid){
+  const u=users[uid];if(!u)return;
+  modal('<h3>⚠️ Xóa @'+esc(u.username)+'?</h3><p style="color:#ef4444">Toàn bộ dữ liệu sẽ bị xóa!</p><div class="ma"><button class="btn sec" id="cb" type="button">Hủy</button><button class="btn dg" id="cfb" type="button">Xóa</button></div>');
+  $('#cb').addEventListener('click',closeModal);
+  $('#cfb').addEventListener('click',async()=>{
+    try{
+      const b=writeBatch(db);
+      b.delete(doc(db,'users',uid));
+      if(u.username)b.delete(doc(db,'usernames',u.username));
+      tasks.filter(t=>t.targetUid===uid||(t.workers||[]).includes(uid)).forEach(t=>b.delete(doc(db,'tasks',t.id)));
+      orders.filter(o=>o.buyerUid===uid).forEach(o=>b.delete(doc(db,'orders',o.id)));
+      notifs.filter(n=>n.userUid===uid).forEach(n=>b.delete(doc(db,'notifications',n.id)));
+      queue.filter(q=>q.workerUid===uid||q.targetUid===uid).forEach(q=>b.delete(doc(db,'verifyQueue',q.id)));
+      await b.commit();closeModal();toast('Đã xóa @'+u.username,'ok');
+    }catch(e){toast('Lỗi: '+e.message,'er');}
+  });
+}
+
+function changePw(){
+  modal('<h3>🔑 Đổi mật khẩu</h3><div class="fg"><label>Mật khẩu hiện tại</label><input type="password" id="op" maxlength="50"></div><div class="fg"><label>Mật khẩu mới</label><input type="password" id="np" maxlength="50"></div><div class="fg"><label>Nhập lại</label><input type="password" id="cp" maxlength="50"></div><div class="ma"><button class="btn sec" id="cb" type="button">Hủy</button><button class="btn cf" id="cfb" type="button">Đổi</button></div>');
+  $('#cb').addEventListener('click',closeModal);
+  $('#cfb').addEventListener('click',async()=>{
+    const o=$('#op').value,n=$('#np').value,c=$('#cp').value;
+    if(n.length<CFG.minP){toast('Quá ngắn','er');return;}
+    if(n!==c){toast('Không khớp','er');return;}
+    try{
+      const cr=EmailAuthProvider.credential(curUser.email,o);
+      await reauthenticateWithCredential(curUser,cr);
+      await updatePassword(curUser,n);
+      closeModal();toast('✅ Đã đổi','ok');
+    }catch(e){toast('Lỗi: '+e.message,'er');}
+  });
+}
+
+// ═══ EVENTS ═══
+$('#aBtn').addEventListener('click',doAuth);
+$('#aU').addEventListener('keypress',e=>{if(e.key==='Enter')$('#aP').focus();});
+$('#aP').addEventListener('keypress',e=>{if(e.key==='Enter')doAuth();});
+$('#swMode').addEventListener('click',()=>{
+  mode=mode==='login'?'register':'login';
+  setAuthLoad(false);
+  $('#aBtnText').textContent=mode==='login'?'Đăng nhập':'Đăng ký';
+  $('#swText').textContent=mode==='login'?'Chưa có tài khoản?':'Đã có tài khoản?';
+  $('#swMode').textContent=mode==='login'?'Đăng ký ngay':'Đăng nhập';
+  $('#authError').classList.remove('show');
+});
+$('#btnOut').addEventListener('click',()=>{
+  modal('<h3>👋 Đăng xuất?</h3><div class="ma"><button class="btn sec" id="cb" type="button">Ở lại</button><button class="btn dg" id="cfb" type="button">Đăng xuất</button></div>');
+  $('#cb').addEventListener('click',closeModal);
+  $('#cfb').addEventListener('click',async()=>{closeModal();stopSubs();await signOut(auth);});
+});
+$$('.tab').forEach(t=>t.addEventListener('click',()=>switchTab(t.dataset.tab)));
+$('#btnN').addEventListener('click',e=>{e.stopPropagation();toggleNP();});
+$('#btnClearN').addEventListener('click',e=>{e.stopPropagation();clearN();});
+document.addEventListener('click',e=>{
+  const p=$('#nPanel'),b=$('#btnN');
+  if(!p.classList.contains('show'))return;
+  if(p.contains(e.target)||b.contains(e.target))return;
+  p.classList.remove('show');
+});
+$('#topAv').addEventListener('click',()=>switchTab('profile'));
+$('#topP').addEventListener('click',()=>switchTab('tasks'));
+$('#btnRefresh').addEventListener('click',()=>{renderTasks();toast('🔄 Đã làm mới','inf');});
+$('#btnSaveTik').addEventListener('click',saveTik);
+$('#tikIn').addEventListener('keypress',e=>{if(e.key==='Enter')saveTik();});
+$('#btnChangePw').addEventListener('click',changePw);
+$('#aSearch').addEventListener('input',e=>{search=e.target.value;renderUsers();});
+$('#aFilter').addEventListener('change',e=>{filter=e.target.value;renderUsers();});
+$('#btnAutoApprove').addEventListener('click',autoApproveAll);
+$('#btnReset').addEventListener('click',()=>{
+  if(!isAdmin())return;
+  modal('<h3>🔄 Reset xu?</h3><p>Không thể hoàn tác!</p><div class="ma"><button class="btn sec" id="cb" type="button">Hủy</button><button class="btn dg" id="cfb" type="button">Reset</button></div>');
+  $('#cb').addEventListener('click',closeModal);
+  $('#cfb').addEventListener('click',async()=>{
+    const b=writeBatch(db);
+    Object.keys(users).forEach(uid=>b.update(doc(db,'users',uid),{points:0}));
+    await b.commit();closeModal();toast('Đã reset xu','ok');
+  });
+});
+$('#modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();$('#nPanel').classList.remove('show');}});
+setInterval(autoApprove,30000);
+
+syncBar('idle','Sẵn sàng');
+console.log('%c🚀 TikTok Boost Pro - Firebase','color:#FE2C55;font-weight:bold');
 </script>
 </body>
 </html>
