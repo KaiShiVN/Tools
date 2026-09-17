@@ -32,11 +32,11 @@
 <div class="card">
     <h2>Tra Cứu TikTok <span class="highlight">Profile</span></h2>
     <div class="input-group">
-        <input type="text" id="usernameInput" placeholder="Nhập ID TikTok (VD: oetkalaiy)...">
+        <input type="text" id="usernameInput" placeholder="Dán link hoặc nhập ID TikTok...">
         <button onclick="searchTikTok()">Tìm</button>
     </div>
 
-    <div id="loading" class="loading">Đang kết nối qua cổng Proxy...</div>
+    <div id="loading" class="loading">Đang bóc tách ID và lấy dữ liệu...</div>
     <div id="error" class="error"></div>
 
     <div id="profile" class="profile">
@@ -54,19 +54,31 @@
 </div>
 
 <script>
+// Hàm tự động trích xuất Username từ Link hoặc Chuỗi nhập vào
+function extractUsername(input) {
+    let clean = input.trim();
+    if (clean.includes('tiktok.com/')) {
+        const match = clean.match(/@([a-zA-Z0-9_.-]+)/);
+        if (match && match[1]) {
+            return match[1];
+        }
+        const parts = clean.split('/');
+        clean = parts[parts.length - 1];
+    }
+    return clean.replace(/^@/, '').split('?')[0];
+}
+
 async function searchTikTok() {
-    let username = document.getElementById('usernameInput').value.trim();
+    const rawInput = document.getElementById('usernameInput').value;
+    const username = extractUsername(rawInput);
+    
     const loading = document.getElementById('loading');
     const error = document.getElementById('error');
     const profile = document.getElementById('profile');
 
     if (!username) {
-        showError("Vui lòng nhập ID TikTok!");
+        showError("Vui lòng nhập ID hoặc dán link TikTok!");
         return;
-    }
-
-    if (username.startsWith('@')) {
-        username = username.substring(1);
     }
 
     loading.style.display = 'block';
@@ -75,7 +87,6 @@ async function searchTikTok() {
 
     const targetUrl = `https://www.tikwm.com/api/user/info?unique_id=${encodeURIComponent(username)}`;
     
-    // Các đường dẫn vượt rào cản CORS
     const apiEndpoints = [
         `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,
         `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
@@ -115,7 +126,7 @@ async function searchTikTok() {
     }
 
     if (!success) {
-        showError("Không thể tra cứu hoặc ID TikTok này không tồn tại!");
+        showError(`Không tìm thấy tài khoản cho ID: "${username}". Bạn kiểm tra lại tài khoản nhé!`);
     }
 
     loading.style.display = 'none';
