@@ -6,7 +6,7 @@
     <title>Tra Cứu TikTok Profile</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #121212; color: #fff; padding: 20px; display: flex; justify-content: center; }
-        .card { width: 100%; max-width: 450px; background: #1e1e1e; padding: 24px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); border: 1px solid #333; }
+        .card { width: 100%; max-width: 480px; background: #1e1e1e; padding: 20px; border-radius: 12px; border: 1px solid #333; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
         h2 { text-align: center; color: #fff; margin-top: 0; font-size: 22px; }
         .highlight { color: #ff0050; }
         .input-group { display: flex; gap: 8px; margin: 15px 0; }
@@ -14,17 +14,9 @@
         input:focus { border-color: #00f2fe; }
         button { padding: 12px 20px; border-radius: 8px; border: none; background: linear-gradient(45deg, #ff0050, #00f2fe); color: #fff; font-weight: bold; cursor: pointer; font-size: 15px; }
         button:hover { opacity: 0.9; }
-        .profile { margin-top: 20px; background: #252525; border-radius: 10px; padding: 16px; text-align: center; display: none; }
-        .avatar { width: 90px; height: 90px; border-radius: 50%; border: 3px solid #ff0050; object-fit: cover; margin-bottom: 10px; }
-        .nickname { font-size: 18px; font-weight: bold; margin: 5px 0; }
-        .username { color: #aaa; font-size: 14px; margin-bottom: 12px; }
-        .bio { font-size: 13px; color: #ddd; margin: 10px 0; padding: 8px; background: #1a1a1a; border-radius: 6px; word-break: break-word; }
-        .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; }
-        .stat-item { background: #1a1a1a; padding: 10px; border-radius: 8px; }
-        .stat-val { font-weight: bold; font-size: 16px; color: #00f2fe; }
-        .stat-lbl { font-size: 12px; color: #888; }
+        .embed-container { margin-top: 20px; width: 100%; display: none; border-radius: 10px; overflow: hidden; background: #000; }
+        iframe { width: 100%; height: 580px; border: none; border-radius: 10px; }
         .error { color: #ff5252; text-align: center; margin-top: 15px; display: none; font-size: 14px; }
-        .loading { color: #00f2fe; text-align: center; margin-top: 15px; display: none; }
     </style>
 </head>
 <body>
@@ -32,24 +24,14 @@
 <div class="card">
     <h2>Tra Cứu TikTok <span class="highlight">Profile</span></h2>
     <div class="input-group">
-        <input type="text" id="usernameInput" placeholder="Nhập ID TikTok (VD: vtv24news)...">
+        <input type="text" id="usernameInput" placeholder="Nhập ID (VD: vtv24news, khaby.lame)...">
         <button onclick="searchTikTok()">Tìm</button>
     </div>
 
-    <div id="loading" class="loading">Đang kết nối máy chủ dữ liệu...</div>
     <div id="error" class="error"></div>
-
-    <div id="profile" class="profile">
-        <img id="avatar" class="avatar" src="" alt="Avatar">
-        <div id="nickname" class="nickname"></div>
-        <div id="username" class="username"></div>
-        <div id="bio" class="bio"></div>
-        <div class="stats">
-            <div class="stat-item"><div id="followers" class="stat-val">0</div><div class="stat-lbl">Followers</div></div>
-            <div class="stat-item"><div id="following" class="stat-val">0</div><div class="stat-lbl">Đang Follow</div></div>
-            <div class="stat-item"><div id="likes" class="stat-val">0</div><div class="stat-lbl">Lượt Thích</div></div>
-            <div class="stat-item"><div id="videos" class="stat-val">0</div><div class="stat-lbl">Video</div></div>
-        </div>
+    
+    <div id="embedContainer" class="embed-container">
+        <iframe id="tiktokIframe" src="" allowfullscreen></iframe>
     </div>
 </div>
 
@@ -65,98 +47,24 @@ function extractUsername(input) {
     return clean.replace(/^@/, '').split('?')[0];
 }
 
-async function searchTikTok() {
+function searchTikTok() {
     const rawInput = document.getElementById('usernameInput').value;
     const username = extractUsername(rawInput);
-    
-    const loading = document.getElementById('loading');
+    const container = document.getElementById('embedContainer');
+    const iframe = document.getElementById('tiktokIframe');
     const error = document.getElementById('error');
-    const profile = document.getElementById('profile');
 
     if (!username) {
-        showError("Vui lòng nhập ID hoặc link TikTok!");
+        error.innerText = "Vui lòng nhập ID hoặc link TikTok!";
+        error.style.display = 'block';
+        container.style.display = 'none';
         return;
     }
 
-    loading.style.display = 'block';
     error.style.display = 'none';
-    profile.style.display = 'none';
-
-    // Cổng Proxy CodeTabs vượt tường lửa
-    const countikUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent('https://countik.com/api/user/info/' + username)}`;
-    const oembedUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent('https://www.tiktok.com/oembed?url=https://www.tiktok.com/@' + username)}`;
-
-    let success = false;
-
-    // Nguồn 1: Lấy đầy đủ thông tin chi tiết (Followers, Likes, Bio, Video)
-    try {
-        const res = await fetch(countikUrl);
-        const data = await res.json();
-        if (data && data.status === 'success' && data.nickname) {
-            renderProfile({
-                avatar: data.avatar,
-                nickname: data.nickname,
-                uniqueId: data.uniqueId || username,
-                bio: data.signature || 'Chưa cập nhật tiểu sử',
-                followers: data.followerCount,
-                following: data.followingCount,
-                likes: data.heartCount,
-                videos: data.videoCount
-            });
-            success = true;
-        }
-    } catch (e) {
-        console.log("Chuyển sang Nguồn 2...");
-    }
-
-    // Nguồn 2: Dùng TikTok Official oEmbed nếu Nguồn 1 bị giới hạn
-    if (!success) {
-        try {
-            const res = await fetch(oembedUrl);
-            const data = await res.json();
-            if (data && data.author_name) {
-                renderProfile({
-                    avatar: data.thumbnail_url,
-                    nickname: data.author_name,
-                    uniqueId: username,
-                    bio: 'Tài khoản hoạt động trên TikTok',
-                    followers: 'Công khai',
-                    following: 'Công khai',
-                    likes: 'Công khai',
-                    videos: 'Công khai'
-                });
-                success = true;
-            }
-        } catch (e) {
-            console.log("Thất bại tất cả các nguồn");
-        }
-    }
-
-    if (!success) {
-        showError(`Không tìm thấy tài khoản "${username}". Bạn hãy thử lại với tài khoản khác (VD: vtv24news)!`);
-    }
-
-    loading.style.display = 'none';
-}
-
-function renderProfile(data) {
-    document.getElementById('avatar').src = data.avatar;
-    document.getElementById('nickname').innerText = data.nickname;
-    document.getElementById('username').innerText = '@' + data.uniqueId;
-    document.getElementById('bio').innerText = data.bio;
-
-    document.getElementById('followers').innerText = isNaN(data.followers) ? data.followers : Number(data.followers).toLocaleString('vi-VN');
-    document.getElementById('following').innerText = isNaN(data.following) ? data.following : Number(data.following).toLocaleString('vi-VN');
-    document.getElementById('likes').innerText = isNaN(data.likes) ? data.likes : Number(data.likes).toLocaleString('vi-VN');
-    document.getElementById('videos').innerText = isNaN(data.videos) ? data.videos : Number(data.videos).toLocaleString('vi-VN');
-
-    document.getElementById('profile').style.display = 'block';
-}
-
-function showError(msg) {
-    const error = document.getElementById('error');
-    error.innerText = msg;
-    error.style.display = 'block';
+    // Sử dụng Embed Player chính thức của TikTok (không qua proxy, không lo lỗi CORS/Cloudflare)
+    iframe.src = `https://www.tiktok.com/embed/v2/@${username}?lang=vi-VN`;
+    container.style.display = 'block';
 }
 </script>
 
