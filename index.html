@@ -1,1025 +1,279 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>TikTok Boost Pro</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-:root{--cyan:#25F4EE;--pink:#FE2C55;--primary:#FE2C55;--ok:#10b981;--warn:#f59e0b;--err:#ef4444;--bg:#f8fafc;--text:#0f172a;--mut:#64748b;--bdr:#e2e8f0;--sh:0 1px 3px rgba(0,0,0,.08);--shl:0 10px 40px rgba(0,0,0,.1)}
-body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5}
-button{font-family:inherit;cursor:pointer;border:0}
-input,select{font-family:inherit}
-.sync{position:fixed;bottom:12;background:rgba(15,23,42,.92);color:#fff;padding:8px 14px;border-radius:100px;font-size:11px;font-weight:700;z-index:9000;display:flex;gap:6px;align-items:center;box-shadow:0 4px 12px rgba(0,0,0,.3)}
-.sync .d{width:7px;height:7px;border-radius:50%;background:var(--ok)}
-.auth{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#000,#1a1a2e 50%,#FE2C55)}
-.card{background:#fff;border-radius:20px;padding:36px 28px;width:100%;max-width:420px;box-shadow:var(--shl)}
-.logo{text-align:center;font-size:44px;margin-bottom:8px}
-.card h1{text-align:center;font-size:26px;font-weight:800;margin-bottom:6px;background:linear-gradient(135deg,#25F4EE,#FE2C55);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.card .sub{text-align:center;color:var(--mut);font-size:14px;margin-bottom:24px}
-.fg{margin-bottom:16px}
-.fg label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
-.fg input{width:100%;padding:12px 14px;border:2px solid var(--bdr);border-radius:10px;font-size:15px;outline:none}
-.fg input:focus{border-color:var(--primary)}
-.fg .hint{font-size:11px;color:var(--mut);margin-top:4px}
-.fg.err input{border-color:var(--err)}
-.btn-p{width:100%;padding:13px;background:linear-gradient(135deg,#25F4EE,#FE2C55);color:#fff;border-radius:10px;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px}
-.btn-p:disabled{opacity:.6;cursor:not-allowed}
-.spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .6s linear infinite}
-@keyframes sp{to{transform:rotate(360deg)}}
-.sw{text-align:center;margin-top:20px;font-size:14px;color:var(--mut)}
-.sw a{color:var(--primary);font-weight:700;cursor:pointer}
-.aerr{background:#fef2f2;color:var(--err);padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:16px;display:none;border-left:3px solid var(--err)}
-.aerr.show{display:block}
-.ahint{text-align:center;margin-top:20px;font-size:11px;color:#94a3b8}
-.app{display:none;min-height:100vh}
-.app.show{display:block}
-.tb{background:#fff;border-bottom:1px solid var(--bdr);padding:12px 16px;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--sh);gap:8px;flex-wrap:wrap}
-.tb-logo{font-size:16px;font-weight:800;display:flex;align-items:center;gap:6px}
-.tb-logo .tt{background:linear-gradient(135deg,#25F4EE,#FE2C55);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.tb-u{display:flex;align-items:center;gap:8px}
-.chip{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#fff;padding:8px 14px;border-radius:100px;font-size:13px;font-weight:800;cursor:pointer}
-.av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:14px;cursor:pointer}
-.nbtn{background:transparent;padding:6px;border-radius:50%;font-size:18px;position:relative;width:36px;height:36px;display:flex;align-items:center;justify-content:center}
-.nbadge{position:absolute;top:2px;right:2px;background:var(--err);color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:100px;min-width:16px;text-align:center}
-.bo{background:transparent;color:var(--mut);padding:6px 10px;border-radius:6px;font-size:13px;font-weight:600}
-.tabs{display:flex;background:#fff;border-bottom:1px solid var(--bdr);position:sticky;top:60px;z-index:99;overflow-x:auto;scrollbar-width:none;box-shadow:0 2px 4px rgba(0,0,0,.04)}
-.tabs::-webkit-scrollbar{display:none}
-.tab{flex:1;min-width:100px;padding:14px 8px;background:transparent;color:var(--mut);font-weight:700;font-size:13px;border-bottom:3px solid transparent;white-space:nowrap}
-.tab.active{color:var(--primary);border-bottom-color:var(--primary)}
-.tab.admin{color:var(--err)}
-.tab.admin.active{color:var(--err);border-bottom-color:var(--err)}
-.main{max-width:720px;margin:0 auto;padding:16px;padding-bottom:80px}
-.pg{display:none}
-.pg.active{display:block}
-.bal{background:linear-gradient(135deg,#000,#1a1a2e);border-radius:14px;padding:24px;color:#fff;margin-bottom:16px;box-shadow:var(--shl);position:relative;overflow:hidden}
-.bal:before{content:"";position:absolute;top:-50%;right:-20%;width:200px;height:200px;background:linear-gradient(135deg,#25F4EE,#FE2C55);border-radius:50%;filter:blur(60px);opacity:.4}
-.bal .lbl{font-size:12px;text-transform:uppercase;letter-spacing:1px;opacity:.7;margin-bottom:6px;position:relative}
-.bal .val{font-size:42px;font-weight:800;line-height:1;position:relative;background:linear-gradient(135deg,#25F4EE,#FE2C55);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.bal .val small{font-size:16px;-webkit-text-fill-color:#fff;opacity:.7;margin-left:6px}
-.bal .s{font-size:13px;opacity:.7;margin-top:8px;position:relative}
-.st{font-size:15px;font-weight:800;margin:20px 0 12px;display:flex;align-items:center;gap:8px;justify-content:space-between}
-.st>span:first-child{display:flex;align-items:center;gap:8px}
-.st>span:first-child:before{content:"";width:4px;height:16px;background:linear-gradient(180deg,#25F4EE,#FE2C55);border-radius:2px}
-.sd{font-size:13px;color:var(--mut);margin-bottom:12px;margin-top:-4px}
-.sl{font-size:12px;color:var(--primary);font-weight:700;cursor:pointer;background:transparent}
-.rg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
-.ri{background:#fff;border-radius:10px;padding:12px 8px;text-align:center;box-shadow:var(--sh)}
-.ri .ic{font-size:20px;margin-bottom:4px}
-.ri .ll{font-size:11px;color:var(--mut);margin-bottom:2px}
-.ri .vv{font-size:14px;font-weight:800;color:var(--ok)}
-.tc{background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:var(--sh);border-left:4px solid var(--primary)}
-.tc.follow{border-left-color:var(--cyan)}
-.tc.like{border-left-color:var(--pink)}
-.tc.comment{border-left-color:var(--warn)}
-.th{display:flex;align-items:center;gap:12px;margin-bottom:12px}
-.tic{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;color:#fff}
-.tic.follow{background:linear-gradient(135deg,#25F4EE,#00b8d4)}
-.tic.like{background:linear-gradient(135deg,#FE2C55,#e11d48)}
-.tic.comment{background:linear-gradient(135deg,#f59e0b,#ea580c)}
-.tinfo{flex:1;min-width:0}
-.tname{font-weight:700;font-size:15px;margin-bottom:2px;word-break:break-word}
-.tmeta{font-size:12px;color:var(--mut);display:flex;gap:10px;flex-wrap:wrap}
-.trew{font-size:14px;font-weight:800;color:#92400e;background:linear-gradient(135deg,#fef3c7,#fde68a);padding:6px 12px;border-radius:100px;white-space:nowrap}
-.ta{display:flex;gap:8px;flex-wrap:wrap}
-.bt{flex:1;min-width:120px;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:700;text-align:center;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:4px}
-.bt.open{background:var(--bg);color:var(--text);border:2px solid var(--bdr)}
-.bt.done{background:linear-gradient(135deg,#25F4EE,#FE2C55);color:#fff}
-.bt.done:disabled{opacity:.5;cursor:not-allowed}
-.tp{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12px;color:var(--mut)}
-.tpb{flex:1;height:6px;background:var(--bg);border-radius:100px;overflow:hidden}
-.tpf{height:100%;background:linear-gradient(90deg,#25F4EE,#FE2C55);border-radius:100px}
-.sc{background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:var(--sh);display:flex;align-items:center;gap:14px;position:relative}
-.sc .bdg{position:absolute;top:-6px;right:12px;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;padding:3px 10px;border-radius:100px;font-size:10px;font-weight:800}
-.sc .bdg.best{background:linear-gradient(135deg,#fbbf24,#f59e0b)}
-.si{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;color:#fff}
-.si.follow{background:linear-gradient(135deg,#25F4EE,#00b8d4)}
-.si.like{background:linear-gradient(135deg,#FE2C55,#e11d48)}
-.si.comment{background:linear-gradient(135deg,#f59e0b,#ea580c)}
-.sinfo{flex:1;min-width:0}
-.sname{font-weight:700;font-size:15px;margin-bottom:2px}
-.sdesc{font-size:12px;color:var(--mut);margin-bottom:6px}
-.sprice{display:inline-flex;align-items:center;gap:4px;background:#fef3c7;color:#92400e;padding:4px 10px;border-radius:100px;font-size:13px;font-weight:800}
-.sprice.ok{background:#d1fae5;color:#065f46}
-.buy{padding:10px 18px;border-radius:10px;background:linear-gradient(135deg,#25F4EE,#FE2C55);color:#fff;font-weight:700;font-size:13px;white-space:nowrap}
-.buy:disabled{background:var(--bdr);color:var(--mut);cursor:not-allowed}
-.oc{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:var(--sh);border-left:4px solid var(--warn)}
-.oc.done{border-left-color:var(--ok);background:#f0fdf4}
-.oc.cancel{border-left-color:var(--mut);opacity:.7}
-.oh{display:flex;justify-content:space-between;margin-bottom:8px;gap:8px;flex-wrap:wrap}
-.oty{font-weight:700;font-size:14px}
-.ost{padding:3px 10px;border-radius:100px;font-size:11px;font-weight:800;text-transform:uppercase}
-.ost.pending{background:#fef3c7;color:#92400e}
-.ost.done{background:#d1fae5;color:#065f46}
-.ost.cancel{background:var(--bg);color:var(--mut)}
-.om{font-size:12px;color:var(--mut);margin-bottom:8px}
-.ot{background:var(--bg);padding:8px 12px;border-radius:8px;font-size:13px;font-weight:600;color:var(--primary);word-break:break-all;margin-bottom:8px}
-.cancel-o{background:#fee2e2;color:var(--err);padding:8px 14px;border-radius:8px;font-size:12px;font-weight:700;margin-top:8px}
-.pc{background:linear-gradient(135deg,#000,#1a1a2e);border-radius:14px;padding:24px;color:#fff;margin-bottom:16px;box-shadow:var(--shl);position:relative;z-index:1;overflow:hidden}
-.pc .ui{display:flex;align-items:center;gap:14px;margin-bottom:18px}
-.pc .avlg{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#25F4EE,#FE2C55);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;border:3px solid rgba(255,255,255,.4);flex-shrink:0}
-.pc .nm{font-size:20px;font-weight:800;word-break:break-word}
-.pc .ttu{font-size:13px;opacity:.8;margin-top:2px}
-.pc .abadge{display:inline-block;background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#fff;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:800;margin-left:6px}
-.sts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.sts .st1{background:rgba(255,255,255,.1);border-radius:12px;padding:12px;text-align:center}
-.sts .st1 .n{font-size:22px;font-weight:800}
-.sts .st1 .l{font-size:11px;opacity:.9;text-transform:uppercase}
-.ig{display:flex;gap:8px;margin-bottom:12px}
-.ig input{flex:1;padding:12px 14px;border:2px solid var(--bdr);border-radius:10px;font-size:14px;outline:none;min-width:0}
-.ig input:focus{border-color:var(--primary)}
-.emp{text-align:center;padding:40px 20px;color:var(--mut)}
-.emp .e{font-size:48px;margin-bottom:10px}
-.emp p{font-size:14px;margin-bottom:6px}
-.emp .h{font-size:12px;opacity:.7}
-.ib{background:#eff6ff;border-left:4px solid #3b82f6;border-radius:10px;padding:12px 14px;font-size:13px;color:#1e40af;margin-bottom:16px;line-height:1.6}
-.ib.warn{background:#fffbeb;border-left-color:var(--warn);color:#92400e}
-.ib.ok{background:#f0fdf4;border-left-color:var(--ok);color:#065f46}
-.ib.err{background:#fef2f2;border-left-color:var(--err);color:#991b1b}
-.ib strong{font-weight:800}
-.mov{position:fixed;inset:0;background:rgba(15,23,42,.6);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:9999;padding:20px;overflow-y:auto}
-.mov.show{display:flex}
-.mc{background:#fff;border-radius:16px;padding:24px;max-width:440px;width:100%;box-shadow:var(--shl);max-height:90vh;overflow-y:auto}
-.mc h3{font-size:18px;margin-bottom:8px}
-.mc p{font-size:14px;color:var(--mut);margin-bottom:16px;line-height:1.6}
-.mc .fg{margin-bottom:14px}
-.mc .fg input{width:100%}
-.ma{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
-.btn{padding:10px 20px;border-radius:10px;font-weight:700;font-size:14px}
-.btn.sec{background:var(--bg);color:var(--text)}
-.btn.dg{background:var(--err);color:#fff}
-.btn.cf{background:linear-gradient(135deg,#25F4EE,#FE2C55);color:#fff}
-.vs{background:var(--bg);border-radius:10px;padding:12px 14px;margin-bottom:12px;display:flex;gap:10px;border-left:3px solid var(--bdr)}
-.vs .num{width:24px;height:24px;background:linear-gradient(135deg,#25F4EE,#FE2C55);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}
-.vs .bd{flex:1;font-size:13px;line-height:1.5}
-.vs.done{background:#f0fdf4;border-left-color:var(--ok)}
-.vs.done .num{background:var(--ok)}
-.vs.act{background:#eff6ff;border-left-color:#3b82f6}
-.vs.act .num{background:#3b82f6}
-.vcb{background:linear-gradient(135deg,#1e293b,#0f172a);color:#fff;padding:20px;700border-radius:12px;text-align:center;margin:12px 0}
-.vcb .code{font-family:'Courier New',monospace;font-size:28px;font-weight:800;letter-spacing:4px;background:linear-gradient(135deg,#25F4EE,#FE2C55);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:8px 0;user-select:all;cursor:pointer}
-.vcb .hint{font-size:12;px;opacity:.7}
-.vcd{text-alignmargin:center;padding:16px;background:linear-gradient(-bottom135deg,#fef3c7,#fde68a);:2border-radius:12px;margin:12px 0}
-.vcd .cdl{font-size:12px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:1px}
-.vcd .cdt{font-size:36px;font-weight:800;color:#92400e;line-height:1;margin:6px 0;font-variant-numeric:tabular-nums}
-.vcd .cdd{font-size:12px;color:#92400e;opacity:.8}
-.vcd.done{background:linear-gradient(135deg,#d1fae5,#a7f3d0)}
-.vcd.done .cdl,.vcd.done .cdt,.vcd.done .cdd{color:#065f46}
-.vin{width:100%;padding:12px 14px;border:2px solid var(--bdr);border-radius:10px;font-size:18px;text-transform:uppercase;letter-spacing:4px;text-align:center;font-weight:800;outline:none;margin:8px 0}
-.vin:focus{border-color:var(--primary)}
-.np{position:fixed;top:70px;right:16px;width:340px;max-width:calc(100vw - 32px);background:#fff;border-radius:14px;box-shadow:var(--shl);z-index:999;max-height:400px;overflow-y:auto;display:none}
-.np.show{display:block}
-.nh{padding:14px 16px;border-bottom:1px solid var(--bdr);font-weight:800;font-size:14px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#fff;border-radius:14px 14px 0 0}
-.ni{padding:12px 16px;border-bottom:1px solid var(--bdr);font-size:13px;display:flex;gap:10px;align-items:flex-start}
-.ni.unread{background:#f0f9ff}
-.ni .ic{font-size:18px;flex-shrink:0}
-.ni .bd{flex:1;min-width:0}
-.ni .tt{font-weight:px}
-.ni .tm{font-size:11px;color:var(--mut);margin-top:4px}
-.ne{padding:40px 16px;text-align:center;color:var(--mut);font-size:13px}
-.tst{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:10000;display:flex;flex-direction:column;gap:10px;pointer-events:none}
-.tst .t{background:#fff;padding:14px 20px;border-radius:12px;box-shadow:var(--shl);font-size:14px;font-weight:600;display:flex;align-items:center;gap:10px;pointer-events:auto;max-width:90vw;border-left:4px solid var(--primary);animation:sd .3s}
-.tst .t.ok{border-left-color:var(--ok);color:#065f46}
-.tst .t.wn{border-left-color:var(--warn);color:#92400e}
-.tst .t.er{border-left-color:var(--err);color:#991b1b}
-.tst .t.inf{border-left-color:#3b82f6;color:#1e40af}
-@keyframes sd{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
-.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px}
-.sk{background:#fff;border-radius:14px;padding:16px;box-shadow:var(--sh);border-left:4px solid var(--primary)}
-.sk.c{border-left-color:var(--cyan)}
-.sk.p{border-left-color:var(--pink)}
-.sk.o{border-left-color:var(--warn)}
-.sk .ll{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:6px}
-.sk .vv{font-size:24px;font-weight:800;line-height:1}
-.sk .s{font-size:11px;color:var(--mut);margin-top:4px}
-.ur{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;box-shadow:var(--sh);flex-wrap:wrap}
-.ur.banned{background:#fef2f2;border-left:4px solid var(--err)}
-.ur .av{width:44px;height:44px;font-size:16px;cursor:default}
-.ur .info{flex:1;min-width:150px}
-.ur .un{font-weight:700;font-size:14px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-.ur .mt{font-size:12px;color:var(--mut);display:flex;gap:10px;margin-top:2px;flex-wrap:wrap}
-.btag{background:var(--err);color:#fff;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:800;text-transform:uppercase}
-.bi{padding:8px 10px;border-radius:8px;font-size:13px;font-weight:600;background:var(--bg);color:var(--text);white-space:nowrap}
-.bi.pri{background:#eef2ff;color:var(--primary)}
-.bi.wn{background:#fef3c7;color:#92400e}
-.bi.dg{background:#fee2e2;color:var(--err)}
-.bi.ok{background:#d1fae5;color:#065f46}
-.hi{background:#fff;border-radius:12px;padding:12px;margin-bottom:8px;box-shadow:var(--sh);display:flex;align-items:center;gap:10px}
-.hi .ic{font-size:22px;flex-shrink:0}
-.hi .bd{flex:1;min-width:0}
-.hi .tt{font-size:13px;font-weight:600;word-break:break-word}
-.hi .tm{font-size:11px;color:var(--mut);margin-top:2px}
-.hi .am{font-weight:800;font-size:14px;white-space:nowrap}
-.hi .am.p{color:var(--ok)}
-.hi .am.m{color:var(--err)}
-.qi{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:var(--sh);border-left:4px solid #3b82f6}
-.qh{display:flex;justify-content:space-between;margin-bottom:10px;gap:8px;flex-wrap:wrap}
-.qt{font-weight:700;font-size:14px}
-.qtime{font-size:11px;color:var(--mut)}
-.qinfo{background:var(--bg);padding:8px 12px;border-radius:8px;font-size:12px;margin-bottom:10px;word-break:break-all;line-height:1.6}
-.qa{display:flex;gap:8px}
-@media(max-width:480px){
-  .tb{padding:10px 12px}
-  .tb-logo{font-size:14px}
-  .chip{padding:6px 10px;font-size:12px}
-  .main{padding:12px}
-  .bal{padding:20px}
-  .bal .val{font-size:34px}
-  .np{top:60px;right:8px;left:8px;width:auto}
-  .card{padding:28px 20px}
-  .sync{bottom:8px;right:8px;font-size:10px}
-}
-</style>
-</head>
-<body>
-
-<div class="sync" id="syncBar">
-  <span class="d"></span>
-  <span id="syncText">Đang kết nối...</span>
-</div>
-
-<!-- AUTH -->
-<div class="auth" id="authScreen">
-  <div class="card">
-    <div class="logo">🎵</div>
-    <h1>TikTok Boost Pro</h1>
-    <p class="sub">Kiếm xu • Đổi follow & like TikTok</p>
-    <div class="aerr" id="authError"></div>
-    <div class="fg" id="uG">
-      <label for="aU">Tên đăng nhập</label>
-      <input type="text" id="aU" placeholder="Ít nhất 3 ký tự" maxlength="20" autocomplete="username">
-      <div class="hint">Chỉ chữ thường, số và dấu gạch dưới</div>
-    </div>
-    <div class="fg" id="pG">
-      <label for="aP">Mật khẩu</label>
-      <input type="password" id="aP" placeholder="Ít nhất 6 ký tự" maxlength="50" autocomplete="current-password">
-      <div class="hint">Tối thiểu 6 ký tự</div>
-    </div>
-    <button class="btn-p" id="aBtn" type="button"><span id="aBtnText">Đăng nhập</span></button>
-    <div class="sw">
-      <span id="swText">Chưa có tài khoản?</span>
-      <a id="swMode" tabindex="0" role="button">Đăng ký ngay</a>
-    </div>
-    <p class="ahint">🔥 Firebase • Real-time • Multi-device</p>
-  </div>
-</div>
-
-<!-- APP -->
-<div class="app" id="app">
-  <div class="tb">
-    <div class="tb-logo">🎵 <span class="tt">TikTok Boost Pro</span></div>
-    <div class="tb-u">
-      <div class="chip" id="topP">0 xu</div>
-      <button class="nbtn" id="btnN" type="button">🔔<span class="nbadge" id="nBadge" style="display:none">0</span></button>
-      <div class="av" id="topAv"></div>
-      <button class="bo" id="btnOut" type="button">Đăng xuất</button>
-    </div>
-  </div>
-
-  <div class="np" id="nPanel">
-    <div class="nh"><span>🔔 Thông báo</span><button class="sl" id="btnClearN" type="button">Xóa hết</button></div>
-    <div id="nList"></div>
-  </div>
-
-  <div class="tabs" id="tabs">
-    <button class="tab active" data-tab="tasks" type="button">💰 Kiếm xu</button>
-    <button class="tab" data-tab="shop" type="button">🛒 Mua tương tác</button>
-    <button class="tab" data-tab="orders" type="button">📦 Đơn của tôi</button>
-    <button class="tab" data-tab="profile" type="button">👤 Cá nhân</button>
-  </div>
-
-  <div class="main">
-    <!-- TASKS -->
-    <div class="pg active" id="pg-tasks">
-      <div class="bal">
-        <div class="lbl">Số dư xu</div>
-        <div class="val" id="balVal">0<small>xu</small></div>
-        <div class="s" id="balSub">Hoàn thành nhiệm vụ để kiếm xu</div>
-      </div>
-      <div class="ib"><strong>💡 Bảng giá kiếm xu:</strong></div>
-      <div class="rg">
-        <div class="ri"><div class="ic">👥</div><div class="ll">1 Follow</div><div class="vv">+100 xu</div></div>
-        <div class="ri"><div class="ic">❤️</div><div class="ll">1 Tim</div><div class="vv">+50 xu</div></div>
-        <div class="ri"><div class="ic">💬</div><div class="ll">1 Comment</div><div class="vv">+50 xu</div></div>
-      </div>
-      <div class="st">
-        <span>📋 Nhiệm vụ có sẵn</span>
-        <button class="sl" id="btnRefresh" type="button">🔄 Làm mới</button>
-      </div>
-      <div class="sd">Mở TikTok → làm → nhập mã xác nhận</div>
-      <div id="taskList"></div>
-    </div>
-
-    <!-- SHOP -->
-    <div class="pg" id="pg-shop">
-      <div class="bal">
-        <div class="lbl">Số dư xu</div>
-        <div class="val" id="shopBal">0<small>xu</small></div>
-        <div class="s">Dùng xu mua tương tác cho TikTok của bạn</div>
-      </div>
-      <div class="ib warn" id="shopWarn" style="display:none"><strong>⚠️ Chưa có TikTok:</strong> Vào tab <b>Cá nhân</b> để cập nhật!</div>
-      <div class="st"><span>🛒 Chọn gói tương tác</span></div>
-      <div id="shopList"></div>
-    </div>
-
-    <!-- ORDERS -->
-    <div class="pg" id="pg-orders">
-      <div class="st"><span>📦 Đơn mua của bạn</span></div>
-      <div id="orderList"></div>
-    </div>
-
-    <!-- PROFILE -->
-    <div class="pg" id="pg-profile">
-      <div class="pc">
-        <div class="ui">
-          <div class="avlg" id="pAv"></div>
-          <div style="min-width:0">
-            <div class="nm" id="pName"></div>
-            <div class="ttu" id="pTik">@chưa-cập-nhật</div>
-          </div>
-        </div>
-        <div class="sts">
-          <div class="st1"><div class="n" id="stP">0</div><div class="l">Xu</div></div>
-          <div class="st1"><div class="n" id="stE">0</div><div class="l">Đã kiếm</div></div>
-          <div class="st1"><div class="n" id="stS">0</div><div class="l">Đã tiêu</div></div>
-        </div>
-      </div>
-      <div class="st"><span>🎵 TikTok của bạn</span></div>
-      <div class="ig">
-        <input type="text" id="tikIn" placeholder="@username_tiktok" maxlength="24">
-        <button class="buy" id="btnSaveTik" type="button">Lưu</button>
-      </div>
-      <div class="st"><span>📊 Lịch sử</span></div>
-      <div id="histList"></div>
-      <div class="st"><span>⚙️ Cài đặt</span></div>
-      <button id="btnChangePw" type="button" style="width:100%;padding:12px;background:var(--bg);border-radius:10px;font-weight:700;margin-bottom:8px">🔑 Đổi mật khẩu</button>
-      <div class="ib ok" style="margin-top:12px"><strong>✅ Hệ thống tự động</strong><br><span style="font-size:12px">Dữ liệu đồng bộ real-time với Firebase. Mọi thiết bị thấy chung!</span></div>
-    </div>
-
-    <!-- ADMIN -->
-    <div class="pg" id="pg-admin">
-      <div class="st"><span>🛡️ Dashboard</span></div>
-      <div class="sg">
-        <div class="sk"><div class="ll">Users</div><div class="vv" id="aUsers">0</div><div class="s" id="aBanned">0 bị khóa</div></div>
-        <div class="sk c"><div class="ll">Task chờ</div><div class="vv" id="aTasks">0</div></div>
-        <div class="sk p"><div class="ll">Đơn xong</div><div class="vv" id="aOrders">0</div></div>
-        <div class="sk o"><div class="ll">Verify chờ</div><div class="vv" id="aVerify">0</div></div>
-      </div>
-      <div class="st">
-        <span>🔍 Hàng chờ xác minh</span>
-        <button class="sl" id="btnAutoApprove" type="button">⚡ Duyệt hết</button>
-      </div>
-      <div id="qList"></div>
-      <div class="st"><span>👥 Quản lý Users</span></div>
-      <div class="ig" style="flex-wrap:wrap">
-        <input type="text" id="aSearch" placeholder="🔍 Tìm..." style="min-width:150px">
-        <select id="aFilter" style="padding:12px 14px;border:2px solid var(--bdr);border-radius:10px;font-weight:600;outline:none">
-          <option value="all">Tất cả</option>
-          <option value="active">Hoạt động</option>
-          <option value="banned">Bị khóa</option>
-          <option value="admin">Admin</option>
-          <option value="rich">Nhiều xu</option>
-        </select>
-      </div>
-      <div id="userList"></div>
-      <div class="st" style="margin-top:32px"><span>⚠️ Vùng nguy hiểm</span></div>
-      <div style="background:#fff;border-radius:14px;padding:16px;box-shadow:var(--sh);border-left:4px solid var(--err)">
-        <button class="bi wn" id="btnReset" type="button">🔄 Reset xu tất cả</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="mov" id="modal"><div class="mc" id="modalC"></div></div>
-<div class="tst" id="toasts"></div>
-
-<script type="module">
-import{initializeApp}from'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
-import{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,updatePassword,EmailAuthProvider,reauthenticateWithCredential}from'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
-import{getFirestore,doc,getDoc,setDoc,updateDoc,collection,addDoc,onSnapshot,writeBatch}from'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
-
-const firebaseConfig={
-  apiKey:"AIzaSyCaVrogtc-0vZvMImksZySECgkwV4yOm2g",
-  authDomain:"tiktok-boots-pro.firebaseapp.com",
-  projectId:"tiktok-boots-pro",
-  storageBucket:"tiktok-boots-pro.firebasestorage.app",
-  messagingSenderId:"53399098081",
-  appId:"1:53399098081:web:b7582dc8bfff81b3569da0"
-};
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getFirestore(app);
-
-const FAKE_DOMAIN='@ttboost.app';
-const ADMIN_USER='admingang';
-const ADMIN_PASS='Rmg16062007';
-const CFG={
-  minU:3,minP:6,cooldown:30000,dailyLimit:50,
-  minTimeTT:5000,delayVerify:15000,autoApprove:180000,
-  rewards:{follow:100,like:50,comment:50},
-  bonus:500,
-  pkgs:[
-    {id:'f10',type:'follow',qty:10,price:1000,name:'10 Follow TikTok',desc:'100 xu/follow'},
-    {id:'f50',type:'follow',qty:50,price:4500,name:'50 Follow TikTok',desc:'90 xu/follow • -10%',badge:'HOT'},
-    {id:'f100',type:'follow',qty:100,price:8000,name:'100 Follow TikTok',desc:'80 xu/follow • -20%',badge:'BEST'},
-    {id:'l20',type:'like',qty:20,price:1000,name:'20 Tim video',desc:'50 xu/tim'},
-    {id:'l100',type:'like',qty:100,price:4500,name:'100 Tim video',desc:'45 xu/tim • -10%',badge:'HOT'},
-    {id:'c10',type:'comment',qty:10,price:500,name:'10 Comment',desc:'50 xu/comment'}
-  ]
-};
-
-let curUser=null,curProf=null;
-let users={},tasks=[],orders=[],notifs=[],queue=[];
-let mode='login',filter='all',search='';
-let busy=false,timers={},opened={},subs=[];
-
-const $=s=>document.querySelector(s);
-const $$=s=>document.querySelectorAll(s);
-const fmt=n=>Number(n||0).toLocaleString('vi-VN');
-const esc=s=>{if(s==null)return'';const d=document.createElement('div');d.textContent=String(s);return d.innerHTML;};
-const col=n=>{let h=0;for(let i=0;i<n.length;i++)h=n.charCodeAt(i)+((h<<5)-h);const c=['#6366f1','#8b5cf6','#ec4899','#f59e0b','#10b981','#06b6d4','#ef4444','#84cc16','#f97316','#14b8a6'];return c[Math.abs(h)%c.length];};
-const ini=n=>n?n.slice(0,2).toUpperCase():'??';
-const ago=t=>{if(!t)return'';const ms=typeof t==='number'?t:(t.seconds?t.seconds*1000:t);const d=Date.now()-ms;if(d<0)return'vừa xong';const m=Math.floor(d/60000);if(m<1)return'vừa xong';if(m<60)return m+' phút trước';const h=Math.floor(m/60);if(h<24)return h+' giờ trước';return Math.floor(h/24)+' ngày trước';};
-const todayKey=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();};
-const normTik=u=>!u?'':String(u).trim().replace(/^@+/,'').toLowerCase();
-const validTik=u=>/^[a-zA-Z0-9._]{2,24}$/.test(u);
-const validU=u=>/^[a-z0-9_]{3,20}$/.test(u);
-
-function toast(m,t){t=t||'';const c=$('#toasts');const el=document.createElement('div');el.className='t '+t;el.textContent=m;c.appendChild(el);setTimeout(()=>el.remove(),2600);}
-function modal(h){$('#modalC').innerHTML=h;$('#modal').classList.add('show');}
-function closeModal(){$('#modal').classList.remove('show');Object.keys(timers).forEach(k=>{clearInterval(timers[k]);delete timers[k];});}
-function syncBar(state,txt){const b=$('#syncBar');if(!b)return;b.querySelector('#syncText').textContent=txt;}
-function isAdmin(){return curProf&&curProf.isAdmin===true&&!curProf.banned;}
-function userData(uid){return users[uid]||null;}
-function genCode(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';const b=crypto.getRandomValues(new Uint8Array(6));let s='';for(let i=0;i<6;i++)s+=c[b[i]%c.length];return s;}
-
-function startSubs(){
-  subs.push(onSnapshot(collection(db,'users'),sn=>{users={};sn.forEach(d=>{users[d.id]=d.data();});if(curUser&&users[curUser.uid]){curProf=users[curUser.uid];renderTop();renderProfile();if(isAdmin())renderAdmin();}}));
-  subs.push(onSnapshot(collection(db,'tasks'),sn=>{tasks=sn.docs.map(d=>({id:d.id,...d.data()}));if(curUser){renderTasks();if(isAdmin())renderAdmin();}}));
-  subs.push(onSnapshot(collection(db,'orders'),sn=>{orders=sn.docs.map(d=>({id:d.id,...d.data()}));if(curUser){renderOrders();renderProfile();}}));
-  subs.push(onSnapshot(collection(db,'notifications'),sn=>{notifs=sn.docs.map(d=>({id:d.id,...d.data()}));if(curUser)renderNotifs();}));
-  subs.push(onSnapshot(collection(db,'verifyQueue'),sn=>{queue=sn.docs.map(d=>({id:d.id,...d.data()}));if(isAdmin()){renderQueue();renderAdmin();}autoApprove();}));
-  syncBar('idle','Đã kết nối Firebase');
-}
-function stopSubs(){subs.forEach(u=>{try{u();}catch(e){}});subs=[];}
-
-// ═══ AUTH ═══
-function authErr(m){const e=$('#authError');e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),5000);}
-function setAuthLoad(l){const b=$('#aBtn'),t=$('#aBtnText');b.disabled=l;t.innerHTML=l?'<span class="spin"></span> Đang xử lý...':(mode==='login'?'Đăng nhập':'Đăng ký');}
-
-async function doAuth(){
-  if(busy)return;
-  const uEl=$('#aU'),pEl=$('#aP');
-  const u=uEl.value.trim().toLowerCase(),p=pEl.value;
-  $('#uG').classList.remove('err');$('#pG').classList.remove('err');
-  if(u.length<CFG.minU){$('#uG').classList.add('err');authErr('Tên ≥ '+CFG.minU+' ký tự');return;}
-  if(!validU(u)){$('#uG').classList.add('err');authErr('Tên chỉ chứa a-z, 0-9, _');return;}
-  if(p.length<CFG.minP){$('#pG').classList.add('err');authErr('Mật khẩu ≥ '+CFG.minP+' ký tự');return;}
-  busy=true;setAuthLoad(true);
-  try{
-    const email=u+FAKE_DOMAIN;
-    if(mode==='register'){
-      if(u===ADMIN_USER){authErr('Tên không khả dụng');setAuthLoad(false);busy=false;return;}
-      const ck=await getDoc(doc(db,'usernames',u));
-      if(ck.exists()){$('#uG').classList.add('err');authErr('Tên đã tồn tại!');setAuthLoad(false);busy=false;return;}
-      const cr=await createUserWithEmailAndPassword(auth,email,p);
-      const uid=cr.user.uid;
-      const prof={uid,username:u,email,points:CFG.bonus,earned:CFG.bonus,spent:0,tiktokUsername:'',history:[{type:'earn',action:'welcome',points:CFG.bonus,time:Date.now()}],dailyTasks:{},lastTaskAt:0,isAdmin:false,banned:false,createdAt:Date.now(),lastLoginAt:Date.now()};
-      await setDoc(doc(db,'users',uid),prof);
-      await setDoc(doc(db,'usernames',u),{uid,username:u,createdAt:Date.now()});
-      toast('🎉 Đăng ký thành công!','ok');
-    }else{
-      if(u===ADMIN_USER&&p===ADMIN_PASS){
-        const ck=await getDoc(doc(db,'usernames',ADMIN_USER));
-        if(!ck.exists()){
-          const cr=await createUserWithEmailAndPassword(auth,email,p);
-          const uid=cr.user.uid;
-          const ap={uid,username:ADMIN_USER,email,points:999999,earned:999999,spent:0,tiktokUsername:'',history:[],dailyTasks:{},lastTaskAt:0,isAdmin:true,banned:false,createdAt:Date.now(),lastLoginAt:Date.now()};
-          await setDoc(doc(db,'users',uid),ap);
-          await setDoc(doc(db,'usernames',ADMIN_USER),{uid,username:ADMIN_USER,createdAt:Date.now()});
-          toast('👑 Admin đã kích hoạt!','ok');
-          return;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Web Chỉnh Sửa Ảnh 4K</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .checkerboard {
+            background-image: linear-gradient(45deg, #ccc 25%, transparent 25%), 
+                              linear-gradient(-45deg, #ccc 25%, transparent 25%), 
+                              linear-gradient(45deg, transparent 75%, #ccc 75%), 
+                              linear-gradient(-45deg, transparent 75%, #ccc 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
         }
-      }
-      await signInWithEmailAndPassword(auth,email,p);
-      toast('👋 Chào mừng, '+u+'!','ok');
-    }
-  }catch(e){
-    console.error(e);
-    let m='Có lỗi xảy ra';
-    if(['auth/user-not-found','auth/wrong-password','auth/invalid-credential'].includes(e.code))m='Sai tên đăng nhập hoặc mật khẩu!';
-    else if(e.code==='auth/email-already-in-use')m='Tên đăng nhập đã tồn tại!';
-    else if(e.code==='auth/weak-password')m='Mật khẩu quá yếu!';
-    else if(e.code==='auth/too-many-requests')m='Quá nhiều lần thử. Vui lòng đợi!';
-    else if(e.code==='auth/unauthorized-domain')m='Domain chưa được cấp phép!';
-    else if(e.message)m=e.message;
-    authErr(m);
-    setAuthLoad(false);busy=false;
-  }
-}
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col">
 
-onAuthStateChanged(auth,async user=>{
-  busy=false;setAuthLoad(false);
-  if(user){
-    curUser=user;
-    try{
-      const d=await getDoc(doc(db,'users',user.uid));
-      if(!d.exists()){authErr('Tài khoản chưa được thiết lập!');await signOut(auth);return;}
-      curProf=d.data();
-      if(curProf.banned){authErr('Tài khoản đã bị khóa!');await signOut(auth);return;}
-      await updateDoc(doc(db,'users',user.uid),{lastLoginAt:Date.now()});
-      $('#authScreen').style.display='none';
-      $('#app').classList.add('show');
-      startSubs();renderTop();updateAdminTab();
-    }catch(e){console.error(e);await signOut(auth);}
-  }else{
-    curUser=null;curProf=null;users={};tasks=[];orders=[];notifs=[];queue=[];
-    stopSubs();
-    $('#app').classList.remove('show');
-    $('#authScreen').style.display='flex';
-    $('#aP').value='';mode='login';
-    $('#aBtnText').textContent='Đăng nhập';
-    $('#swText').textContent='Chưa có tài khoản?';
-    $('#swMode').textContent='Đăng ký ngay';
-    closeModal();
-    const t=document.querySelector('.tab.admin');if(t)t.remove();
-  }
-});
+    <!-- Header -->
+    <header class="bg-gray-800 border-b border-gray-700 py-4 px-6 flex justify-between items-center shadow-md">
+        <h1 class="text-2xl font-bold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+            4K Photo Editor Pro
+        </h1>
+        <div>
+            <label for="upload" class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-lg shadow transition duration-200">
+                📁 Tải ảnh lên
+            </label>
+            <input type="file" id="upload" accept="image/*" class="hidden">
+        </div>
+    </header>
 
-// ═══ RENDER ═══
-function updateAdminTab(){
-  const tabs=$('#tabs'),ex=tabs.querySelector('.tab.admin');
-  if(isAdmin()){if(!ex){const b=document.createElement('button');b.className='tab admin';b.dataset.tab='admin';b.type='button';b.textContent='🛡️ Admin';b.addEventListener('click',()=>switchTab('admin'));tabs.appendChild(b);}}
-  else if(ex)ex.remove();
-}
+    <!-- Main Workspace -->
+    <main class="flex-1 flex flex-col lg:flex-row p-6 gap-6 max-w-7xl mx-auto w-full">
+        
+        <!-- Canvas Display Area -->
+        <div class="flex-1 bg-gray-800 border border-gray-700 rounded-xl flex items-center justify-center p-4 overflow-hidden relative shadow-inner min-h-[400px]">
+            <div id="placeholder" class="text-center text-gray-400">
+                <svg class="mx-auto h-16 w-16 text-gray-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                <p class="text-lg">Chưa có ảnh nào được chọn. Hãy tải lên một bức ảnh chất lượng cao để bắt đầu.</p>
+            </div>
+            <!-- Canvas ẩn dùng để xử lý độ phân giải gốc 4K, Canvas hiển thị thu nhỏ vừa màn hình -->
+            <div class="relative max-h-[70vh] max-w-full overflow-auto hidden" id="canvas-container">
+                <canvas id="canvas" class="max-w-full h-auto shadow-2xl rounded"></canvas>
+            </div>
+        </div>
 
-function switchTab(n){
-  if(n==='admin'&&!isAdmin()){toast('⛔ Không có quyền','er');return;}
-  $$('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===n));
-  $$('.pg').forEach(p=>p.classList.toggle('active',p.id==='pg-'+n));
-  if(n==='tasks')renderTasks();
-  if(n==='shop')renderShop();
-  if(n==='orders')renderOrders();
-  if(n==='profile')renderProfile();
-  if(n==='admin')renderAdmin();
-}
+        <!-- Control Sidebar -->
+        <aside class="w-full lg:w-80 bg-gray-800 border border-gray-700 rounded-xl p-5 flex flex-col gap-5 shadow-md opacity-50 pointer-events-none transition-opacity duration-300" id="sidebar">
+            <h2 class="text-lg font-semibold border-b border-gray-700 pb-2 text-blue-400">Công cụ chỉnh sửa</h2>
 
-function renderTop(){
-  if(!curProf)return;
-  $('#topP').textContent=fmt(curProf.points)+' xu';
-  const a=$('#topAv');a.textContent=ini(curProf.username);a.style.background=col(curProf.username);
-  renderNotifs();
-}
+            <!-- Sliders / Filters -->
+            <div class="flex flex-col gap-4">
+                <div>
+                    <label class="text-sm font-medium flex justify-between">Độ sáng <span id="val-brightness">100%</span></label>
+                    <input type="range" id="brightness" min="0" max="200" value="100" class="w-full accent-blue-500 mt-1">
+                </div>
+                <div>
+                    <label class="text-sm font-medium flex justify-between">Tương phản <span id="val-contrast">100%</span></label>
+                    <input type="range" id="contrast" min="0" max="200" value="100" class="w-full accent-blue-500 mt-1">
+                </div>
+                <div>
+                    <label class="text-sm font-medium flex justify-between">Độ bão hòa <span id="val-saturate">100%</span></label>
+                    <input type="range" id="saturate" min="0" max="200" value="100" class="w-full accent-blue-500 mt-1">
+                </div>
+                <div>
+                    <label class="text-sm font-medium flex justify-between">Làm mờ <span id="val-blur">0px</span></label>
+                    <input type="range" id="blur" min="0" max="20" value="0" class="w-full accent-blue-500 mt-1">
+                </div>
+            </div>
 
-function renderTasks(){
-  if(!curProf)return;
-  $('#balVal').innerHTML=fmt(curProf.points)+'<small>xu</small>';
-  $('#balSub').textContent='Đã kiếm: '+fmt(curProf.earned)+' • Đã tiêu: '+fmt(curProf.spent);
-  const list=$('#taskList');
-  const now=Date.now(),today=todayKey();
-  const daily=(curProf.dailyTasks&&curProf.dailyTasks[today])||0;
-  const cd=Math.max(0,CFG.cooldown-(now-(curProf.lastTaskAt||0)));
-  const avail=tasks.filter(t=>{
-    if(t.completed)return false;
-    if(t.targetUid===curUser.uid)return false;
-    if(t.workers&&t.workers.includes(curUser.uid))return false;
-    if(t.slotsLeft<=0)return false;
-    return true;
-  }).sort((a,b)=>b.slotsLeft-a.slotsLeft||a.createdAt-b.createdAt);
-  if(avail.length===0){list.innerHTML='<div class="emp"><div class="e">⏳</div><p>Chưa có nhiệm vụ nào</p><p class="h">Khi có người mua, nhiệm vụ sẽ xuất hiện!</p></div>';return;}
-  if(daily>=CFG.dailyLimit){list.innerHTML='<div class="ib warn"><strong>⏰ Đạt giới hạn:</strong> '+CFG.dailyLimit+' task/ngày.</div>';return;}
-  list.innerHTML=avail.slice(0,20).map(t=>{
-    const tu=userData(t.targetUid);if(!tu)return'';
-    const rw=CFG.rewards[t.type]||0;
-    let ic='👥',cls='follow',txt='Follow';
-    if(t.type==='like'){ic='❤️';cls='like';txt='Tim';}
-    else if(t.type==='comment'){ic='💬';cls='comment';txt='Comment';}
-    const pr=((t.totalSlots-t.slotsLeft)/t.totalSlots)*100;
-    const h=tu.tiktokUsername?'@'+esc(tu.tiktokUsername):'chưa cập nhật';
-    return '<div class="tc '+cls+'"><div class="th"><div class="tic '+cls+'">'+ic+'</div><div class="tinfo"><div class="tname">'+txt+' TikTok của @'+esc(tu.username)+'</div><div class="tmeta"><span>🎵 '+h+'</span></div></div><div class="trew">+'+fmt(rw)+' xu</div></div><div class="tp"><span>'+(t.totalSlots-t.slotsLeft)+'/'+t.totalSlots+'</span><div class="tpb"><div class="tpf" style="width:'+pr+'%"></div></div><span>'+t.slotsLeft+' chỗ</span></div><div class="ta"><a class="bt open" href="'+getTikUrl(t,tu)+'" target="_blank" rel="noopener" data-open="'+t.id+'">🔗 Mở TikTok</a><button class="bt done" data-done="'+t.id+'" type="button" disabled>'+(cd>0?'⏱ Chờ '+Math.ceil(cd/1000)+'s':'✓ Đã '+txt.toLowerCase())+'</button></div></div>';
-  }).join('');
-  list.querySelectorAll('[data-open]').forEach(b=>{
-    b.addEventListener('click',()=>{
-      const id=b.dataset.open;opened[id]=Date.now();
-      const d=list.querySelector('[data-done="'+id+'"]');
-      if(d){d.disabled=false;d.textContent='✓ Đã hoàn thành';}
-      toast('⏱ Chờ '+(CFG.minTimeTT/1000)+'s','inf');
-    });
-  });
-  list.querySelectorAll('[data-done]').forEach(b=>{
-    b.addEventListener('click',()=>{if(b.disabled)return;openVerify(b.dataset.done);});
-  });
-  if(cd>0)setTimeout(renderTasks,cd+100);
-}
+            <!-- Effect Buttons -->
+            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-gray-700">
+                <button id="btn-grayscale" class="bg-gray-700 hover:bg-gray-600 text-sm py-2 px-3 rounded transition">Đen Trắng</button>
+                <button id="btn-invert" class="bg-gray-700 hover:bg-gray-600 text-sm py-2 px-3 rounded transition">Đảo Màu</button>
+                <button id="btn-sepia" class="bg-gray-700 hover:bg-gray-600 text-sm py-2 px-3 rounded transition">Cổ Điển (Sepia)</button>
+                <button id="btn-reset" class="bg-red-900/40 hover:bg-red-900/60 text-red-300 text-sm py-2 px-3 rounded transition">Đặt lại</button>
+            </div>
 
-function getTikUrl(t,tu){
-  const h=normTik(tu.tiktokUsername);if(!h)return'https://www.tiktok.com/';
-  if(t.type==='follow')return'https://www.tiktok.com/@'+encodeURIComponent(h);
-  if((t.type==='like'||t.type==='comment')&&t.videoUrl){try{const u=new URL(t.videoUrl);if(u.hostname.includes('tiktok.com'))return u.href;}catch(e){}}
-  return'https://www.tiktok.com/@'+encodeURIComponent(h);
-}
+            <!-- Rotate & Flip -->
+            <div class="flex flex-col gap-2 pt-2 border-t border-gray-700">
+                <span class="text-sm font-medium">Xoay & Lật</span>
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="btn-rotate" class="bg-gray-700 hover:bg-gray-600 text-sm py-2 px-3 rounded transition">🔄 Xoay 90°</button>
+                    <button id="btn-flip" class="bg-gray-700 hover:bg-gray-600 text-sm py-2 px-3 rounded transition">↔️ Lật ngang</button>
+                </div>
+            </div>
 
-function openVerify(taskId){
-  const t=tasks.find(x=>x.id===taskId);if(!t||!curProf)return;
-  const cd=Math.max(0,CFG.cooldown-(Date.now()-(curProf.lastTaskAt||0)));
-  if(cd>0){toast('⏱ Chờ '+Math.ceil(cd/1000)+'s','wn');return;}
-  const today=todayKey();
-  if(((curProf.dailyTasks&&curProf.dailyTasks[today])||0)>=CFG.dailyLimit){toast('⏰ Đạt giới hạn','wn');return;}
-  if(t.completed||t.slotsLeft<=0){toast('Hết chỗ','er');renderTasks();return;}
-  if(t.workers&&t.workers.includes(curUser.uid)){toast('Đã làm rồi','wn');return;}
-  const op=opened[taskId]||0,tt=Date.now()-op;
-  if(tt<CFG.minTimeTT){toast('⚠️ Cần thêm '+Math.ceil((CFG.minTimeTT-tt)/1000)+'s','wn');return;}
-  const code=genCode();
-  const rw=CFG.rewards[t.type]||0;
-  modal('<h3>🔐 Xác minh</h3><p>Làm 3 bước để hoàn thành</p><div class="vs act" id="vs1"><div class="num">1</div><div class="bd">Copy mã và dán vào <strong>bình luận TikTok</strong></div></div><div class="vcb"><div style="font-size:12px;opacity:.7">Mã xác nhận</div><div class="code" id="vc">'+code+'</div><div class="hint">👆 Nhấn để copy</div></div><div class="vs" id="vs2"><div class="num">2</div><div class="bd">Chờ <strong>'+Math.ceil(CFG.delayVerify/1000)+'s</strong> hệ thống xác minh</div></div><div class="vcd" id="vcd"><div class="cdl">⏳ Đang xác minh</div><div class="cdt" id="cdt">'+Math.ceil(CFG.delayVerify/1000)+'</div><div class="cdd">Vui lòng đợi...</div></div><div class="vs" id="vs3"><div class="num">3</div><div class="bd">Nhập lại mã để hoàn tất</div></div><input type="text" class="vin" id="vin" placeholder="MÃ 6 KÝ TỰ" maxlength="6" autocomplete="off" disabled><p style="font-size:12px;margin-top:12px">Thưởng: <b style="color:#10b981">+'+fmt(rw)+' xu</b></p><div class="ma"><button class="btn sec" id="cv" type="button">Hủy</button><button class="btn cf" id="cf" type="button" disabled>Hoàn tất</button></div>');
-  const cEl=$('#vc');
-  cEl.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(code);toast('📋 Đã copy!','ok');$('#vs1').classList.add('done');}catch(e){const r=document.createRange();r.selectNode(cEl);window.getSelection().removeAllRanges();window.getSelection().addRange(r);try{document.execCommand('copy');toast('📋 Đã copy!','ok');$('#vs1').classList.add('done');}catch(x){}}});
-  $('#vs2').classList.add('act');
-  let cd2=Math.ceil(CFG.delayVerify/1000);
-  timers.v=setInterval(()=>{cd2--;$('#cdt').textContent=cd2;if(cd2<=0){clearInterval(timers.v);delete timers.v;$('#vcd').classList.add('done');$('#vcd').querySelector('.cdl').textContent='✅ Xác minh xong';$('#vcd').querySelector('.cdt').textContent='✓';$('#vcd').querySelector('.cdd').textContent='Nhập mã để hoàn tất';$('#vs2').classList.remove('act');$('#vs2').classList.add('done');$('#vs3').classList.add('act');const i=$('#vin');i.disabled=false;i.focus();}},1000);
-  const vin=$('#vin'),cf=$('#cf');
-  vin.addEventListener('input',()=>{cf.disabled=vin.value.trim().toUpperCase().length!==6;});
-  vin.addEventListener('keypress',e=>{if(e.key==='Enter'&&!cf.disabled)cf.click();});
-  $('#cv').addEventListener('click',closeModal);
-  cf.addEventListener('click',()=>{
-    const v=vin.value.trim().toUpperCase();
-    if(v!==code){toast('❌ Sai mã','er');vin.value='';cf.disabled=true;return;}
-    closeModal();submitVerify(t.id,code);
-  });
-}
+            <!-- Export Button -->
+            <div class="mt-auto pt-4 border-t border-gray-700">
+                <button id="btn-download" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg shadow-lg transition duration-200 flex items-center justify-center gap-2">
+                    ⬇️ Tải ảnh 4K về máy
+                </button>
+            </div>
+        </aside>
+    </main>
 
-async function submitVerify(taskId,code){
-  if(busy)return;busy=true;
-  try{
-    const t=tasks.find(x=>x.id===taskId);if(!t||!curProf){busy=false;return;}
-    if(t.completed||t.slotsLeft<=0||(t.workers&&t.workers.includes(curUser.uid))){toast('Không thể','er');busy=false;return;}
-    const rw=CFG.rewards[t.type]||0,now=Date.now(),today=todayKey();
-    await addDoc(collection(db,'verifyQueue'),{taskId:t.id,orderId:t.orderId,type:t.type,workerUid:curUser.uid,workerUsername:curProf.username,workerTiktok:curProf.tiktokUsername||'',targetUid:t.targetUid,targetUsername:(userData(t.targetUid)||{}).username||'',targetTiktok:(userData(t.targetUid)||{}).tiktokUsername||'',verifyCode:code,reward:rw,status:'pending',submittedAt:now,autoApproveAt:now+CFG.autoApprove});
-    const nw=[...(t.workers||[]),curUser.uid];
-    await updateDoc(doc(db,'tasks',t.id),{workers:nw,slotsLeft:t.slotsLeft-1,completed:t.slotsLeft-1<=0});
-    const ndt={...(curProf.dailyTasks||{})};ndt[today]=(ndt[today]||0)+1;
-    await updateDoc(doc(db,'users',curUser.uid),{lastTaskAt:now,dailyTasks:ndt});
-    delete opened[taskId];
-    toast('✅ Đã gửi xác minh!','ok');
-    autoApprove();
-  }catch(e){console.error(e);toast('Lỗi: '+e.message,'er');}
-  finally{busy=false;}
-}
+    <!-- JavaScript Logic -->
+    <script>
+        const upload = document.getElementById('upload');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const placeholder = document.getElementById('placeholder');
+        const canvasContainer = document.getElementById('canvas-container');
+        const sidebar = document.getElementById('sidebar');
 
-async function autoApprove(){
-  if(!curUser)return;
-  const now=Date.now();
-  for(const it of queue){
-    if(it.status!=='pending')continue;
-    if(now<it.autoApproveAt)continue;
-    try{await approveV(it.id);}catch(e){}
-  }
-}
+        // Inputs
+        const brightnessInput = document.getElementById('brightness');
+        const contrastInput = document.getElementById('contrast');
+        const saturateInput = document.getElementById('saturate');
+        const blurInput = document.getElementById('blur');
 
-async function approveV(qid){
-  const it=queue.find(q=>q.id===qid);if(!it||it.status!=='pending')return;
-  const w=userData(it.workerUid);if(!w)return;
-  const b=writeBatch(db);
-  const nh=[{type:'earn',action:it.type,targetUsername:it.targetUsername,points:it.reward,time:Date.now()},...(w.history||[])].slice(0,50);
-  b.update(doc(db,'users',it.workerUid),{points:(w.points||0)+it.reward,earned:(w.earned||0)+it.reward,history:nh});
-  const o=orders.find(x=>x.id===it.orderId);
-  if(o){const nc=(o.completedSlots||0)+1;b.update(doc(db,'orders',it.orderId),{completedSlots:nc,status:nc>=o.qty?'done':'pending',completedAt:nc>=o.qty?Date.now():null});}
-  b.update(doc(db,'verifyQueue',qid),{status:'approved',reviewedAt:Date.now(),reviewedBy:'system'});
-  b.set(doc(collection(db,'notifications')),{userUid:it.workerUid,type:'success',title:'✅ Nhiệm vụ được duyệt!',body:'+'+fmt(it.reward)+' xu',read:false,time:Date.now()});
-  await b.commit();
-}
+        // Values display
+        const valBrightness = document.getElementById('val-brightness');
+        const valContrast = document.getElementById('val-contrast');
+        const valSaturate = document.getElementById('val-saturate');
+        const valBlur = document.getElementById('val-blur');
 
-async function rejectV(qid,reason){
-  const it=queue.find(q=>q.id===qid);if(!it||it.status!=='pending')return;
-  const t=tasks.find(x=>x.id===it.taskId);
-  const b=writeBatch(db);
-  if(t){const nw=(t.workers||[]).filter(w=>w!==it.workerUid);b.update(doc(db,'tasks',it.taskId),{workers:nw,slotsLeft:t.slotsLeft+1,completed:false});}
-  b.update(doc(db,'verifyQueue',qid),{status:'rejected',reviewedAt:Date.now(),reviewedBy:curUser.uid,reason:reason||'Không đạt'});
-  b.set(doc(collection(db,'notifications')),{userUid:it.workerUid,type:'error',title:'❌ Nhiệm vụ bị từ chối',body:reason||'Không đạt',read:false,time:Date.now()});
-  await b.commit();
-}
+        let originalImage = new Image();
+        let currentRotation = 0;
+        let isFlipped = false;
+        let activeFilters = {
+            grayscale: false,
+            invert: false,
+            sepia: false
+        };
 
-function renderShop(){
-  if(!curProf)return;
-  $('#shopBal').innerHTML=fmt(curProf.points)+'<small>xu</small>';
-  $('#shopWarn').style.display=curProf.tiktokUsername?'none':'block';
-  const l=$('#shopList');
-  l.innerHTML=CFG.pkgs.map(p=>{
-    let ic='👥',cls='follow';
-    if(p.type==='like'){ic='❤️';cls='like';}
-    else if(p.type==='comment'){ic='💬';cls='comment';}
-    const ok=curProf.points>=p.price;
-    const bd=p.badge?'<span class="bdg '+(p.badge==='BEST'?'best':'')+'">'+p.badge+'</span>':'';
-    return '<div class="sc">'+bd+'<div class="si '+cls+'">'+ic+'</div><div class="sinfo"><div class="sname">'+esc(p.name)+'</div><div class="sdesc">'+esc(p.desc)+'</div><div class="sprice '+(ok?'ok':'')+'">💰 '+fmt(p.price)+' xu</div></div><button class="buy" data-pkg="'+p.id+'" type="button" '+(ok?'':'disabled')+'>Mua</button></div>';
-  }).join('');
-  l.querySelectorAll('[data-pkg]').forEach(b=>{b.addEventListener('click',()=>{const p=CFG.pkgs.find(x=>x.id===b.dataset.pkg);if(p)buyP(p);});});
-}
+        // Khi người dùng chọn ảnh
+        upload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
 
-function buyP(p){
-  if(!curProf.tiktokUsername){toast('⚠️ Cập nhật TikTok trước!','er');switchTab('profile');return;}
-  if(curProf.points<p.price){toast('Cần '+fmt(p.price)+' xu','er');return;}
-  if(p.type==='like'||p.type==='comment'){
-    modal('<h3>📹 Link video TikTok</h3><div class="fg"><label>Link video</label><input type="text" id="vurl" placeholder="https://www.tiktok.com/@user/video/..."></div><div class="ma"><button class="btn sec" id="cb" type="button">Hủy</button><button class="btn cf" id="cfb" type="button">Mua (-'+fmt(p.price)+' xu)</button></div>');
-    $('#cb').addEventListener('click',closeModal);
-    $('#cfb').addEventListener('click',()=>{const u=$('#vurl').value.trim();if(!u){toast('Nhập link','wn');return;}try{const x=new URL(u);if(!x.hostname.includes('tiktok.com'))throw 0;}catch(e){toast('Link không hợp lệ','er');return;}closeModal();doBuy(p,u);});
-  }else{
-    modal('<h3>🛒 Xác nhận</h3><p>Mua <b>'+esc(p.name)+'</b> với <b style="color:#f59e0b">'+fmt(p.price)+' xu</b>?</p><div class="ib ok">🎵 @'+esc(curProf.tiktokUsername)+'</div><div class="ma"><button class="btn sec" id="cb" type="button">Hủy</button><button class="btn cf" id="cfb" type="button">Xác nhận</button></div>');
-    $('#cb').addEventListener('click',closeModal);
-    $('#cfb').addEventListener('click',()=>{closeModal();doBuy(p,null);});
-  }
-}
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                originalImage = new Image();
+                originalImage.onload = function() {
+                    // Giữ nguyên kích thước gốc của ảnh (Hỗ trợ 4K, 8K...)
+                    canvas.width = originalImage.naturalWidth;
+                    canvas.height = originalImage.naturalHeight;
+                    
+                    // Reset trạng thái chỉnh sửa
+                    currentRotation = 0;
+                    isFlipped = false;
+                    resetFiltersValues();
 
-async function doBuy(p,vurl){
-  if(busy)return;busy=true;
-  try{
-    if(curProf.points<p.price){toast('Không đủ xu!','er');busy=false;return;}
-    const now=Date.now(),b=writeBatch(db);
-    const nh=[{type:'spend',action:'buy_'+p.type,qty:p.qty,points:p.price,time:now},...(curProf.history||[])].slice(0,50);
-    b.update(doc(db,'users',curUser.uid),{points:curProf.points-p.price,spent:(curProf.spent||0)+p.price,history:nh});
-    const oRef=doc(collection(db,'orders'));
-    b.set(oRef,{buyerUid:curUser.uid,buyerUsername:curProf.username,type:p.type,qty:p.qty,price:p.price,videoUrl:vurl,status:'pending',completedSlots:0,createdAt:now});
-    const tRef=doc(collection(db,'tasks'));
-    b.set(tRef,{orderId:oRef.id,type:p.type,targetUid:curUser.uid,targetUsername:curProf.username,videoUrl:vurl,totalSlots:p.qty,slotsLeft:p.qty,workers:[],completed:false,createdAt:now});
-    b.set(doc(collection(db,'notifications')),{userUid:curUser.uid,type:'success',title:'🛒 Đã mua thành công!',body:p.qty+' '+p.type+' đang chờ',read:false,time:now});
-    await b.commit();
-    toast('🎉 Đã mua '+p.qty+' '+p.type,'ok');
-    switchTab('orders');
-  }catch(e){toast('Lỗi: '+e.message,'er');}
-  finally{busy=false;}
-}
+                    drawImageOnCanvas();
 
-function renderOrders(){
-  if(!curUser)return;
-  const l=$('#orderList');
-  const mine=orders.filter(o=>o.buyerUid===curUser.uid);
-  if(mine.length===0){l.innerHTML='<div class="emp"><div class="e">📦</div><p>Chưa có đơn</p><p class="h">Mua tương tác để tạo đơn!</p></div>';return;}
-  l.innerHTML=mine.map(o=>{
-    let ic='👥',nm='Follow';
-    if(o.type==='like'){ic='❤️';nm='Tim';}
-    else if(o.type==='comment'){ic='💬';nm='Comment';}
-    const c=o.completedSlots||0,pr=(c/o.qty)*100;
-    const dn=o.status==='done',cn=o.status==='cancelled';
-    const cc=!dn&&!cn&&c===0;
-    return '<div class="oc '+(dn?'done':'')+' '+(cn?'cancel':'')+'"><div class="oh"><div class="oty">'+ic+' '+o.qty+' '+nm+'</div><div class="ost '+(dn?'done':cn?'cancel':'pending')+'">'+(dn?'✓ Xong':cn?'✗ Hủy':'⏳ Chờ')+'</div></div><div class="om">💰 '+fmt(o.price)+' xu • '+ago(o.createdAt)+'</div><div class="ot">🎵 @'+esc(curProf.tiktokUsername||'N/A')+'</div><div class="tp"><span>'+c+'/'+o.qty+'</span><div class="tpb"><div class="tpf" style="width:'+pr+'%"></div></div><span>'+Math.round(pr)+'%</span></div>'+(cc?'<button class="cancel-o" data-cancel="'+o.id+'" type="button">✗ Hủy & hoàn xu</button>':'')+'</div>';
-  }).join('');
-  l.querySelectorAll('[data-cancel]').forEach(b=>{b.addEventListener('click',()=>cancelOrd(b.dataset.cancel));});
-}
+                    // Hiển thị canvas, ẩn placeholder và mở khóa sidebar
+                    placeholder.classList.add('hidden');
+                    canvasContainer.classList.remove('hidden');
+                    sidebar.classList.remove('opacity-50', 'pointer-events-none');
+                }
+                originalImage.src = event.target.result;
+            }
+            reader.readAsDataURL(file);
+        });
 
-async function cancelOrd(oid){
-  const o=orders.find(x=>x.id===oid);if(!o||o.buyerUid!==curUser.uid)return;
-  if(o.completedSlots>0){toast('Không thể hủy','er');return;}
-  modal('<h3>✗ Hủy đơn?</h3><p>Hoàn <b>'+fmt(o.price)+' xu</b>?</p><div class="ma"><button class="btn sec" id="cb" type="button">Không</button><button class="btn dg" id="cfb" type="button">Hủy</button></div>');
-  $('#cb').addEventListener('click',closeModal);
-  $('#cfb').addEventListener('click',async()=>{
-    const b=writeBatch(db);
-    b.update(doc(db,'orders',oid),{status:'cancelled'});
-    b.update(doc(db,'users',curUser.uid),{points:curProf.points+o.price,spent:Math.max(0,(curProf.spent||0)-o.price)});
-    tasks.filter(t=>t.orderId===oid).forEach(t=>b.delete(doc(db,'tasks',t.id)));
-    await b.commit();closeModal();toast('✅ Hoàn '+fmt(o.price)+' xu','ok');
-  });
-}
+        // Vẽ ảnh lên Canvas kèm theo các hiệu ứng và biến đổi hình học
+        function drawImageOnCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
 
-function renderProfile(){
-  if(!curProf)return;
-  $('#pAv').textContent=ini(curProf.username);
-  $('#pName').innerHTML='@'+esc(curProf.username)+(curProf.isAdmin?' <span class="abadge">👑 ADMIN</span>':'');
-  $('#pTik').textContent=curProf.tiktokUsername?'@'+curProf.tiktokUsername:'@chưa-cập-nhật';
-  $('#stP').textContent=fmt(curProf.points);
-  $('#stE').textContent=fmt(curProf.earned);
-  $('#stS').textContent=fmt(curProf.spent);
-  $('#tikIn').value=curProf.tiktokUsername||'';
-  renderHist();
-}
+            // Dịch chuyển tâm để xoay và lật ảnh chính xác
+            ctx.translate(canvas.width / 2, canvas.height / 2);
 
-function renderHist(){
-  const l=$('#histList');
-  const h=curProf.history||[];
-  if(h.length===0){l.innerHTML='<div class="emp"><div class="e">📊</div><p>Chưa có hoạt động</p></div>';return;}
-  l.innerHTML=h.slice(0,20).map(x=>{
-    let ic='💰',txt='',sg='+',cls='p';
-    if(x.type==='earn'){ic=x.action==='follow'?'👥':x.action==='like'?'❤️':x.action==='comment'?'💬':'🎁';txt=x.action==='welcome'?'Xu chào mừng':'Đã '+(x.action==='like'?'tim':x.action)+' @'+esc(x.targetUsername||'');}
-    else if(x.type==='spend'){ic='🛒';const a=x.action.replace('buy_','');txt='Mua '+x.qty+' '+(a==='like'?'tim':a);sg='-';cls='m';}
-    return '<div class="hi"><div class="ic">'+ic+'</div><div class="bd"><div class="tt">'+txt+'</div><div class="tm">'+ago(x.time)+'</div></div><div class="am '+cls+'">'+sg+fmt(x.points)+'</div></div>';
-  }).join('');
-}
+            if (currentRotation !== 0) {
+                ctx.rotate((currentRotation * Math.PI) / 180);
+            }
+            if (isFlipped) {
+                ctx.scale(-1, 1);
+            }
 
-async function saveTik(){
-  const v=normTik($('#tikIn').value);
-  if(!v){toast('Nhập username','wn');return;}
-  if(!validTik(v)){toast('Username không hợp lệ','er');return;}
-  await updateDoc(doc(db,'users',curUser.uid),{tiktokUsername:v});
-  $('#tikIn').value=v;toast('✅ Đã lưu @'+v,'ok');
-}
+            // Xử lý chuỗi bộ lọc CSS cho Canvas
+            let filterString = `
+                brightness(${brightnessInput.value}%) 
+                contrast(${contrastInput.value}%) 
+                saturate(${saturateInput.value}%) 
+                blur(${blurInput.value}px)
+            `;
 
-function renderNotifs(){
-  if(!curUser)return;
-  const mine=notifs.filter(n=>n.userUid===curUser.uid).sort((a,b)=>(b.time||0)-(a.time||0));
-  const ur=mine.filter(n=>!n.read).length;
-  const bd=$('#nBadge');
-  if(ur>0){bd.textContent=ur>99?'99+':ur;bd.style.display='block';}else bd.style.display='none';
-  const l=$('#nList');
-  if(mine.length===0){l.innerHTML='<div class="ne">🔕 Chưa có thông báo</div>';return;}
-  const ic={success:'✅',info:'ℹ️',warning:'⚠️',error:'❌'};
-  l.innerHTML=mine.slice(0,30).map(n=>'<div class="ni '+(n.read?'':'unread')+'"><div class="ic">'+(ic[n.type]||'🔔')+'</div><div class="bd"><div class="tt">'+esc(n.title)+'</div>'+(n.body?'<div style="font-size:12px;color:var(--mut);margin-top:2px">'+esc(n.body)+'</div>':'')+'<div class="tm">'+ago(n.time)+'</div></div></div>').join('');
-}
+            if (activeFilters.grayscale) filterString += ' grayscale(100%)';
+            if (activeFilters.invert) filterString += ' invert(100%)';
+            if (activeFilters.sepia) filterString += ' sepia(100%)';
 
-function toggleNP(){
-  const p=$('#nPanel');
-  if(p.classList.contains('show')){p.classList.remove('show');}
-  else{p.classList.add('show');
-    notifs.filter(n=>n.userUid===curUser.uid&&!n.read).forEach(async n=>{try{await updateDoc(doc(db,'notifications',n.id),{read:true});}catch(e){}});
-  }
-}
+            ctx.filter = filterString;
 
-async function clearN(){
-  const b=writeBatch(db);
-  notifs.filter(n=>n.userUid===curUser.uid).forEach(n=>b.delete(doc(db,'notifications',n.id)));
-  await b.commit();toast('Đã xóa','ok');
-}
+            // Vẽ ảnh gốc vào giữa canvas (đã được translate)
+            ctx.drawImage(
+                originalImage, 
+                -originalImage.naturalWidth / 2, 
+                -originalImage.naturalHeight / 2
+            );
 
-function renderAdmin(){
-  if(!isAdmin())return;
-  const au=Object.values(users);
-  $('#aUsers').textContent=au.length;
-  $('#aBanned').textContent=au.filter(u=>u.banned).length+' bị khóa';
-  $('#aTasks').textContent=tasks.filter(t=>!t.completed).length;
-  $('#aOrders').textContent=orders.filter(o=>o.status==='done').length;
-  $('#aVerify').textContent=queue.filter(q=>q.status==='pending').length;
-  renderQueue();renderUsers();
-}
+            ctx.restore();
+        }
 
-function renderQueue(){
-  const l=$('#qList');
-  const p=queue.filter(q=>q.status==='pending').sort((a,b)=>b.submittedAt-a.submittedAt);
-  if(p.length===0){l.innerHTML='<div class="emp"><div class="e">✨</div><p>Không có gì chờ duyệt</p></div>';return;}
-  l.innerHTML=p.map(q=>{
-    let ic='👥',nm='Follow';
-    if(q.type==='like'){ic='❤️';nm='Tim';}
-    else if(q.type==='comment'){ic='💬';nm='Comment';}
-    const ai=Math.max(0,Math.ceil((q.autoApproveAt-Date.now())/1000));
-    return '<div class="qi"><div class="qh"><div class="qt">'+ic+' '+nm+' - @'+esc(q.workerUsername)+'</div><div class="qtime">'+ago(q.submittedAt)+'</div></div><div class="qinfo">🎵 Worker: @'+esc(q.workerTiktok||'N/A')+'<br>🎯 Target: @'+esc(q.targetTiktok||q.targetUsername||'N/A')+'<br>🔑 Mã: <b>'+esc(q.verifyCode)+'</b> • 💰 +'+fmt(q.reward)+' xu</div><div style="font-size:11px;color:var(--mut);margin-bottom:8px">⏰ Auto duyệt sau: <b>'+ai+'s</b></div><div class="qa"><button class="bi ok" data-v="a" data-id="'+q.id+'" type="button">✅ Duyệt</button><button class="bi dg" data-v="r" data-id="'+q.id+'" type="button">❌ Từ chối</button></div></div>';
-  }).join('');
-  l.querySelectorAll('[data-v]').forEach(b=>{
-    b.addEventListener('click',async()=>{
-      if(b.dataset.v==='a'){await approveV(b.dataset.id);toast('✅ Đã duyệt','ok');}
-      else showReject(b.dataset.id);
-    });
-  });
-}
+        // Lắng nghe sự kiện thay đổi trên các thanh trượt
+        function updateImage() {
+            valBrightness.innerText = brightnessInput.value + '%';
+            valContrast.innerText = contrastInput.value + '%';
+            valSaturate.innerText = saturateInput.value + '%';
+            valBlur.innerText = blurInput.value + 'px';
+            drawImageOnCanvas();
+        }
 
-function showReject(qid){
-  const it=queue.find(q=>q.id===qid);if(!it)return;
-  modal('<h3>❌ Từ chối?</h3><p>Nhiệm vụ của @'+esc(it.workerUsername)+'</p><div class="fg"><label>Lý do</label><input type="text" id="rr" placeholder="VD: Không có mã" maxlength="100"></div><div class="ma"><button class="btn sec" id="cb" type="button">Hủy</button><button class="btn dg" id="cfb" type="button">Từ chối</button></div>');
-  $('#cb').addEventListener('click',closeModal);
-  $('#cfb').addEventListener('click',async()=>{const r=($('#rr').value||'').trim()||'Không đạt';await rejectV(qid,r);closeModal();toast('Đã từ chối','wn');});
-}
+        brightnessInput.addEventListener('input', updateImage);
+        contrastInput.addEventListener('input', updateImage);
+        saturateInput.addEventListener('input', updateImage);
+        blurInput.addEventListener('input', updateImage);
 
-async function autoApproveAll(){
-  const p=queue.filter(q=>q.status==='pending');
-  if(p.length===0){toast('Không có gì','inf');return;}
-  for(const q of p){try{await approveV(q.id);}catch(e){}}
-  toast('✅ Đã duyệt '+p.length,'ok');
-}
+        // Nút lọc màu
+        document.getElementById('btn-grayscale').addEventListener('click', () => {
+            activeFilters.grayscale = !activeFilters.grayscale;
+            drawImageOnCanvas();
+        });
 
-function renderUsers(){
-  let l=Object.values(users);
-  if(filter==='active')l=l.filter(u=>!u.banned);
-  else if(filter==='banned')l=l.filter(u=>u.banned);
-  else if(filter==='admin')l=l.filter(u=>u.isAdmin);
-  else if(filter==='rich')l=l.filter(u=>u.points>1000);
-  if(search){const q=search.toLowerCase();l=l.filter(u=>u.username.toLowerCase().includes(q));}
-  l.sort((a,b)=>b.points-a.points);
-  const c=$('#userList');
-  if(l.length===0){c.innerHTML='<div class="emp"><div class="e">🔍</div><p>Không tìm thấy</p></div>';return;}
-  c.innerHTML=l.map(u=>{
-    const me=u.uid===curUser.uid;
-    return '<div class="ur '+(u.banned?'banned':'')+'"><div class="av" style="background:'+col(u.username)+'">'+ini(u.username)+'</div><div class="info"><div class="un">@'+esc(u.username)+(u.isAdmin?' 👑':'')+(u.banned?' <span class="btag">Khóa</span>':'')+'</div><div class="mt"><span>💰 '+fmt(u.points)+' xu</span><span>🎵 @'+esc(u.tiktokUsername||'N/A')+'</span></div></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="bi pri" data-a="p" data-id="'+u.uid+'">💰</button>'+(me?'<span style="font-size:12px;color:#94a3b8;padding:8px">(Bạn)</span>':'<button class="bi '+(u.banned?'ok':'wn')+'" data-a="b" data-id="'+u.uid+'">'+(u.banned?'🔓':'🔒')+'</button><button class="bi '+(u.isAdmin?'wn':'pri')+'" data-a="t" data-id="'+u.uid+'">'+(u.isAdmin?'👤':'👑')+'</button><button class="bi dg" data-a="d" data-id="'+u.uid+'">🗑️</button>')+'</div></div>';
-  }).join('');
-  c.querySelectorAll('[data-a]').forEach(b=>{
-    b.addEventListener('click',()=>{
-      const a=b.dataset.a,id=b.dataset.id;
-      if(a==='p')editPts(id);
-      else if(a==='b')togBan(id);
-      else if(a==='t')togAdm(id);
-      else if(a==='d')delU(id);
-    });
-  });
-}
+        document.getElementById('btn-invert').addEventListener('click', () => {
+            activeFilters.invert = !activeFilters.invert;
+            drawImageOnCanvas();
+        });
 
-function editPts(uid){
-  const u=users[uid];if(!u)return;
-  modal('<h3>💰 Chỉnh xu @'+esc(u.username)+'</h3><p>Hiện tại: <b>'+fmt(u.points)+' xu</b></p><div class="fg"><label>Số xu thêm (âm để trừ)</label><input type="number" id="pi" value="1000"></div><div class="ma"><button class="btn sec" id="cb" type="button">Hủy</button><button class="btn cf" id="cfb" type="button">Áp dụng</button></div>');
-  $('#cb').addEventListener('click',closeModal);
-  $('#cfb').addEventListener('click',async()=>{
-    const v=parseInt($('#pi').value,10);
-    if(isNaN(v)){toast('Số không hợp lệ','er');return;}
-    await updateDoc(doc(db,'users',uid),{points:Math.max(0,u.points+v)});
-    await addDoc(collection(db,'notifications'),{userUid:uid,type:'info',title:'💰 Xu cập nhật',body:(v>=0?'+':'')+fmt(v)+' xu',read:false,time:Date.now()});
-    closeModal();toast((v>=0?'+':'')+fmt(v)+' xu','ok');
-  });
-}
+        document.getElementById('btn-sepia').addEventListener('click', () => {
+            activeFilters.sepia = !activeFilters.sepia;
+            drawImageOnCanvas();
+        });
 
-async function togBan(uid){
-  const u=users[uid];if(!u)return;
-  const nb=!u.banned;
-  await updateDoc(doc(db,'users',uid),{banned:nb});
-  await addDoc(collection(db,'notifications'),{userUid:uid,type:nb?'warning':'success',title:nb?'🔒 Tài khoản bị khóa':'🔓 Đã mở khóa',body:'',read:false,time:Date.now()});
-  toast(nb?'Đã khóa':'Đã mở',nb?'wn':'ok');
-}
+        // Xoay ảnh 90 độ
+        document.getElementById('btn-rotate').addEventListener('click', () => {
+            currentRotation = (currentRotation + 90) % 360;
+            // Nếu xoay 90 hoặc 270 độ, cần hoán đổi chiều rộng và chiều cao của canvas để tránh bị méo
+            if (currentRotation === 90 || currentRotation === 270) {
+                canvas.width = originalImage.naturalHeight;
+                canvas.height = originalImage.naturalWidth;
+            } else {
+                canvas.width = originalImage.naturalWidth;
+                canvas.height = originalImage.naturalHeight;
+            }
+            drawImageOnCanvas();
+        });
 
-async function togAdm(uid){
-  const u=users[uid];if(!u)return;
-  const na=!u.isAdmin;
-  await updateDoc(doc(db,'users',uid),{isAdmin:na});
-  await addDoc(collection(db,'notifications'),{userUid:uid,type:'info',title:na?'👑 Được cấp Admin':'Mất Admin',body:'',read:false,time:Date.now()});
-  toast(na?'👑 Đã cấp':'Đã hạ','ok');
-}
+        // Lật ngang ảnh
+        document.getElementById('btn-flip').addEventListener('click', () => {
+            isFlipped = !isFlipped;
+            drawImageOnCanvas();
+        });
 
-function delU(uid){
-  const u=users[uid];if(!u)return;
-  modal('<h3>⚠️ Xóa @'+esc(u.username)+'?</h3><p style="color:#ef4444">Toàn bộ dữ liệu sẽ bị xóa!</p><div class="ma"><button class="btn sec" id="cb" type="button">Hủy</button><button class="btn dg" id="cfb" type="button">Xóa</button></div>');
-  $('#cb').addEventListener('click',closeModal);
-  $('#cfb').addEventListener('click',async()=>{
-    try{
-      const b=writeBatch(db);
-      b.delete(doc(db,'users',uid));
-      if(u.username)b.delete(doc(db,'usernames',u.username));
-      tasks.filter(t=>t.targetUid===uid||(t.workers||[]).includes(uid)).forEach(t=>b.delete(doc(db,'tasks',t.id)));
-      orders.filter(o=>o.buyerUid===uid).forEach(o=>b.delete(doc(db,'orders',o.id)));
-      notifs.filter(n=>n.userUid===uid).forEach(n=>b.delete(doc(db,'notifications',n.id)));
-      queue.filter(q=>q.workerUid===uid||q.targetUid===uid).forEach(q=>b.delete(doc(db,'verifyQueue',q.id)));
-      await b.commit();closeModal();toast('Đã xóa @'+u.username,'ok');
-    }catch(e){toast('Lỗi: '+e.message,'er');}
-  });
-}
+        // Đặt lại tất cả
+        function resetFiltersValues() {
+            brightnessInput.value = 100;
+            contrastInput.value = 100;
+            saturateInput.value = 100;
+            blurInput.value = 0;
+            activeFilters = { grayscale: false, invert: false, sepia: false };
+            currentRotation = 0;
+            isFlipped = false;
+            canvas.width = originalImage.naturalWidth;
+            canvas.height = originalImage.naturalHeight;
+            updateImage();
+        }
 
-function changePw(){
-  modal('<h3>🔑 Đổi mật khẩu</h3><div class="fg"><label>Mật khẩu hiện tại</label><input type="password" id="op" maxlength="50"></div><div class="fg"><label>Mật khẩu mới</label><input type="password" id="np" maxlength="50"></div><div class="fg"><label>Nhập lại</label><input type="password" id="cp" maxlength="50"></div><div class="ma"><button class="btn sec" id="cb" type="button">Hủy</button><button class="btn cf" id="cfb" type="button">Đổi</button></div>');
-  $('#cb').addEventListener('click',closeModal);
-  $('#cfb').addEventListener('click',async()=>{
-    const o=$('#op').value,n=$('#np').value,c=$('#cp').value;
-    if(n.length<CFG.minP){toast('Quá ngắn','er');return;}
-    if(n!==c){toast('Không khớp','er');return;}
-    try{
-      const cr=EmailAuthProvider.credential(curUser.email,o);
-      await reauthenticateWithCredential(curUser,cr);
-      await updatePassword(curUser,n);
-      closeModal();toast('✅ Đã đổi','ok');
-    }catch(e){toast('Lỗi: '+e.message,'er');}
-  });
-}
+        document.getElementById('btn-reset').addEventListener('click', () => {
+            resetFiltersValues();
+        });
 
-// ═══ EVENTS ═══
-$('#aBtn').addEventListener('click',doAuth);
-$('#aU').addEventListener('keypress',e=>{if(e.key==='Enter')$('#aP').focus();});
-$('#aP').addEventListener('keypress',e=>{if(e.key==='Enter')doAuth();});
-$('#swMode').addEventListener('click',()=>{
-  mode=mode==='login'?'register':'login';
-  setAuthLoad(false);
-  $('#aBtnText').textContent=mode==='login'?'Đăng nhập':'Đăng ký';
-  $('#swText').textContent=mode==='login'?'Chưa có tài khoản?':'Đã có tài khoản?';
-  $('#swMode').textContent=mode==='login'?'Đăng ký ngay':'Đăng nhập';
-  $('#authError').classList.remove('show');
-});
-$('#btnOut').addEventListener('click',()=>{
-  modal('<h3>👋 Đăng xuất?</h3><div class="ma"><button class="btn sec" id="cb" type="button">Ở lại</button><button class="btn dg" id="cfb" type="button">Đăng xuất</button></div>');
-  $('#cb').addEventListener('click',closeModal);
-  $('#cfb').addEventListener('click',async()=>{closeModal();stopSubs();await signOut(auth);});
-});
-$$('.tab').forEach(t=>t.addEventListener('click',()=>switchTab(t.dataset.tab)));
-$('#btnN').addEventListener('click',e=>{e.stopPropagation();toggleNP();});
-$('#btnClearN').addEventListener('click',e=>{e.stopPropagation();clearN();});
-document.addEventListener('click',e=>{
-  const p=$('#nPanel'),b=$('#btnN');
-  if(!p.classList.contains('show'))return;
-  if(p.contains(e.target)||b.contains(e.target))return;
-  p.classList.remove('show');
-});
-$('#topAv').addEventListener('click',()=>switchTab('profile'));
-$('#topP').addEventListener('click',()=>switchTab('tasks'));
-$('#btnRefresh').addEventListener('click',()=>{renderTasks();toast('🔄 Đã làm mới','inf');});
-$('#btnSaveTik').addEventListener('click',saveTik);
-$('#tikIn').addEventListener('keypress',e=>{if(e.key==='Enter')saveTik();});
-$('#btnChangePw').addEventListener('click',changePw);
-$('#aSearch').addEventListener('input',e=>{search=e.target.value;renderUsers();});
-$('#aFilter').addEventListener('change',e=>{filter=e.target.value;renderUsers();});
-$('#btnAutoApprove').addEventListener('click',autoApproveAll);
-$('#btnReset').addEventListener('click',()=>{
-  if(!isAdmin())return;
-  modal('<h3>🔄 Reset xu?</h3><p>Không thể hoàn tác!</p><div class="ma"><button class="btn sec" id="cb" type="button">Hủy</button><button class="btn dg" id="cfb" type="button">Reset</button></div>');
-  $('#cb').addEventListener('click',closeModal);
-  $('#cfb').addEventListener('click',async()=>{
-    const b=writeBatch(db);
-    Object.keys(users).forEach(uid=>b.update(doc(db,'users',uid),{points:0}));
-    await b.commit();closeModal();toast('Đã reset xu','ok');
-  });
-});
-$('#modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal();});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();$('#nPanel').classList.remove('show');}});
-setInterval(autoApprove,30000);
-
-syncBar('idle','Sẵn sàng');
-console.log('%c🚀 TikTok Boost Pro - Firebase','color:#FE2C55;font-weight:bold');
-</script>
+        // Tải ảnh xuống giữ nguyên độ phân giải cao (4K)
+        document.getElementById('btn-download').addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = 'edited-4k-image.png';
+            // Xuất canvas dưới dạng ảnh PNG chất lượng cao nhất
+            link.href = canvas.toDataURL('image/png', 1.0);
+            link.click();
+        });
+    </script>
 </body>
 </html>
