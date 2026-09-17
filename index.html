@@ -3,277 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trang Web Chỉnh Sửa Ảnh 4K</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Tra Cứu TikTok Profile</title>
     <style>
-        .checkerboard {
-            background-image: linear-gradient(45deg, #ccc 25%, transparent 25%), 
-                              linear-gradient(-45deg, #ccc 25%, transparent 25%), 
-                              linear-gradient(45deg, transparent 75%, #ccc 75%), 
-                              linear-gradient(-45deg, transparent 75%, #ccc 75%);
-            background-size: 20px 20px;
-            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-        }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #121212; color: #fff; padding: 20px; display: flex; justify-content: center; }
+        .card { width: 100%; max-width: 450px; background: #1e1e1e; padding: 24px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); border: 1px solid #333; }
+        h2 { text-align: center; color: #fff; margin-top: 0; font-size: 22px; }
+        .highlight { color: #ff0050; }
+        .input-group { display: flex; gap: 8px; margin: 15px 0; }
+        input { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #2a2a2a; color: #fff; font-size: 15px; outline: none; }
+        input:focus { border-color: #00f2fe; }
+        button { padding: 12px 20px; border-radius: 8px; border: none; background: linear-gradient(45deg, #ff0050, #00f2fe); color: #fff; font-weight: bold; cursor: pointer; font-size: 15px; }
+        button:hover { opacity: 0.9; }
+        .profile { margin-top: 20px; background: #252525; border-radius: 10px; padding: 16px; text-align: center; display: none; }
+        .avatar { width: 90px; height: 90px; border-radius: 50%; border: 3px solid #ff0050; object-fit: cover; margin-bottom: 10px; }
+        .nickname { font-size: 18px; font-weight: bold; margin: 5px 0; }
+        .username { color: #aaa; font-size: 14px; margin-bottom: 12px; }
+        .bio { font-size: 13px; color: #ddd; margin: 10px 0; padding: 8px; background: #1a1a1a; border-radius: 6px; word-break: break-word; }
+        .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; }
+        .stat-item { background: #1a1a1a; padding: 10px; border-radius: 8px; }
+        .stat-val { font-weight: bold; font-size: 16px; color: #00f2fe; }
+        .stat-lbl { font-size: 12px; color: #888; }
+        .error { color: #ff5252; text-align: center; margin-top: 15px; display: none; font-size: 14px; }
+        .loading { color: #00f2fe; text-align: center; margin-top: 15px; display: none; }
     </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex flex-col">
+<body>
 
-    <!-- Header -->
-    <header class="bg-gray-800 border-b border-gray-700 py-4 px-6 flex justify-between items-center shadow-md">
-        <h1 class="text-2xl font-bold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
-            4K Photo Editor Pro
-        </h1>
-        <div>
-            <label for="upload" class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-lg shadow transition duration-200">
-                📁 Tải ảnh lên
-            </label>
-            <input type="file" id="upload" accept="image/*" class="hidden">
+<div class="card">
+    <h2>Tra Cứu TikTok <span class="highlight">Profile</span></h2>
+    <div class="input-group">
+        <input type="text" id="usernameInput" placeholder="Nhập ID TikTok (VD: oetkalaiy)...">
+        <button onclick="searchTikTok()">Tìm</button>
+    </div>
+
+    <div id="loading" class="loading">Đang kết nối qua cổng Proxy...</div>
+    <div id="error" class="error"></div>
+
+    <div id="profile" class="profile">
+        <img id="avatar" class="avatar" src="" alt="Avatar">
+        <div id="nickname" class="nickname"></div>
+        <div id="username" class="username"></div>
+        <div id="bio" class="bio"></div>
+        <div class="stats">
+            <div class="stat-item"><div id="followers" class="stat-val">0</div><div class="stat-lbl">Followers</div></div>
+            <div class="stat-item"><div id="following" class="stat-val">0</div><div class="stat-lbl">Đang Follow</div></div>
+            <div class="stat-item"><div id="likes" class="stat-val">0</div><div class="stat-lbl">Lượt Thích</div></div>
+            <div class="stat-item"><div id="videos" class="stat-val">0</div><div class="stat-lbl">Video</div></div>
         </div>
-    </header>
+    </div>
+</div>
 
-    <!-- Main Workspace -->
-    <main class="flex-1 flex flex-col lg:flex-row p-6 gap-6 max-w-7xl mx-auto w-full">
-        
-        <!-- Canvas Display Area -->
-        <div class="flex-1 bg-gray-800 border border-gray-700 rounded-xl flex items-center justify-center p-4 overflow-hidden relative shadow-inner min-h-[400px]">
-            <div id="placeholder" class="text-center text-gray-400">
-                <svg class="mx-auto h-16 w-16 text-gray-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                </svg>
-                <p class="text-lg">Chưa có ảnh nào được chọn. Hãy tải lên một bức ảnh chất lượng cao để bắt đầu.</p>
-            </div>
-            <!-- Canvas ẩn dùng để xử lý độ phân giải gốc 4K, Canvas hiển thị thu nhỏ vừa màn hình -->
-            <div class="relative max-h-[70vh] max-w-full overflow-auto hidden" id="canvas-container">
-                <canvas id="canvas" class="max-w-full h-auto shadow-2xl rounded"></canvas>
-            </div>
-        </div>
+<script>
+async function searchTikTok() {
+    let username = document.getElementById('usernameInput').value.trim();
+    const loading = document.getElementById('loading');
+    const error = document.getElementById('error');
+    const profile = document.getElementById('profile');
 
-        <!-- Control Sidebar -->
-        <aside class="w-full lg:w-80 bg-gray-800 border border-gray-700 rounded-xl p-5 flex flex-col gap-5 shadow-md opacity-50 pointer-events-none transition-opacity duration-300" id="sidebar">
-            <h2 class="text-lg font-semibold border-b border-gray-700 pb-2 text-blue-400">Công cụ chỉnh sửa</h2>
+    if (!username) {
+        showError("Vui lòng nhập ID TikTok!");
+        return;
+    }
 
-            <!-- Sliders / Filters -->
-            <div class="flex flex-col gap-4">
-                <div>
-                    <label class="text-sm font-medium flex justify-between">Độ sáng <span id="val-brightness">100%</span></label>
-                    <input type="range" id="brightness" min="0" max="200" value="100" class="w-full accent-blue-500 mt-1">
-                </div>
-                <div>
-                    <label class="text-sm font-medium flex justify-between">Tương phản <span id="val-contrast">100%</span></label>
-                    <input type="range" id="contrast" min="0" max="200" value="100" class="w-full accent-blue-500 mt-1">
-                </div>
-                <div>
-                    <label class="text-sm font-medium flex justify-between">Độ bão hòa <span id="val-saturate">100%</span></label>
-                    <input type="range" id="saturate" min="0" max="200" value="100" class="w-full accent-blue-500 mt-1">
-                </div>
-                <div>
-                    <label class="text-sm font-medium flex justify-between">Làm mờ <span id="val-blur">0px</span></label>
-                    <input type="range" id="blur" min="0" max="20" value="0" class="w-full accent-blue-500 mt-1">
-                </div>
-            </div>
+    if (username.startsWith('@')) {
+        username = username.substring(1);
+    }
 
-            <!-- Effect Buttons -->
-            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-gray-700">
-                <button id="btn-grayscale" class="bg-gray-700 hover:bg-gray-600 text-sm py-2 px-3 rounded transition">Đen Trắng</button>
-                <button id="btn-invert" class="bg-gray-700 hover:bg-gray-600 text-sm py-2 px-3 rounded transition">Đảo Màu</button>
-                <button id="btn-sepia" class="bg-gray-700 hover:bg-gray-600 text-sm py-2 px-3 rounded transition">Cổ Điển (Sepia)</button>
-                <button id="btn-reset" class="bg-red-900/40 hover:bg-red-900/60 text-red-300 text-sm py-2 px-3 rounded transition">Đặt lại</button>
-            </div>
+    loading.style.display = 'block';
+    error.style.display = 'none';
+    profile.style.display = 'none';
 
-            <!-- Rotate & Flip -->
-            <div class="flex flex-col gap-2 pt-2 border-t border-gray-700">
-                <span class="text-sm font-medium">Xoay & Lật</span>
-                <div class="grid grid-cols-2 gap-2">
-                    <button id="btn-rotate" class="bg-gray-700 hover:bg-gray-600 text-sm py-2 px-3 rounded transition">🔄 Xoay 90°</button>
-                    <button id="btn-flip" class="bg-gray-700 hover:bg-gray-600 text-sm py-2 px-3 rounded transition">↔️ Lật ngang</button>
-                </div>
-            </div>
+    const targetUrl = `https://www.tikwm.com/api/user/info?unique_id=${encodeURIComponent(username)}`;
+    
+    // Các đường dẫn vượt rào cản CORS
+    const apiEndpoints = [
+        `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
+        targetUrl
+    ];
 
-            <!-- Export Button -->
-            <div class="mt-auto pt-4 border-t border-gray-700">
-                <button id="btn-download" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg shadow-lg transition duration-200 flex items-center justify-center gap-2">
-                    ⬇️ Tải ảnh 4K về máy
-                </button>
-            </div>
-        </aside>
-    </main>
+    let success = false;
 
-    <!-- JavaScript Logic -->
-    <script>
-        const upload = document.getElementById('upload');
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const placeholder = document.getElementById('placeholder');
-        const canvasContainer = document.getElementById('canvas-container');
-        const sidebar = document.getElementById('sidebar');
+    for (let url of apiEndpoints) {
+        try {
+            const res = await fetch(url);
+            if (!res.ok) continue;
 
-        // Inputs
-        const brightnessInput = document.getElementById('brightness');
-        const contrastInput = document.getElementById('contrast');
-        const saturateInput = document.getElementById('saturate');
-        const blurInput = document.getElementById('blur');
+            const data = await res.json();
 
-        // Values display
-        const valBrightness = document.getElementById('val-brightness');
-        const valContrast = document.getElementById('val-contrast');
-        const valSaturate = document.getElementById('val-saturate');
-        const valBlur = document.getElementById('val-blur');
+            if (data && data.code === 0 && data.data) {
+                const u = data.data.user;
+                const s = data.data.stats;
 
-        let originalImage = new Image();
-        let currentRotation = 0;
-        let isFlipped = false;
-        let activeFilters = {
-            grayscale: false,
-            invert: false,
-            sepia: false
-        };
+                document.getElementById('avatar').src = u.avatarMedium || u.avatarThumb;
+                document.getElementById('nickname').innerHTML = (u.nickname || username) + (u.verified ? ' <span style="color:#00f2fe;">✓</span>' : '');
+                document.getElementById('username').innerText = '@' + (u.uniqueId || username);
+                document.getElementById('bio').innerText = u.signature || 'Chưa cập nhật tiểu sử';
 
-        // Khi người dùng chọn ảnh
-        upload.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
+                document.getElementById('followers').innerText = Number(s.followerCount || 0).toLocaleString('vi-VN');
+                document.getElementById('following').innerText = Number(s.followingCount || 0).toLocaleString('vi-VN');
+                document.getElementById('likes').innerText = Number(s.heartCount || 0).toLocaleString('vi-VN');
+                document.getElementById('videos').innerText = Number(s.videoCount || 0).toLocaleString('vi-VN');
 
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                originalImage = new Image();
-                originalImage.onload = function() {
-                    // Giữ nguyên kích thước gốc của ảnh (Hỗ trợ 4K, 8K...)
-                    canvas.width = originalImage.naturalWidth;
-                    canvas.height = originalImage.naturalHeight;
-                    
-                    // Reset trạng thái chỉnh sửa
-                    currentRotation = 0;
-                    isFlipped = false;
-                    resetFiltersValues();
-
-                    drawImageOnCanvas();
-
-                    // Hiển thị canvas, ẩn placeholder và mở khóa sidebar
-                    placeholder.classList.add('hidden');
-                    canvasContainer.classList.remove('hidden');
-                    sidebar.classList.remove('opacity-50', 'pointer-events-none');
-                }
-                originalImage.src = event.target.result;
+                profile.style.display = 'block';
+                success = true;
+                break;
             }
-            reader.readAsDataURL(file);
-        });
-
-        // Vẽ ảnh lên Canvas kèm theo các hiệu ứng và biến đổi hình học
-        function drawImageOnCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.save();
-
-            // Dịch chuyển tâm để xoay và lật ảnh chính xác
-            ctx.translate(canvas.width / 2, canvas.height / 2);
-
-            if (currentRotation !== 0) {
-                ctx.rotate((currentRotation * Math.PI) / 180);
-            }
-            if (isFlipped) {
-                ctx.scale(-1, 1);
-            }
-
-            // Xử lý chuỗi bộ lọc CSS cho Canvas
-            let filterString = `
-                brightness(${brightnessInput.value}%) 
-                contrast(${contrastInput.value}%) 
-                saturate(${saturateInput.value}%) 
-                blur(${blurInput.value}px)
-            `;
-
-            if (activeFilters.grayscale) filterString += ' grayscale(100%)';
-            if (activeFilters.invert) filterString += ' invert(100%)';
-            if (activeFilters.sepia) filterString += ' sepia(100%)';
-
-            ctx.filter = filterString;
-
-            // Vẽ ảnh gốc vào giữa canvas (đã được translate)
-            ctx.drawImage(
-                originalImage, 
-                -originalImage.naturalWidth / 2, 
-                -originalImage.naturalHeight / 2
-            );
-
-            ctx.restore();
+        } catch (err) {
+            console.log("Thử proxy tiếp theo...");
         }
+    }
 
-        // Lắng nghe sự kiện thay đổi trên các thanh trượt
-        function updateImage() {
-            valBrightness.innerText = brightnessInput.value + '%';
-            valContrast.innerText = contrastInput.value + '%';
-            valSaturate.innerText = saturateInput.value + '%';
-            valBlur.innerText = blurInput.value + 'px';
-            drawImageOnCanvas();
-        }
+    if (!success) {
+        showError("Không thể tra cứu hoặc ID TikTok này không tồn tại!");
+    }
 
-        brightnessInput.addEventListener('input', updateImage);
-        contrastInput.addEventListener('input', updateImage);
-        saturateInput.addEventListener('input', updateImage);
-        blurInput.addEventListener('input', updateImage);
+    loading.style.display = 'none';
+}
 
-        // Nút lọc màu
-        document.getElementById('btn-grayscale').addEventListener('click', () => {
-            activeFilters.grayscale = !activeFilters.grayscale;
-            drawImageOnCanvas();
-        });
+function showError(msg) {
+    const error = document.getElementById('error');
+    error.innerText = msg;
+    error.style.display = 'block';
+}
+</script>
 
-        document.getElementById('btn-invert').addEventListener('click', () => {
-            activeFilters.invert = !activeFilters.invert;
-            drawImageOnCanvas();
-        });
-
-        document.getElementById('btn-sepia').addEventListener('click', () => {
-            activeFilters.sepia = !activeFilters.sepia;
-            drawImageOnCanvas();
-        });
-
-        // Xoay ảnh 90 độ
-        document.getElementById('btn-rotate').addEventListener('click', () => {
-            currentRotation = (currentRotation + 90) % 360;
-            // Nếu xoay 90 hoặc 270 độ, cần hoán đổi chiều rộng và chiều cao của canvas để tránh bị méo
-            if (currentRotation === 90 || currentRotation === 270) {
-                canvas.width = originalImage.naturalHeight;
-                canvas.height = originalImage.naturalWidth;
-            } else {
-                canvas.width = originalImage.naturalWidth;
-                canvas.height = originalImage.naturalHeight;
-            }
-            drawImageOnCanvas();
-        });
-
-        // Lật ngang ảnh
-        document.getElementById('btn-flip').addEventListener('click', () => {
-            isFlipped = !isFlipped;
-            drawImageOnCanvas();
-        });
-
-        // Đặt lại tất cả
-        function resetFiltersValues() {
-            brightnessInput.value = 100;
-            contrastInput.value = 100;
-            saturateInput.value = 100;
-            blurInput.value = 0;
-            activeFilters = { grayscale: false, invert: false, sepia: false };
-            currentRotation = 0;
-            isFlipped = false;
-            canvas.width = originalImage.naturalWidth;
-            canvas.height = originalImage.naturalHeight;
-            updateImage();
-        }
-
-        document.getElementById('btn-reset').addEventListener('click', () => {
-            resetFiltersValues();
-        });
-
-        // Tải ảnh xuống giữ nguyên độ phân giải cao (4K)
-        document.getElementById('btn-download').addEventListener('click', () => {
-            const link = document.createElement('a');
-            link.download = 'edited-4k-image.png';
-            // Xuất canvas dưới dạng ảnh PNG chất lượng cao nhất
-            link.href = canvas.toDataURL('image/png', 1.0);
-            link.click();
-        });
-    </script>
 </body>
-</html> 
+</html>
